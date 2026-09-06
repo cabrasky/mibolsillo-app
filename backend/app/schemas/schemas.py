@@ -159,8 +159,8 @@ class ExpenseOut(BaseModel):
     ajeno: bool
     invitacion: bool
     deudores: str
-    personas: str
-    ref_cc: str
+    personas: str | None = None
+    ref_cc: str | None = None
     deuda_metodo: str
     devuelto: bool
     me_corresponde: float
