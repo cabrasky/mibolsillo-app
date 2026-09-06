@@ -2,7 +2,11 @@
 
 MiBolsillo: full-stack personal expense tracker with Sankey diagrams, Google OAuth, PostgreSQL, and Kubernetes deployment.
 
-**Producto web:** https://mibolsillo.cabrasky.net · **API:** https://mibolsillo.cabrasky.net/api
+**Producto web:** https://mibolsillo.cabrasky.net
+
+**Integración:** los gastos compartidos (personas Debe/Invitado) se pueden enviar a
+**Cuentas Claras** (`cabrasky/cuentas-claras`) con el botón "Añadir a CC" para gestionar
+el reparto entre gente; el vínculo queda guardado como `ref_cc` en cada gasto. · **API:** https://mibolsillo.cabrasky.net/api
 (alias histórico: gastos.cabrasky.net)
 
 | Stack | Tech |

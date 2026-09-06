@@ -22,6 +22,7 @@ const FEATURES = [
   { icon: 'target', title: 'Metas de ahorro', desc: 'Viajes, fondo de emergencia… con progreso y aportaciones rápidas.' },
   { icon: 'wallet', title: 'Tuyo, en tu servidor', desc: 'Sin nubes de terceros: tus datos viven en tu propio servidor. Web y app móvil sincronizados al instante.' },
   { icon: 'phone', title: 'En tu bolsillo', desc: 'App Android nativa (APK) con el mismo aspecto y datos que la web. Y en cualquier navegador.' },
+  { icon: 'refresh', title: 'Conectado a Cuentas Claras', desc: '¿Gasto compartido? Envíalo a Cuentas Claras con un toque y gestiona el reparto entre amigos sin salir de tu flujo.' },
 ];
 
 export default function Landing() {
