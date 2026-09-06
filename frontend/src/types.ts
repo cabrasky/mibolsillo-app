@@ -15,6 +15,7 @@ export interface Expense {
   invitacion?: number;
   deudores?: string;
   personas?: string;
+  ref_cc?: string;
   deudaMetodo: string;
   devuelto: 'yes' | 'no';
   meCorresponde: number;

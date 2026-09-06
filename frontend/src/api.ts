@@ -153,6 +153,7 @@ export interface ServerExpense {
   invitacion: boolean;
   deudores: string;
   personas: string;
+  ref_cc: string;
   deuda_metodo: string;
   devuelto: boolean;
   me_corresponde: number;
@@ -316,4 +317,8 @@ export async function apiUpdateCategory(id: string, body: { name?: string }): Pr
 }
 export async function apiDeleteCategory(id: string): Promise<void> {
   await request<void>('DELETE', `/categories/${id}`, undefined, true);
+}
+
+export async function apiSendToCC(id: string): Promise<any> {
+  return request('POST', `/expenses/${id}/send-to-cc`);
 }

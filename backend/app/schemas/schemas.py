@@ -118,6 +118,7 @@ class ExpenseCreate(BaseModel):
     invitacion: bool = False
     deudores: str = ""
     personas: str = ""
+    ref_cc: str = ""
     deuda_metodo: str = ""
     devuelto: bool = False
     me_corresponde: float = 0.0
@@ -137,6 +138,7 @@ class ExpenseUpdate(BaseModel):
     invitacion: Optional[bool] = None
     deudores: Optional[str] = None
     personas: Optional[str] = None
+    ref_cc: Optional[str] = None
     deuda_metodo: Optional[str] = None
     devuelto: Optional[bool] = None
     me_corresponde: Optional[float] = None
@@ -158,6 +160,7 @@ class ExpenseOut(BaseModel):
     invitacion: bool
     deudores: str
     personas: str
+    ref_cc: str
     deuda_metodo: str
     devuelto: bool
     me_corresponde: float

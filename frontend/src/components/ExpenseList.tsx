@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { REF, getMonth } from '../types';
 import type { Expense } from '../types';
 import { loadData } from '../store';
+import { apiSendToCC } from '../api';
 import { IconSearch, IconEdit, IconTrash, IconCheckCircle, IconXCircle } from './Icons';
 
 interface Props {
@@ -12,6 +13,8 @@ interface Props {
 
 export default function ExpenseList({ expenses, onEdit, onDelete }: Props) {
   const [search, setSearch] = useState('');
+  const [ccRefs, setCcRefs] = useState<Record<string, string>>({});
+  const [busyCc, setBusyCc] = useState<string | null>(null);
   const [filterProp, setFilterProp] = useState('');
   const [filterMonth, setFilterMonth] = useState('');
   const [filterProj, setFilterProj] = useState('');
@@ -33,6 +36,17 @@ export default function ExpenseList({ expenses, onEdit, onDelete }: Props) {
 
   const total = filtered.reduce((s, e) => s + e.amount, 0);
 
+      const personasOf = (e: Expense) => { try { const a = JSON.parse(e.personas || '[]'); return Array.isArray(a) ? a.filter((x: any) => x && x.n) : []; } catch { return []; } };
+      const ccInfo = (e: Expense) => { const raw = ccRefs[e.id] || e.ref_cc || ''; try { const o = JSON.parse(raw); return o?.receipt?.url || o?.url || ''; } catch { return ''; } };
+      const pushCc = async (e: Expense) => {
+        setBusyCc(e.id);
+        try {
+          const r = await apiSendToCC(e.id);
+          setCcRefs(prev => ({ ...prev, [e.id]: JSON.stringify(r) }));
+        } catch (err: any) {
+          alert(err?.message || 'No se pudo enviar a Cuentas Claras');
+        } finally { setBusyCc(null); }
+      };
   return (
     <div className="card">
       <div className="card-header">
@@ -80,7 +94,14 @@ export default function ExpenseList({ expenses, onEdit, onDelete }: Props) {
                   <td>
                     <strong>{e.desc}</strong>
                     {e.motivo && <span className="td-meta">{e.motivo}</span>}
-                    {!!e.invitacion && <span style={{display:'inline-block',background:'#ecfdf5',color:'#047857',border:'1px solid #a7f3d0',borderRadius:999,padding:'1px 8px',fontSize:11,marginLeft:6}} title="Invitación: pagado por ti sin devolución">Invitación</span>}
+                    {(!!e.invitacion || personasOf(e).length > 0) && (
+                      <>
+                        {!!e.invitacion && <span style={{ display: 'inline-block', background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', borderRadius: 999, padding: '1px 8px', fontSize: 11, marginLeft: 6 }} title="Invitación: pagado por ti sin devolución">Invitación</span>}
+                        {personasOf(e).length > 0 && (ccInfo(e)
+                          ? <a href={ccInfo(e)} target="_blank" rel="noreferrer" style={{ display: 'inline-block', background: '#eef2ff', color: '#4338ca', border: '1px solid #c7d2fe', borderRadius: 999, padding: '1px 8px', fontSize: 11, marginLeft: 6, textDecoration: 'none' }}>En CC ↗</a>
+                          : <button type="button" disabled={busyCc === e.id} onClick={() => pushCc(e)} style={{ background: '#eef2ff', color: '#4338ca', border: '1px solid #c7d2fe', borderRadius: 999, padding: '1px 8px', fontSize: 11, marginLeft: 6, cursor: 'pointer' }}>{busyCc === e.id ? 'Enviando…' : 'Añadir a CC'}</button>)}
+                      </>
+                    )}
                     {e.proyectoId && <span className="td-meta">📁 {projectName(e.proyectoId)}</span>}
                   </td>
                   <td className="td-amount">{e.amount.toFixed(2)} EUR</td>

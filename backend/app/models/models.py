@@ -77,6 +77,7 @@ class Expense(Base):
     invitacion: Mapped[bool] = mapped_column(Boolean, default=False)
     deudores: Mapped[str] = mapped_column(Text, default="")
     personas: Mapped[str] = mapped_column(Text, default="")
+    ref_cc: Mapped[str] = mapped_column(Text, default="")
     deuda_metodo: Mapped[str] = mapped_column(String(32), default="")
     devuelto: Mapped[bool] = mapped_column(Boolean, default=False)
     me_corresponde: Mapped[float] = mapped_column(Float, default=0.0)
