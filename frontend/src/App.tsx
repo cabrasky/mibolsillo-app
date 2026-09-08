@@ -28,6 +28,7 @@ import CategoriesPage from './components/CategoriesPage';
 import ExcelPage from './components/ExcelPage';
 import HelpPage from './components/HelpPage';
 import { MonthlyChart, CashFlowChart, BalanceEvolution, IncomeExpenseComparison, SankeyChart, DailyTrendCharts, CategoryFilter, CategoryCompare, CAT_COLORS } from './components/Charts';
+import PeriodCompare from './components/CompareCharts';
 import './App.css';
 
 const LAYOUT_BREAK = 1024;
@@ -63,6 +64,7 @@ function MonthlyCharts({ expenses, incomes }: { expenses: any[]; incomes: any[] 
       <DailyTrendCharts expenses={filtered} />
       <MonthlySummary expenses={filtered} />
       <IncomeExpenseComparison expenses={filtered} incomes={incomes} />
+      <PeriodCompare expenses={filtered} incomes={incomes} />
     </>
   );
 }
