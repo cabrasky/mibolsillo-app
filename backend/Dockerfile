@@ -12,6 +12,10 @@ WORKDIR /app
 COPY --from=builder /root/.local /usr/local
 COPY . .
 
+# Versión del despliegue (git short sha inyectado por CI)
+ARG GIT_SHA=dev
+RUN echo "$GIT_SHA" > /app/version.txt
+
 EXPOSE 8000
 USER gastos
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

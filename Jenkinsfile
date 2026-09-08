@@ -93,7 +93,7 @@ pipeline {
                             set -e
                             cd ${CI_DIR}
                             echo ${REGISTRY_PASS} | docker login ${REGISTRY} -u ${REGISTRY_USER} --password-stdin
-                            docker build -t ${BACKEND_IMAGE}:${env.IMAGE_TAG} -t ${BACKEND_IMAGE}:latest -f backend/Dockerfile backend/
+                            docker build --build-arg GIT_SHA=${env.GIT_SHORT} -t ${BACKEND_IMAGE}:${env.IMAGE_TAG} -t ${BACKEND_IMAGE}:latest -f backend/Dockerfile backend/
                             docker build -t ${FRONTEND_IMAGE}:${env.IMAGE_TAG} -t ${FRONTEND_IMAGE}:latest -f frontend/Dockerfile frontend/
                             docker push ${BACKEND_IMAGE}:${env.IMAGE_TAG}
                             docker push ${BACKEND_IMAGE}:latest

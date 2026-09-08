@@ -71,4 +71,9 @@ app.include_router(excel.router, prefix="/api")
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok", "app": settings.app_name}
+    try:
+        with open("/app/version.txt") as f:
+            version = f.read().strip()
+    except OSError:
+        version = "dev"
+    return {"status": "ok", "app": settings.app_name, "version": version}
