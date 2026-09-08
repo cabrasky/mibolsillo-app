@@ -86,6 +86,25 @@ function periodLabel(key: string, dim: Dim): string {
   return key;
 }
 
+function daysInMonth(y: number, m: number): number {
+  return new Date(y, m, 0).getDate();
+}
+
+/**
+ * Posiciones REALES dibujables de un periodo: su tamaño natural, o las ya
+ * transcurridas si el periodo está en curso (lo futuro no existe → null).
+ */
+function periodLength(key: string, dim: Dim): number {
+  const now = new Date();
+  if (dim === 'meses') {
+    const [y, m] = key.split('-').map(Number);
+    return isPartial(key, dim) ? now.getDate() : daysInMonth(y, m);
+  }
+  if (dim === 'semanas') return isPartial(key, dim) ? (now.getDay() + 6) % 7 + 1 : 7;
+  if (dim === 'trimestres') return isPartial(key, dim) ? posInPeriod(now, dim) : 13;
+  return isPartial(key, dim) ? now.getMonth() + 1 : 12;
+}
+
 function xLabel(pos: number, dim: Dim): string {
   if (dim === 'meses') return String(pos);
   if (dim === 'semanas') return WEEKDAYS[pos - 1];
@@ -97,6 +116,8 @@ const xTitle: Record<Dim, string> = {
   meses: 'Día del mes', semanas: 'Día de la semana', trimestres: 'Semana del trimestre', anios: 'Mes del año',
 };
 const defaultN: Record<Dim, number> = { meses: 3, semanas: 4, trimestres: 4, anios: 3 };
+/** Máximo de chips (periodos con datos) que se ofrecen por dimensión, los más recientes. */
+const MAX_OPTIONS: Record<Dim, number> = { meses: 18, semanas: 18, trimestres: 12, anios: 10 };
 
 export default function PeriodCompare({ expenses, incomes }: { expenses: Expense[]; incomes: Income[] }) {
   const [dim, setDim] = useState<Dim>('meses');
@@ -108,7 +129,7 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
     const acc = (dates: string[]) => {
       const set = new Set<string>();
       dates.forEach(s => set.add(periodKeyOf(s, dim)));
-      return [...set].sort().reverse();
+      return [...set].sort().reverse().slice(0, MAX_OPTIONS[dim]);
     };
     return acc([...expenses.map(e => e.date), ...incomes.map(i => i.date)]);
   }, [expenses, incomes, dim]);
@@ -147,12 +168,17 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
     expenses.forEach(e => { if (metric !== 'ingreso') add(periodKeyOf(e.date, dim), parseDate(e.date), e.amount); });
     incomes.forEach(i => { if (metric !== 'gasto') add(periodKeyOf(i.date, dim), parseDate(i.date), i.amount); });
 
-    // Filas del overlay (una por posición del eje X)
+    // Filas del overlay (una por posición del eje X). Dentro del periodo, un día sin
+    // gasto vale 0 (la curva se dibuja COMPLETA bajando a cero); solo queda null lo
+    // que aún no ha ocurrido (periodo en curso) o no pertenece al periodo (mes de 30 días).
     const maxPos = dim === 'meses' ? 31 : dim === 'semanas' ? 7 : dim === 'trimestres' ? 13 : 12;
     const rows: Record<string, any>[] = [];
     for (let p = 1; p <= maxPos; p++) {
       const row: Record<string, any> = { x: xLabel(p, dim) };
-      active.forEach(k => { const v = acc.get(k)?.get(p); row[k] = v === undefined ? null : Math.round(v * 100) / 100; });
+      active.forEach(k => {
+        const v = acc.get(k)?.get(p);
+        row[k] = v !== undefined ? Math.round(v * 100) / 100 : (p <= periodLength(k, dim) ? 0 : null);
+      });
       rows.push(row);
     }
     const totals = active.map(k => {
