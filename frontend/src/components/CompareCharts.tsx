@@ -61,10 +61,19 @@ function posInPeriod(d: Date, dim: Dim): number {
 
 function periodKeyOf(dateStr: string, dim: Dim): string {
   const d = parseDate(dateStr);
-  if (dim === 'meses') return dateStr.slice(0, 7);
+  return periodKeyOfDate(d, dim);
+}
+
+function periodKeyOfDate(d: Date, dim: Dim): string {
+  if (dim === 'meses') return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
   if (dim === 'semanas') { const w = isoWeek(d); return `${w.y}-W${pad(w.w)}`; }
-  if (dim === 'trimestres') return `${dateStr.slice(0, 4)}-Q${Math.floor(d.getMonth() / 3) + 1}`;
-  return dateStr.slice(0, 4); // años
+  if (dim === 'trimestres') return `${d.getFullYear()}-Q${Math.floor(d.getMonth() / 3) + 1}`;
+  return String(d.getFullYear()); // años
+}
+
+/** ¿El periodo está en curso (incompleto)? */
+function isPartial(key: string, dim: Dim): boolean {
+  return key === periodKeyOfDate(new Date(), dim);
 }
 
 function periodLabel(key: string, dim: Dim): string {
@@ -107,7 +116,14 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
   const active = useMemo(() => {
     const saved = sel[dim];
     if (saved && saved.length) return saved.filter(k => candidates.includes(k));
-    return candidates.slice(0, defaultN[dim]);
+    // Por defecto, periodos COMPLETOS (excluye el mes/semana/trimestre/año en curso,
+    // que está incompleto y aplastaría la comparación). Si no hay suficientes, se rellenan.
+    const complete = candidates.filter(k => !isPartial(k, dim));
+    const base = complete.slice(0, defaultN[dim]);
+    if (base.length < defaultN[dim]) {
+      candidates.filter(k => isPartial(k, dim)).slice(0, defaultN[dim] - base.length).forEach(k => base.push(k));
+    }
+    return base;
   }, [sel, dim, candidates]);
 
   const toggle = (k: string) => {
@@ -148,7 +164,9 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
   }, [active, expenses, incomes, metric, dim]);
 
   const colorOf = (k: string) => PALETTE[active.indexOf(k) % PALETTE.length];
-  const avg = totals.length ? grand / totals.length : 0;
+  const completeTotals = totals.filter(t => !isPartial(t.key, dim));
+  const avg = completeTotals.length ? completeTotals.reduce((s, t) => s + t.total, 0) / completeTotals.length : 0;
+  const anyPartial = totals.length > completeTotals.length;
 
   return (
     <div className="card">
@@ -184,14 +202,17 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginBottom: 4 }}>
         {candidates.map(k => {
           const on = active.includes(k);
+          const partial = isPartial(k, dim);
+          const label = periodLabel(k, dim) + (partial ? ' *' : '');
           return (
-            <button key={k} onClick={() => toggle(k)} title={periodLabel(k, dim)}
+            <button key={k} onClick={() => toggle(k)}
+              title={periodLabel(k, dim) + (partial ? ' — en curso (incompleto)' : '')}
               style={{
                 border: on ? `1.5px solid ${colorOf(k)}` : '1px solid var(--border)',
                 background: on ? colorOf(k) + '22' : 'transparent',
                 color: on ? colorOf(k) : 'var(--muted)',
                 borderRadius: 999, padding: '3px 11px', fontSize: 12, cursor: 'pointer', fontWeight: on ? 700 : 500,
-              }}>{periodLabel(k, dim)}</button>
+              }}>{label}</button>
           );
         })}
         {candidates.length === 0 && <span className="muted" style={{ fontSize: 12 }}>Sin movimientos</span>}
@@ -239,16 +260,19 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 12 }}>
             {totals.map(t => {
               const diff = avg !== 0 ? Math.round(((t.total - avg) / Math.abs(avg)) * 100) : 0;
+              const partial = isPartial(t.key, dim);
               return (
                 <div key={t.key} style={{ minWidth: 120, flex: 1, border: '1px solid var(--border)', borderRadius: 12, padding: '8px 12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: 12.5 }}>
                     <span style={{ width: 9, height: 9, borderRadius: 99, background: colorOf(t.key), display: 'inline-block' }} />
-                    {t.label}
+                    {t.label}{partial ? ' *' : ''}
                   </div>
                   <div style={{ fontWeight: 800, fontSize: 15, marginTop: 3 }}>{eur(t.total)}</div>
                   <div style={{ fontSize: 11, color: 'var(--muted)' }}>
-                    {totals.length > 1 && (diff >= 0 ? <span style={{ color: '#10b981' }}>▲ {diff}%</span> : <span style={{ color: '#ef4444' }}>▼ {Math.abs(diff)}%</span>)}
-                    {' '}vs media
+                    {partial ? <span style={{ color: 'var(--warning)', fontWeight: 700 }}>en curso · incompleto</span> : totals.length > 1 && (
+                      diff >= 0 ? <span style={{ color: '#10b981' }}>▲ {diff}%</span> : <span style={{ color: '#ef4444' }}>▼ {Math.abs(diff)}%</span>
+                    )}
+                    {!partial && totals.length > 1 && ' vs media'}
                   </div>
                 </div>
               );
@@ -257,7 +281,9 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
               <div style={{ minWidth: 120, flex: 1, border: '1px solid var(--border)', borderRadius: 12, padding: '8px 12px', background: 'var(--surface2)' }}>
                 <div style={{ fontWeight: 700, fontSize: 12.5 }}>Total conjunto</div>
                 <div style={{ fontWeight: 800, fontSize: 15, marginTop: 3 }}>{eur(grand)}</div>
-                <div style={{ fontSize: 11, color: 'var(--muted)' }}>media {eur(Math.round(avg * 100) / 100)}</div>
+                <div style={{ fontSize: 11, color: 'var(--muted)' }}>
+                  {anyPartial ? `media (completos) ${eur(Math.round(avg * 100) / 100)}` : `media ${eur(Math.round(avg * 100) / 100)}`}
+                </div>
               </div>
             )}
           </div>
