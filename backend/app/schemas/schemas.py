@@ -1,4 +1,5 @@
 """Pydantic schemas for API request/response validation."""
+import datetime as _dt
 from datetime import date, datetime
 from typing import Optional
 from pydantic import BaseModel, Field
@@ -107,7 +108,7 @@ class SmtpConfigUpdate(BaseModel):
 # ── Expenses ──────────────────────────────────────────────────────────────────
 
 class ExpenseCreate(BaseModel):
-    date: date
+    date: _dt.date
     description: str
     amount: float = Field(gt=0)
     purpose: str = ""
@@ -127,7 +128,7 @@ class ExpenseCreate(BaseModel):
 
 
 class ExpenseUpdate(BaseModel):
-    date: Optional[date] = None
+    date: Optional[_dt.date] = None
     description: Optional[str] = None
     amount: Optional[float] = Field(default=None, gt=0)
     purpose: Optional[str] = None
@@ -149,7 +150,7 @@ class ExpenseUpdate(BaseModel):
 class ExpenseOut(BaseModel):
     id: str
     user_id: str
-    date: date
+    date: _dt.date
     description: str
     amount: float
     purpose: str
@@ -174,7 +175,7 @@ class ExpenseOut(BaseModel):
 # ── Incomes ───────────────────────────────────────────────────────────────────
 
 class IncomeCreate(BaseModel):
-    date: date
+    date: _dt.date
     description: str
     amount: float = Field(gt=0)
     category: str = ""
@@ -182,7 +183,7 @@ class IncomeCreate(BaseModel):
 
 
 class IncomeUpdate(BaseModel):
-    date: Optional[date] = None
+    date: Optional[_dt.date] = None
     description: Optional[str] = None
     amount: Optional[float] = Field(default=None, gt=0)
     category: Optional[str] = None
@@ -192,7 +193,7 @@ class IncomeUpdate(BaseModel):
 class IncomeOut(BaseModel):
     id: str
     user_id: str
-    date: date
+    date: _dt.date
     description: str
     amount: float
     category: str
@@ -208,7 +209,7 @@ class GoalCreate(BaseModel):
     name: str
     target_amount: float = Field(gt=0)
     current_amount: float = 0.0
-    deadline: Optional[date] = None
+    deadline: Optional[_dt.date] = None
     category: str = ""
     notes: str = ""
 
@@ -217,7 +218,7 @@ class GoalUpdate(BaseModel):
     name: Optional[str] = None
     target_amount: Optional[float] = Field(default=None, gt=0)
     current_amount: Optional[float] = Field(default=None, ge=0)
-    deadline: Optional[date] = None
+    deadline: Optional[_dt.date] = None
     category: Optional[str] = None
     notes: Optional[str] = None
 
@@ -228,7 +229,7 @@ class GoalOut(BaseModel):
     name: str
     target_amount: float
     current_amount: float
-    deadline: Optional[date]
+    deadline: Optional[_dt.date]
     category: str
     notes: str
     created_at: datetime
@@ -242,7 +243,7 @@ class SubscriptionCreate(BaseModel):
     name: str
     amount: float = Field(gt=0)
     billing_cycle: str = "monthly"  # weekly, monthly, quarterly, yearly
-    next_billing: date
+    next_billing: _dt.date
     category: str = ""
     method: str = ""
     notes: str = ""
@@ -253,7 +254,7 @@ class SubscriptionUpdate(BaseModel):
     name: Optional[str] = None
     amount: Optional[float] = Field(default=None, gt=0)
     billing_cycle: Optional[str] = None
-    next_billing: Optional[date] = None
+    next_billing: Optional[_dt.date] = None
     category: Optional[str] = None
     method: Optional[str] = None
     notes: Optional[str] = None
@@ -266,7 +267,7 @@ class SubscriptionOut(BaseModel):
     name: str
     amount: float
     billing_cycle: str
-    next_billing: date
+    next_billing: _dt.date
     category: str
     method: str
     notes: str
