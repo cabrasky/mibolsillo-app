@@ -321,7 +321,7 @@ export async function apiDeleteCategory(id: string): Promise<void> {
 }
 
 export async function apiSendToCC(id: string): Promise<any> {
-  return request('POST', `/expenses/${id}/send-to-cc`);
+  return request('POST', `/expenses/${id}/send-to-cc`, undefined, true);
 }
 
 /* ── Developer / API keys ──────────────────────────────────────────────────── */
