@@ -8,6 +8,7 @@ interface User {
   name: string;
   avatar_url: string;
   is_admin: boolean;
+  is_developer: boolean;
 }
 
 interface AuthContextType {

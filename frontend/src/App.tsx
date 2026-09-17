@@ -27,6 +27,7 @@ import Landing from './components/Landing';
 import CategoriesPage from './components/CategoriesPage';
 import ExcelPage from './components/ExcelPage';
 import HelpPage from './components/HelpPage';
+import DeveloperPage from './components/DeveloperPage';
 import { MonthlyChart, CashFlowChart, BalanceEvolution, IncomeExpenseComparison, SankeyChart, DailyTrendCharts, CategoryFilter, CategoryCompare, CAT_COLORS } from './components/Charts';
 import PeriodCompare from './components/CompareCharts';
 import './App.css';
@@ -224,6 +225,7 @@ function AppContent() {
       } />
       <Route path="/excel" element={<ExcelPage onImported={refresh} />} />
       <Route path="/help" element={<HelpPage />} />
+      <Route path="/developer" element={<DeveloperPage />} />
       <Route path="/projects" element={
         <ProjectsPage onRefresh={refresh} onAddToProject={openAddFor} />
       } />

@@ -30,6 +30,7 @@ class UserOut(BaseModel):
     name: str
     avatar_url: str = ""
     is_admin: bool = False
+    is_developer: bool = False
 
     model_config = {"from_attributes": True}
 
@@ -319,3 +320,30 @@ class ProjectOut(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+# ── API Keys / Developer ──────────────────────────────────────────────────────
+
+class ApiKeyCreate(BaseModel):
+    name: str = ""
+
+
+class ApiKeyCreatedOut(BaseModel):
+    id: str
+    name: str
+    prefix: str
+    key: str  # clave completa — solo se devuelve UNA vez, en la creación
+    created_at: datetime
+
+
+class ApiKeyOut(BaseModel):
+    id: str
+    name: str
+    prefix: str
+    created_at: datetime
+    last_used_at: Optional[datetime] = None
+    revoked: bool = False
+
+
+class DeveloperToggleOut(BaseModel):
+    is_developer: bool

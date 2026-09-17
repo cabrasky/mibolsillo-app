@@ -57,6 +57,7 @@ export interface AuthResponse {
     name: string;
     avatar_url: string;
     is_admin: boolean;
+    is_developer: boolean;
   };
 }
 
@@ -321,4 +322,43 @@ export async function apiDeleteCategory(id: string): Promise<void> {
 
 export async function apiSendToCC(id: string): Promise<any> {
   return request('POST', `/expenses/${id}/send-to-cc`);
+}
+
+/* ── Developer / API keys ──────────────────────────────────────────────────── */
+
+export interface ApiKeyItem {
+  id: string;
+  name: string;
+  prefix: string;
+  created_at: string;
+  last_used_at: string | null;
+  revoked: boolean;
+}
+
+export interface ApiKeyCreated {
+  id: string;
+  name: string;
+  prefix: string;
+  key: string;
+  created_at: string;
+}
+
+export async function apiGetDeveloperStatus(): Promise<{ is_developer: boolean }> {
+  return request('GET', '/developer', undefined, true);
+}
+
+export async function apiToggleDeveloper(): Promise<{ is_developer: boolean }> {
+  return request('PUT', '/developer/toggle', {}, true);
+}
+
+export async function apiListApiKeys(): Promise<ApiKeyItem[]> {
+  return request<ApiKeyItem[]>('GET', '/developer/keys', undefined, true);
+}
+
+export async function apiCreateApiKey(name: string): Promise<ApiKeyCreated> {
+  return request<ApiKeyCreated>('POST', '/developer/keys', { name }, true);
+}
+
+export async function apiRevokeApiKey(id: string): Promise<void> {
+  await request<void>('DELETE', `/developer/keys/${id}`, undefined, true);
 }

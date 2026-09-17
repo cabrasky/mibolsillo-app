@@ -10,7 +10,7 @@ from sqlalchemy import select
 from app.config import settings
 from app.database import engine, Base, async_session_factory
 from app.models.models import User
-from app.routers import auth, expenses, incomes, goals, subscriptions, projects, categories, excel
+from app.routers import auth, expenses, incomes, goals, subscriptions, projects, categories, excel, developer
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +67,7 @@ app.include_router(subscriptions.router, prefix="/api")
 app.include_router(projects.router, prefix="/api")
 app.include_router(categories.router, prefix="/api")
 app.include_router(excel.router, prefix="/api")
+app.include_router(developer.router, prefix="/api")
 
 
 @app.get("/api/health")

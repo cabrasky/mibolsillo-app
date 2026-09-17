@@ -29,6 +29,7 @@ class User(Base):
     google_id: Mapped[str] = mapped_column(String(128), unique=True, nullable=True, default=None)
     avatar_url: Mapped[str] = mapped_column(String(512), default="")
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_developer: Mapped[bool] = mapped_column(Boolean, default=False)
     code: Mapped[str] = mapped_column(String(16), unique=True, default=gen_uuid)
     reset_token: Mapped[Optional[str]] = mapped_column(String(128), nullable=True, default=None, index=True)
     reset_token_expires: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, default=None)
@@ -151,3 +152,22 @@ class Category(Base):
     name: Mapped[str] = mapped_column(String(64), nullable=False)
     color: Mapped[str] = mapped_column(String(9), default="#0d9488")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class ApiKey(Base):
+    """Clave de API para acceso programático a los datos del usuario.
+
+    La clave completa se genera una sola vez y se devuelve al crearla; en BD
+    solo se guarda el hash SHA-256 (irrecuperable por diseño).
+    """
+
+    __tablename__ = "api_keys"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=gen_uuid)
+    user_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(128), default="")
+    key_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True, index=True)
+    prefix: Mapped[str] = mapped_column(String(12), default="")  # 'mb_live_…' para mostrar
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    last_used_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, default=None)
+    revoked_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, default=None)

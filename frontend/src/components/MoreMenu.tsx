@@ -42,6 +42,13 @@ export default function MoreMenu() {
         <div className="more-label">Cómo se usa</div>
         <div className="more-desc">Guía rápida</div>
       </Link>
+      <Link to="/developer" className="more-card" style={{ textDecoration: 'none', color: 'inherit' }}>
+        <div className="more-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <div className="more-label">Desarrollador</div>
+        <div className="more-desc">API y claves de acceso</div>
+      </Link>
       <Link to="/categories" className="more-card" style={{ textDecoration: 'none', color: 'inherit' }}>
         <div className="more-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>

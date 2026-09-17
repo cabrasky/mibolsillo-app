@@ -2,6 +2,7 @@
 import secrets
 import re
 import base64
+import hashlib
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -15,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_db
-from app.models.models import User, OAuthConfig, SmtpConfig
+from app.models.models import User, ApiKey, OAuthConfig, SmtpConfig
 from app.schemas.schemas import (
     RegisterRequest,
     LoginRequest,
@@ -76,7 +77,11 @@ async def get_current_user(
     request: Request,
     db: AsyncSession = Depends(get_db),
 ) -> User:
-    """Extract current user from Bearer token. Raises 401 if invalid."""
+    """Extract current user from Bearer JWT or X-API-Key header. Raises 401 if invalid."""
+    api_key = request.headers.get("X-API-Key", "").strip()
+    if api_key:
+        return await _user_from_api_key(api_key, db)
+
     auth = request.headers.get("Authorization", "")
     if not auth.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="No autenticado")
@@ -98,6 +103,33 @@ async def get_current_user(
     return user
 
 
+def _hash_api_key(key: str) -> str:
+    return hashlib.sha256(key.encode()).hexdigest()
+
+
+async def _user_from_api_key(key: str, db: AsyncSession) -> User:
+    """Resolve a user from an API key (X-API-Key header). 401 si inválida o revocada."""
+    key_hash = _hash_api_key(key)
+    result = await db.execute(
+        select(ApiKey).where(
+            ApiKey.key_hash == key_hash,
+            ApiKey.revoked_at.is_(None),
+        )
+    )
+    api_key_row = result.scalar_one_or_none()
+    if api_key_row is None:
+        raise HTTPException(status_code=401, detail="API key inválida o revocada")
+
+    result = await db.execute(select(User).where(User.id == api_key_row.user_id))
+    user = result.scalar_one_or_none()
+    if user is None:
+        raise HTTPException(status_code=401, detail="Usuario no encontrado")
+
+    api_key_row.last_used_at = datetime.utcnow()
+    await db.flush()
+    return user
+
+
 async def require_admin(
     request: Request,
     db: AsyncSession = Depends(get_db),
@@ -106,6 +138,21 @@ async def require_admin(
     user = await get_current_user(request, db)
     if not user.is_admin:
         raise HTTPException(status_code=403, detail="Acceso denegado")
+    return user
+
+
+async def require_developer(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    """Require developer mode (or admin). Raises 403 if not enabled.
+
+    Autoservicio: el propio usuario activa el modo desde la web. Los admins
+    pasan siempre (acceso implícito).
+    """
+    user = await get_current_user(request, db)
+    if not (user.is_developer or user.is_admin):
+        raise HTTPException(status_code=403, detail="Modo Desarrollador no activado")
     return user
 
 
