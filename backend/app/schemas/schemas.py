@@ -168,6 +168,7 @@ class ExpenseOut(BaseModel):
     me_corresponde: float
     viaje: str
     project_id: str
+    has_photo: bool = False
     created_at: datetime
 
     model_config = {"from_attributes": True}

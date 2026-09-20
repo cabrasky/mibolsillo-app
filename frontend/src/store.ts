@@ -204,6 +204,7 @@ function fromServerExpense(s: ServerExpense): Expense {
     meCorresponde: s.me_corresponde,
     viaje: s.viaje,
     proyectoId: s.project_id || '',
+    hasPhoto: !!s.has_photo,
     createdAt: s.created_at,
   };
 }

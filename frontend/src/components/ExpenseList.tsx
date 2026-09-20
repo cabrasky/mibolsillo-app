@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useCallback } from 'react';
 import { REF, getMonth } from '../types';
 import type { Expense } from '../types';
 import { loadData } from '../store';
-import { apiSendToCC } from '../api';
-import { IconSearch, IconEdit, IconTrash, IconCheckCircle, IconXCircle } from './Icons';
+import { apiSendToCC, apiUploadExpensePhoto, apiDeleteExpensePhoto, fetchExpensePhotoUrl } from '../api';
+import { IconSearch, IconEdit, IconTrash, IconCheckCircle, IconXCircle, IconCamera } from './Icons';
 
 interface Props {
   expenses: Expense[];
@@ -18,6 +18,72 @@ export default function ExpenseList({ expenses, onEdit, onDelete }: Props) {
   const [filterProp, setFilterProp] = useState('');
   const [filterMonth, setFilterMonth] = useState('');
   const [filterProj, setFilterProj] = useState('');
+
+  // Foto del ticket (subir / ver / reemplazar / borrar)
+  const [photoOpenId, setPhotoOpenId] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoErr, setPhotoErr] = useState('');
+  const [photoFlags, setPhotoFlags] = useState<Record<string, boolean>>({});
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const hasPhoto = (id: string) => {
+    if (photoFlags[id] !== undefined) return photoFlags[id];
+    return !!expenses.find(e => e.id === id)?.hasPhoto;
+  };
+
+  // Limpia la URL blob anterior al cerrar
+  const closePhoto = useCallback(() => {
+    setPhotoUrl(p => { if (p) URL.revokeObjectURL(p); return null; });
+    setPhotoOpenId(null); setPhotoErr('');
+  }, []);
+
+  const openPhoto = useCallback(async (e: Expense) => {
+    setPhotoOpenId(e.id); setPhotoErr(''); setPhotoUrl(null);
+    try {
+      const res = await fetchExpensePhotoUrl(e.id);
+      setPhotoUrl(res.url);
+    } catch (err: any) {
+      setPhotoErr(err?.message || 'Este gasto no tiene foto');
+    }
+  }, []);
+
+  const onPickFile = useCallback(async (file: File | undefined) => {
+    const id = photoOpenId;
+    if (!id || !file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setPhotoErr('Solo jpeg/png/webp');
+      return;
+    }
+    setPhotoBusy(true); setPhotoErr('');
+    try {
+      await apiUploadExpensePhoto(id, file, file.name, file.type);
+      setPhotoFlags(p => ({ ...p, [id]: true }));
+      // recargar la foto (ahora es la nueva)
+      setPhotoUrl(p => { if (p) URL.revokeObjectURL(p); return null; });
+      const res = await fetchExpensePhotoUrl(id);
+      setPhotoUrl(res.url);
+    } catch (err: any) {
+      setPhotoErr(err?.message || 'No se pudo subir');
+    } finally {
+      setPhotoBusy(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  }, [photoOpenId]);
+
+  const deletePhoto = useCallback(async () => {
+    const id = photoOpenId;
+    if (!id) return;
+    setPhotoBusy(true); setPhotoErr('');
+    try {
+      await apiDeleteExpensePhoto(id);
+      setPhotoFlags(p => ({ ...p, [id]: false }));
+      closePhoto();
+    } catch (err: any) {
+      setPhotoErr(err?.message || 'No se pudo borrar');
+    } finally { setPhotoBusy(false); }
+  }, [photoOpenId, closePhoto]);
+
   const projects = loadData().projects;
   const projectName = (id: string) => projects.find(p => p.id === id)?.name || '';
 
@@ -116,6 +182,7 @@ export default function ExpenseList({ expenses, onEdit, onDelete }: Props) {
                   </td>
                   <td>
                     <div className="row-actions">
+                      <button className="btn sm outline" onClick={() => openPhoto(e)} title={hasPhoto(e.id) ? 'Ver foto del ticket' : 'Añadir foto del ticket'}><IconCamera size={14} className={hasPhoto(e.id) ? 'icon-success' : undefined} /></button>
                       <button className="btn sm outline" onClick={() => onEdit(e.id)} title="Editar"><IconEdit size={14} /></button>
                       <button className="btn sm danger" onClick={() => onDelete(e.id)} title="Eliminar"><IconTrash size={14} /></button>
                     </div>
@@ -124,6 +191,44 @@ export default function ExpenseList({ expenses, onEdit, onDelete }: Props) {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* ── Modal foto del ticket ──────────────────────────── */}
+      {photoOpenId && (
+        <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) closePhoto(); }}>
+          <div className="modal modal-sm">
+            <div className="modal-header">
+              <h2>Foto del ticket</h2>
+              <button className="modal-close" onClick={closePhoto} title="Cerrar">✕</button>
+            </div>
+            <div className="modal-body">
+              {photoErr && <p style={{ color: '#b91c1c', fontSize: 13, margin: '0 0 12px' }}>{photoErr}</p>}
+              {photoUrl ? (
+                <img src={photoUrl} alt="Ticket" style={{ maxWidth: '100%', maxHeight: '55vh', borderRadius: 8, border: '1px solid #e5e7eb' }} />
+              ) : (
+                <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 12px' }}>Este gasto aún no tiene foto del ticket.</p>
+              )}
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                style={{ display: 'none' }}
+                onChange={e => onPickFile(e.target.files?.[0])}
+              />
+              <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+                <button className="btn sm" disabled={photoBusy} onClick={() => fileRef.current?.click()}>
+                  {photoUrl ? 'Reemplazar foto' : 'Subir foto'}
+                </button>
+                {photoUrl && (
+                  <button className="btn sm danger" disabled={photoBusy} onClick={() => { if (confirm('¿Borrar la foto del ticket?')) deletePhoto(); }}>
+                    Borrar foto
+                  </button>
+                )}
+                {photoBusy && <span style={{ fontSize: 12, color: '#6b7280', alignSelf: 'center' }}>Procesando…</span>}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
