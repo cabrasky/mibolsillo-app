@@ -160,6 +160,7 @@ export interface ServerExpense {
   me_corresponde: number;
   viaje: string;
   project_id: string;
+  has_photo?: boolean;
   created_at: string;
 }
 
@@ -179,6 +180,39 @@ export async function apiUpdateExpense(id: string, body: Partial<ExpenseCreateBo
 
 export async function apiDeleteExpense(id: string): Promise<void> {
   await request<void>('DELETE', `/expenses/${id}`, undefined, true);
+}
+
+/* ── Foto del ticket (multipart + descarga binaria) ──────────────────────────── */
+
+export async function apiUploadExpensePhoto(id: string, file: Blob, filename: string, contentType: string): Promise<void> {
+  const form = new FormData();
+  form.append('file', new File([file], filename, { type: contentType }));
+  const token = getToken();
+  const res = await fetch(`${BASE}/expenses/${id}/photo`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || 'No se pudo subir la foto');
+  }
+}
+
+export async function apiDeleteExpensePhoto(id: string): Promise<void> {
+  await request<void>('DELETE', `/expenses/${id}/photo`, undefined, true);
+}
+
+/** La foto exige Bearer → fetch con header + createObjectURL (no <img src=…token>). */
+export async function fetchExpensePhotoUrl(id: string): Promise<{ url: string; revoke: () => void }> {
+  const token = getToken();
+  const res = await fetch(`${BASE}/expenses/${id}/photo`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error('No se pudo cargar la foto');
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  return { url, revoke: () => URL.revokeObjectURL(url) };
 }
 
 /* ── Projects API (proyectos a los que enlazar gastos) ───────────────────── */

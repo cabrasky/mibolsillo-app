@@ -21,6 +21,7 @@ export interface Expense {
   meCorresponde: number;
   viaje: string;
   proyectoId: string;
+  hasPhoto?: boolean;
   createdAt: string;
 }
 

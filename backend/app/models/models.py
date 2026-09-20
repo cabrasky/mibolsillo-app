@@ -84,7 +84,13 @@ class Expense(Base):
     me_corresponde: Mapped[float] = mapped_column(Float, default=0.0)
     viaje: Mapped[str] = mapped_column(String(128), default="")
     project_id: Mapped[str] = mapped_column(String(36), default="")
+    photo_type: Mapped[str] = mapped_column(String(16), default="")  # jpeg/png/webp si hay foto
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    @property
+    def has_photo(self) -> bool:
+        """El fichero vive en disco cifrado; la columna photo_type indica si hay foto."""
+        return bool(self.photo_type)
 
 
 class Income(Base):
