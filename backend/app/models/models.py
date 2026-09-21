@@ -3,7 +3,7 @@ import enum
 import uuid
 from datetime import date, datetime
 from typing import Optional
-from sqlalchemy import String, Float, Date, DateTime, Boolean, Text, Enum as SAEnum
+from sqlalchemy import String, Float, Date, DateTime, Boolean, Text, LargeBinary, ForeignKey, Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
 
@@ -89,8 +89,20 @@ class Expense(Base):
 
     @property
     def has_photo(self) -> bool:
-        """El fichero vive en disco cifrado; la columna photo_type indica si hay foto."""
+        """La columna photo_type indica si hay foto (los bytes viven en expense_photos)."""
         return bool(self.photo_type)
+
+
+class ExpensePhoto(Base):
+    """Bytes de la foto del ticket de un gasto (en claro, cifrado pendiente)."""
+
+    __tablename__ = "expense_photos"
+
+    expense_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("expenses.id", ondelete="CASCADE"), primary_key=True
+    )
+    data: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    content_type: Mapped[str] = mapped_column(String(16), default="")
 
 
 class Income(Base):

@@ -10,7 +10,6 @@ sys.path.insert(0, BACKEND)
 
 WORK = tempfile.mkdtemp(prefix="mbtest_photos_")
 os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{os.path.join(WORK, 'test.db')}"
-os.environ["PHOTO_DIR"] = os.path.join(WORK, "photos")
 
 import httpx
 from PIL import Image
@@ -26,10 +25,6 @@ _sa.create_async_engine = _safe_async_engine
 
 from app.main import app
 from app.database import engine, Base
-
-def photo_files(pattern="*.enc"):
-    import glob
-    return glob.glob(os.path.join(WORK, "photos", pattern))
 
 async def main():
     async with engine.begin() as conn:
@@ -70,18 +65,14 @@ async def main():
         rows = {e["id"]: e for e in r.json()}
         check("lista trae has_photo", eid in rows and rows[eid].get("has_photo") is True)
 
-        # 6. GET foto = mismos bytes (descifrada en memoria, content-type original)
+        # 6. GET foto = mismos bytes, content-type original
         r = c.get(f"/api/expenses/{eid}/photo", headers=H)
         check("GET foto 200", r.status_code == 200)
         check("content-type image/jpeg", (r.headers.get("content-type") or "").startswith("image/jpeg"))
         check("bytes idénticos al original", r.content == jpg, f"{len(r.content)} vs {len(jpg)} b")
         check("cache privado", (r.headers.get("cache-control") or "").startswith("private"))
 
-        # 7. el disco SOLO tiene el .enc cifrado (no el jpeg en claro)
-        check("1 .enc en disco", len(photo_files()) == 1, str(photo_files()))
-        check(".enc NO es el jpeg original", photo_files() and open(photo_files()[0], "rb").read()[:4] != b"\xff\xd8\xff\xe0")
-
-        # 8. reemplazo (segunda foto)
+        # 7. reemplazo (segunda foto)
         img2 = Image.new("RGB", (300, 300), (200, 60, 60)); p2 = os.path.join(WORK, "t2.jpg"); img2.save(p2, "JPEG")
         jpg2 = open(p2, "rb").read()
         r = c.post(f"/api/expenses/{eid}/photo", headers=H, files={"file": ("t2.jpg", jpg2, "image/jpeg")})
@@ -89,11 +80,11 @@ async def main():
         r = c.get(f"/api/expenses/{eid}/photo", headers=H)
         check("GET devuelve la NUEVA foto", r.content == jpg2)
 
-        # 9. tipo no permitido
+        # 8. tipo no permitido
         r = c.post(f"/api/expenses/{eid}/photo", headers=H, files={"file": ("x.txt", b"hola", "text/plain")})
         check("tipo no permitido 400", r.status_code == 400, f"got {r.status_code}")
 
-        # 10. otro usuario no ve la foto ni el gasto
+        # 9. otro usuario no ve la foto ni el gasto
         r2 = c.post("/api/auth/register", json={"email": "otro@test.local", "password": "secret123", "name": "Otro"})
         H2 = {"Authorization": f"Bearer {r2.json()['token']}"}
         r = c.get(f"/api/expenses/{eid}/photo", headers=H2)
@@ -101,21 +92,21 @@ async def main():
         r = c.get(f"/api/expenses/{eid}", headers=H2)
         check("otro usuario NO ve el gasto (404)", r.status_code == 404, f"got {r.status_code}")
 
-        # 11. borrar foto
+        # 10. borrar foto
         r = c.delete(f"/api/expenses/{eid}/photo", headers=H)
         check("delete photo 200", r.status_code == 200, f"got {r.status_code}")
         check("has_photo=false tras delete", r.json().get("has_photo") is False)
         r = c.get(f"/api/expenses/{eid}/photo", headers=H)
         check("GET foto tras delete 404", r.status_code == 404)
-        check("disco limpio (0 .enc)", len(photo_files()) == 0)
         r = c.delete(f"/api/expenses/{eid}/photo", headers=H)
         check("delete sin foto 404", r.status_code == 404)
 
-        # 12. borrar el gasto borra también el .enc
+        # 11. borrar el gasto borra la foto en cascada
         c.post(f"/api/expenses/{eid}/photo", headers=H, files={"file": ("a.jpg", jpg, "image/jpeg")})
         r = c.delete(f"/api/expenses/{eid}", headers=H)
         check("delete expense 204", r.status_code == 204)
-        check("disco limpio al borrar gasto", len(photo_files()) == 0)
+        r = c.get(f"/api/expenses/{eid}/photo", headers=H)
+        check("GET foto tras borrar gasto 404", r.status_code == 404)
 
     print("\n" + ("TODO OK" if fails == 0 else f"{fails} FALLARON"))
     sys.exit(1 if fails else 0)

@@ -8,7 +8,7 @@ from app.models.models import Expense
 from app.schemas.schemas import ExpenseCreate, ExpenseUpdate, ExpenseOut
 from app.routers.auth import get_user_from_bearer as get_current_user
 from app.routers.crud import list_entities, get_entity, create_entity, update_entity, delete_entity
-from app.services.photos import get_photo_service, safe_delete_photo
+from app.services.photos import store_photo, get_photo_response, delete_photo
 from app.services.recurring import ensure_recurring_expense
 
 router = APIRouter(prefix="/expenses", tags=["expenses"])
@@ -65,7 +65,7 @@ async def delete_expense(expense_id: str, user=Depends(get_current_user), db: As
     deleted = await delete_entity(db, Expense, expense_id, user.id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Expense not found")
-    safe_delete_photo(user.id, expense_id)  # limpia el fichero en disco (ya no existe en BBDD)
+    # la foto se borra en cascada (FK ondelete=CASCADE en expense_photos)
 
 
 # ── Integración: enviar gasto compartido a Cuentas Claras ──────────
@@ -147,9 +147,7 @@ async def upload_photo(
     expense = await get_entity(db, Expense, expense_id, user.id)
     if not expense:
         raise HTTPException(status_code=404, detail="Expense not found")
-    svc = get_photo_service()
-    await svc.store(user.id, expense_id, file)
-    expense.photo_type = file.content_type or "application/octet-stream"
+    expense.photo_type = await store_photo(db, expense.id, file)
     await db.commit()
     await db.refresh(expense)
     return expense
@@ -161,12 +159,11 @@ async def get_photo(
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Descifrar y servir la foto en memoria (el cliente nunca ve el .enc)."""
+    """Servir la foto en memoria."""
     expense = await get_entity(db, Expense, expense_id, user.id)
     if not expense:
         raise HTTPException(status_code=404, detail="Expense not found")
-    svc = get_photo_service()
-    return svc.get_response(user.id, expense_id, expense.photo_type)
+    return await get_photo_response(db, expense.id, expense.photo_type)
 
 
 @router.delete("/{expense_id}/photo", response_model=ExpenseOut)
@@ -179,8 +176,7 @@ async def remove_photo(
     expense = await get_entity(db, Expense, expense_id, user.id)
     if not expense:
         raise HTTPException(status_code=404, detail="Expense not found")
-    svc = get_photo_service()
-    if not svc.delete(user.id, expense_id) and not expense.photo_type:
+    if not await delete_photo(db, expense.id) and not expense.photo_type:
         raise HTTPException(status_code=404, detail="El gasto no tiene foto")
     expense.photo_type = ""
     await db.commit()
