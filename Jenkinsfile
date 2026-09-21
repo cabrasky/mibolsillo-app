@@ -4,13 +4,13 @@
 //   otras ramas/PRs → pipeline verde sin build/deploy (solo main despliega)
 //
 // Credenciales Jenkins globales (mismas que yambo):
-//   yambo-ssh-key          : SSH private key para BUILD_HOST
-//   yambo-build-host       : "root@192.168.1.21"
+//   yambo-ssh-key          : SSH private key del usuario IPA 'build'
+//   yambo-build-host       : "build@192.168.1.21"
 //   yambo-registry-user    : usuario registry
 //   yambo-registry-pass    : password registry
 //   yambo-registry-host-prod : "100.111.131.248:5000" (registry .21 vía NetBird,
 //                              el que el k3s de Hetzner ya tiene en registries.yaml)
-// Kubeconfig Hetzner en BUILD_HOST: /root/.kube/hetzner.yaml
+// Kubeconfig Hetzner en BUILD_HOST: /home/build/.kube/hetzner.yaml
 
 pipeline {
     agent any
@@ -36,10 +36,10 @@ pipeline {
         REGISTRY         = credentials('yambo-registry-host-prod')
         BACKEND_IMAGE    = "${REGISTRY}/gastos-backend"
         FRONTEND_IMAGE   = "${REGISTRY}/gastos-frontend"
-        KUBECONFIG_HETZNER = '/root/.kube/hetzner.yaml'
+        KUBECONFIG_HETZNER = '/home/build/.kube/hetzner.yaml'
         NS_PROD          = 'gastos'
         APP_DOMAIN       = 'gastos.cabrasky.net'
-        CI_DIR           = '/tmp/gastos-ci'
+        CI_DIR           = '/home/build/gastos-ci'
     }
 
     stages {
