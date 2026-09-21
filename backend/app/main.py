@@ -2,13 +2,13 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from sqlalchemy import select
 
 from app.config import settings
 from app.database import engine, Base, async_session_factory
+from app.schema_sync import run_alembic_upgrade, sync_missing_columns
 from app.models.models import User
 from app.routers import auth, expenses, incomes, goals, subscriptions, projects, categories, excel, developer
 
@@ -34,9 +34,31 @@ async def _run_startup_recurring() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: create tables
+    # Startup: asegurar esquema coherente con el modelo SQLAlchemy, en 3 pasos:
+    #  1) `alembic upgrade head` si hay alembic.ini — el sistema formal de
+    #     migraciones (avanza alembic_version y aplica las versiones pendientes).
+    #  2) `Base.metadata.create_all` — idempotente; crea tablas NUEVAS cuya
+    #     definición ya existe en el modelo.
+    #  3) `sync_missing_columns` — añade columnas que estén en el modelo pero
+    #     falten en tablas ya existentes. Causa raíz del 500 de /expenses:
+    #     la columna photo_type estaba en el modelo y faltaba en la BD de
+    #     prod (la migración alembic nunca se aplicó ahí).
+    ok_alembic = run_alembic_upgrade()
+    if not ok_alembic:
+        logger.warning(
+            "alembic sin alembic.ini o sin resultado: usando create_all + sync_missing_columns"
+        )
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    try:
+        added = await sync_missing_columns(engine, Base)
+        if added:
+            logger.info("schema-sync: added %d missing column(s)", added)
+    except Exception:
+        logger.exception("schema-sync failed (continuing anyway)")
+
     await _run_startup_recurring()
     yield
     # Shutdown
