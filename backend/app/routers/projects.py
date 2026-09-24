@@ -29,7 +29,7 @@ async def get_project(project_id: str, user=Depends(get_current_user), db: Async
 async def create_project(body: ProjectCreate, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     name = body.name.strip()
     if not name:
-        raise HTTPException(status_code=400, detail="Se requiere un nombre")
+        raise HTTPException(status_code=400, detail="Name is required")
     return await create_entity(db, Project, user.id, {"name": name})
 
 
@@ -39,7 +39,7 @@ async def update_project(project_id: str, body: ProjectUpdate, user=Depends(get_
     if body.name is not None:
         name = body.name.strip()
         if not name:
-            raise HTTPException(status_code=400, detail="Se requiere un nombre")
+            raise HTTPException(status_code=400, detail="Name is required")
         data["name"] = name
     p = await update_entity(db, Project, project_id, user.id, data)
     if not p:

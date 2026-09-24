@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { REF } from '../types';
 import { addExpense, updateExpense, loadData, suggestExpense, type Suggestion } from '../store';
 import type { Expense } from '../types';
+import { useLocale } from '../i18n';
 
 interface Props {
   isOpen: boolean;
@@ -25,6 +26,7 @@ function parsePersonas(raw?: string): Persona[] {
 }
 
 export default function AddExpense({ isOpen, editExpense, onClose, onSaved, presetProjectId = '' }: Props) {
+  const { t } = useLocale();
   const isEdit = !!editExpense;
   const today = new Date().toISOString().slice(0, 10);
   const projects = loadData().projects;
@@ -126,9 +128,9 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const errs: { desc?: string; amount?: string } = {};
-    if (!desc.trim()) errs.desc = 'La descripción es obligatoria';
+    if (!desc.trim()) errs.desc = t('error.descriptionRequired');
     const amt = Number(amount);
-    if (!amt || amt <= 0 || !isFinite(amt)) errs.amount = 'Introduce un importe mayor que 0';
+    if (!amt || amt <= 0 || !isFinite(amt)) errs.amount = t('error.amountPositive');
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 

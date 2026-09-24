@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { expenseCost, getMonth } from '../types';
 import type { Expense } from '../types';
-import { getMonth } from '../types';
 import { useLocale } from '../i18n';
 import { useAuth } from '../AuthContext';
 import {
@@ -64,16 +64,16 @@ export default function DesktopLayout({
     const now = new Date();
     const thisMonth = now.getMonth() + 1;
     const thisYear = now.getFullYear();
-    const totalYear = expenses.filter(e => e.date?.startsWith(String(thisYear))).reduce((s, e) => s + e.amount, 0);
+    const totalYear = expenses.filter(e => e.date?.startsWith(String(thisYear))).reduce((s, e) => s + expenseCost(e), 0);
     const thisMonthExps = expenses.filter(e => getMonth(e.date) === thisMonth && e.date?.startsWith(String(thisYear)));
-    const totalMonth = thisMonthExps.reduce((s, e) => s + e.amount, 0);
+    const totalMonth = thisMonthExps.reduce((s, e) => s + expenseCost(e), 0);
     const monthCount = thisMonthExps.length;
     const avgMonth = monthCount > 0 ? totalMonth / monthCount : 0;
     const weekAgo = new Date(now.getTime() - 7 * 86400000);
     const weekSpent = expenses.filter(e => {
       const d = new Date(e.date + 'T12:00:00');
       return d >= weekAgo && d <= now;
-    }).reduce((s, e) => s + e.amount, 0);
+    }).reduce((s, e) => s + expenseCost(e), 0);
     return { totalYear, totalMonth, monthCount, avgMonth, weekSpent };
   }, [expenses]);
   const { t, locale, setLocale } = useLocale();

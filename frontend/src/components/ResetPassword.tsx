@@ -2,10 +2,12 @@
 import { useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { resetPassword } from '../api';
+import { useLocale, localizeError } from '../i18n';
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useLocale();
   const token = searchParams.get('token') || '';
 
   const [password, setPassword] = useState('');
@@ -20,11 +22,11 @@ export default function ResetPassword() {
     setMessage('');
 
     if (password !== confirm) {
-      setError('Las contraseñas no coinciden');
+      setError(t('error.passwordMismatch'));
       return;
     }
     if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+      setError(t('error.passwordLength'));
       return;
     }
 
@@ -34,7 +36,7 @@ export default function ResetPassword() {
       setMessage(res.message);
       setTimeout(() => navigate('/login'), 3000);
     } catch (err: any) {
-      setError(err.message);
+      setError(localizeError(err, t));
     }
     setBusy(false);
   };
@@ -47,7 +49,7 @@ export default function ResetPassword() {
           <Link to="/" className="back-link">← Volver a la portada</Link>
         </div>
           <h1>Gastos App</h1>
-          <h2>Enlace inválido</h2>
+          <h2>{t('error.invalidLink')}</h2>
           <p>El enlace de recuperación no es válido o ha expirado.</p>
           <p className="auth-link">
             <Link to="/forgot-password">Solicitar un nuevo enlace</Link>

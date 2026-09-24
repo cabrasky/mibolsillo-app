@@ -41,7 +41,7 @@ async def _ensure_defaults(db: AsyncSession, user_id: str, kind: str):
 @router.get("", response_model=list[CategoryOut])
 async def list_categories(kind: str = "", user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     if kind and kind not in _VALID_KINDS:
-        raise HTTPException(status_code=400, detail="kind debe ser 'expense' o 'income'")
+        raise HTTPException(status_code=400, detail="kind must be 'expense' or 'income'")
     kinds = [kind] if kind else list(_VALID_KINDS)
     for k in kinds:
         await _ensure_defaults(db, user.id, k)
@@ -57,15 +57,15 @@ async def create_category(body: CategoryCreate, user=Depends(get_current_user), 
     name = (body.name or "").strip()
     kind = (body.kind or "").strip().lower()
     if not name:
-        raise HTTPException(status_code=400, detail="Se requiere un nombre")
+        raise HTTPException(status_code=400, detail="Name is required")
     if kind not in _VALID_KINDS:
-        raise HTTPException(status_code=400, detail="kind debe ser 'expense' o 'income'")
+        raise HTTPException(status_code=400, detail="kind must be 'expense' or 'income'")
     if len(name) > 40:
-        raise HTTPException(status_code=400, detail="Máximo 40 caracteres")
+        raise HTTPException(status_code=400, detail="Maximum length is 40 characters")
     dup = await db.scalar(select(Category).where(
         Category.user_id == user.id, Category.kind == kind, func.lower(Category.name) == name.lower()))
     if dup:
-        raise HTTPException(status_code=400, detail="Ya tienes una categoría con ese nombre")
+        raise HTTPException(status_code=400, detail="A category with that name already exists")
     color = _PALETTE[(await db.scalar(select(func.count()).select_from(Category).where(Category.user_id == user.id, Category.kind == kind)) or 0) % len(_PALETTE)]
     cat = Category(user_id=user.id, kind=kind, name=name, color=color)
     db.add(cat)
@@ -84,12 +84,12 @@ async def update_category(category_id: str, body: CategoryUpdate, user=Depends(g
     if body.name is not None:
         new_name = body.name.strip()
         if not new_name:
-            raise HTTPException(status_code=400, detail="Se requiere un nombre")
+            raise HTTPException(status_code=400, detail="Name is required")
         dup = await db.scalar(select(Category).where(
             Category.id != category_id, Category.user_id == user.id,
             Category.kind == cat.kind, func.lower(Category.name) == new_name.lower()))
         if dup:
-            raise HTTPException(status_code=400, detail="Ya tienes una categoría con ese nombre")
+            raise HTTPException(status_code=400, detail="A category with that name already exists")
     if body.color is not None and body.color.strip():
         cat.color = body.color.strip()
     if new_name != old_name:
@@ -116,11 +116,11 @@ async def delete_category(category_id: str, user=Depends(get_current_user), db: 
         used += await db.scalar(select(func.count()).select_from(Subscription).where(
             Subscription.user_id == user.id, Subscription.category == cat.name)) or 0
         if used:
-            raise HTTPException(status_code=409, detail=f"No se puede borrar: {used} registro(s) la usan. Renómbrala o cambia esos registros.")
+            raise HTTPException(status_code=409, detail=f"Cannot delete: {used} record(s) use this category")
     else:
         used = await db.scalar(select(func.count()).select_from(Income).where(
             Income.user_id == user.id, Income.category == cat.name)) or 0
         if used:
-            raise HTTPException(status_code=409, detail=f"No se puede borrar: {used} ingreso(s) la usan. Renómbrala o cambia esos registros.")
+            raise HTTPException(status_code=409, detail=f"Cannot delete: {used} income record(s) use this category")
     await db.delete(cat)
     await db.flush()

@@ -111,6 +111,6 @@ async def revoke_api_key(
     )
     api_key = result.scalar_one_or_none()
     if api_key is None:
-        raise HTTPException(status_code=404, detail="API key no encontrada")
+        raise HTTPException(status_code=404, detail="API key not found")
     api_key.revoked_at = datetime.utcnow()
     await db.flush()

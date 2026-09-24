@@ -2,10 +2,12 @@
 import { useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
+import { useLocale, localizeError } from '../i18n';
 
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLocale();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,7 +18,7 @@ export default function Register() {
     e.preventDefault();
     setError('');
     if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+      setError(t('error.passwordLength'));
       return;
     }
     setBusy(true);
@@ -24,7 +26,7 @@ export default function Register() {
       await register(email, password, name);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message);
+      setError(localizeError(err, t));
     }
     setBusy(false);
   };

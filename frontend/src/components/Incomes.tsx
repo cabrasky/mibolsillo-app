@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { REF, getMonth } from '../types';
+import { useLocale } from '../i18n';
 import type { Income } from '../types';
 import { addIncome, updateIncome, deleteIncome } from '../store';
 import { IconPlus, IconX, IconEdit, IconTrash, IconSearch } from './Icons';
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function IncomesPage({ incomes, onRefresh }: Props) {
+  const { t } = useLocale();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Income | null>(null);
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -62,7 +64,7 @@ export default function IncomesPage({ incomes, onRefresh }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!desc.trim() || !amount || amount <= 0) {
-      setFormError(!desc.trim() ? 'La descripción es obligatoria' : 'El importe debe ser mayor que 0');
+      setFormError(!desc.trim() ? t('error.descriptionRequired') : t('error.amountPositive'));
       return;
     }
     setFormError('');

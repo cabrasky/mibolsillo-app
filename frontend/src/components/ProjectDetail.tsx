@@ -1,5 +1,6 @@
 /* ── Desglose de un proyecto: todos los gastos que lo componen ─────────────── */
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { expenseCost } from '../types';
 import { loadData, deleteExpense, updateExpense } from '../store';
 import { IconArrowLeft, IconPlus, IconTrash } from './Icons';
 
@@ -29,7 +30,7 @@ export default function ProjectDetail({ onRefresh, onEditExpense, onAddToProject
     );
   }
 
-  const total = items.reduce((s, e) => s + e.amount, 0);
+  const total = items.reduce((s, e) => s + expenseCost(e), 0);
   const pending = items.filter(e => e.devuelto !== 'yes').reduce((s, e) => s + e.meCorresponde, 0);
 
   const handleUnlink = (expenseId: string) => {

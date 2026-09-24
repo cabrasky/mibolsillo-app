@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Expense, Income, Goal, Subscription } from '../types';
-import { getMonth } from '../types';
+import { expenseCost, getMonth } from '../types';
 import { useLocale } from '../i18n';
 import { IconArrowUpRight } from './Icons';
 
@@ -20,13 +20,13 @@ export default function Dashboard({ expenses, incomes, goals, subscriptions }: P
   const thisYear = now.getFullYear();
 
   const stats = useMemo(() => {
-    const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
+    const totalExpenses = expenses.reduce((s, e) => s + expenseCost(e), 0);
     const totalIncomes = incomes.reduce((s, i) => s + i.amount, 0);
     const balance = totalIncomes - totalExpenses;
 
     const monthExpenses = expenses
       .filter(e => getMonth(e.date) === thisMonth && e.date.startsWith(String(thisYear)))
-      .reduce((s, e) => s + e.amount, 0);
+      .reduce((s, e) => s + expenseCost(e), 0);
     const monthIncomes = incomes
       .filter(i => getMonth(i.date) === thisMonth && i.date.startsWith(String(thisYear)))
       .reduce((s, i) => s + i.amount, 0);
@@ -44,7 +44,7 @@ export default function Dashboard({ expenses, incomes, goals, subscriptions }: P
     const weekExpenses = expenses.filter(e => {
       const d = new Date(e.date + 'T12:00:00');
       return d >= weekAgo && d <= now;
-    }).reduce((s, e) => s + e.amount, 0);
+    }).reduce((s, e) => s + expenseCost(e), 0);
 
     return {
       totalExpenses, totalIncomes, balance, monthExpenses, monthIncomes,

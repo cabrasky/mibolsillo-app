@@ -1,6 +1,8 @@
 /* ── Proyectos: gastos enlazables a proyectos (NAS, homelab…) vs uso general ── */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLocale } from '../i18n';
+import { expenseCost } from '../types';
 import type { Project } from '../types';
 import { loadData, addProject, updateProject, deleteProject } from '../store';
 import { IconPlus, IconX, IconEdit, IconTrash, IconArrowRight } from './Icons';
@@ -11,6 +13,7 @@ interface Props {
 }
 
 export default function ProjectsPage({ onRefresh, onAddToProject }: Props) {
+  const { t } = useLocale();
   const data = loadData();
   const projects = data.projects;
   const navigate = useNavigate();
@@ -21,9 +24,9 @@ export default function ProjectsPage({ onRefresh, onAddToProject }: Props) {
 
   const statsFor = (id: string) => {
     const list = data.expenses.filter(e => e.proyectoId === id);
-    return { count: list.length, total: list.reduce((s, e) => s + e.amount, 0) };
+    return { count: list.length, total: list.reduce((s, e) => s + expenseCost(e), 0) };
   };
-  const generalTotal = data.expenses.filter(e => !e.proyectoId).reduce((s, e) => s + e.amount, 0);
+  const generalTotal = data.expenses.filter(e => !e.proyectoId).reduce((s, e) => s + expenseCost(e), 0);
 
   const openNew = () => {
     setEditing(null); setName(''); setError(''); setShowForm(true);
@@ -36,7 +39,7 @@ export default function ProjectsPage({ onRefresh, onAddToProject }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) { setError('El nombre es obligatorio'); return; }
+    if (!name.trim()) { setError(t('error.nameRequired')); return; }
     if (editing) {
       updateProject(editing.id, name.trim());
     } else {
@@ -73,7 +76,7 @@ export default function ProjectsPage({ onRefresh, onAddToProject }: Props) {
         </div>
         <div className="stat">
           <div className="label">Invertido en proyectos</div>
-          <div className="value">{data.expenses.filter(e => e.proyectoId).reduce((s, e) => s + e.amount, 0).toFixed(2)} EUR</div>
+          <div className="value">{data.expenses.filter(e => e.proyectoId).reduce((s, e) => s + expenseCost(e), 0).toFixed(2)} EUR</div>
         </div>
         <div className="stat">
           <div className="label">Uso general</div>

@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { REF } from '../types';
+import { useLocale } from '../i18n';
 import type { Goal } from '../types';
 import { addGoal, updateGoal, deleteGoal } from '../store';
 import { IconPlus, IconX, IconEdit, IconTrash, IconTrendingUp, IconTarget } from './Icons';
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function GoalsPage({ goals, onRefresh }: Props) {
+  const { t } = useLocale();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Goal | null>(null);
   const [name, setName] = useState('');
@@ -48,7 +50,7 @@ export default function GoalsPage({ goals, onRefresh }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !targetAmount || targetAmount <= 0) {
-      setFormError(!name.trim() ? 'El nombre es obligatorio' : 'El objetivo debe ser mayor que 0');
+      setFormError(!name.trim() ? t('error.nameRequired') : t('error.goalPositive'));
       return;
     }
     setFormError('');

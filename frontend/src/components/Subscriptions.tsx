@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { REF } from '../types';
+import { useLocale } from '../i18n';
 import type { Subscription } from '../types';
 import { addSubscription, updateSubscription, deleteSubscription, advanceSubscription, addExpense } from '../store';
 import {
@@ -26,6 +27,7 @@ const CYCLE_MONTH_FACTOR: Record<string, number> = {
 };
 
 export default function SubscriptionsPage({ subscriptions, onRefresh }: Props) {
+  const { t } = useLocale();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Subscription | null>(null);
   const [name, setName] = useState('');
@@ -89,7 +91,7 @@ export default function SubscriptionsPage({ subscriptions, onRefresh }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !amount || amount <= 0) {
-      setFormError(!name.trim() ? 'El nombre es obligatorio' : 'El importe debe ser mayor que 0');
+      setFormError(!name.trim() ? t('error.nameRequired') : t('error.amountPositive'));
       return;
     }
     setFormError('');

@@ -2,9 +2,11 @@
 import { useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { updateMe, changePassword } from '../api';
+import { useLocale, localizeError } from '../i18n';
 
 export default function Profile() {
   const { user, refreshUser } = useAuth();
+  const { t } = useLocale();
   const [name, setName] = useState(user?.name || '');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || '');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -25,7 +27,7 @@ export default function Profile() {
       }
       setMsg({ ok: true, text: 'Perfil guardado ✅' });
     } catch (e: any) {
-      setMsg({ ok: false, text: 'Error: ' + e.message });
+      setMsg({ ok: false, text: localizeError(e, t) });
     }
     setSaving(false);
   };
@@ -34,11 +36,11 @@ export default function Profile() {
     try {
       setMsg(null);
       if (newPassword.length < 6) {
-        setMsg({ ok: false, text: 'La contraseña debe tener al menos 6 caracteres' });
+        setMsg({ ok: false, text: t('error.passwordLength') });
         return;
       }
       if (newPassword !== confirmPassword) {
-        setMsg({ ok: false, text: 'Las contraseñas no coinciden' });
+        setMsg({ ok: false, text: t('error.passwordMismatch') });
         return;
       }
       setSaving(true);
@@ -48,7 +50,7 @@ export default function Profile() {
       setNewPassword('');
       setConfirmPassword('');
     } catch (e: any) {
-      setMsg({ ok: false, text: 'Error: ' + e.message });
+      setMsg({ ok: false, text: localizeError(e, t) });
     }
     setSaving(false);
   };

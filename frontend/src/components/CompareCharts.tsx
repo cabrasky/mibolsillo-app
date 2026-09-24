@@ -3,6 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, Cell,
 } from 'recharts';
+import { expenseCost } from '../types';
 import type { Expense, Income } from '../types';
 
 /* ── Comparativas de periodos superpuestos (meses / semanas / trimestres / años) ── */
@@ -165,7 +166,7 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
       m.set(pos, (m.get(pos) || 0) + amount);
       acc.set(key, m);
     };
-    expenses.forEach(e => { if (metric !== 'ingreso') add(periodKeyOf(e.date, dim), parseDate(e.date), e.amount); });
+    expenses.forEach(e => { if (metric !== 'ingreso') add(periodKeyOf(e.date, dim), parseDate(e.date), expenseCost(e)); });
     incomes.forEach(i => { if (metric !== 'gasto') add(periodKeyOf(i.date, dim), parseDate(i.date), i.amount); });
 
     // Filas del overlay (una por posición del eje X). Dentro del periodo, un día sin

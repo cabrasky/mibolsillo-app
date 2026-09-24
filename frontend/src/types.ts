@@ -25,6 +25,12 @@ export interface Expense {
   createdAt: string;
 }
 
+/** Coste que corresponde al usuario para balances y presupuestos. */
+export function expenseCost(e: Expense): number {
+  const shared = !!e.ajeno || !!e.invitacion || !!e.deudores?.trim() || !!e.personas?.trim();
+  return shared && Number.isFinite(e.meCorresponde) ? e.meCorresponde : e.amount;
+}
+
 export interface Project {
   id: string;
   name: string;

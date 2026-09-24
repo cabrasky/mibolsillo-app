@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { expenseCost } from '../types';
 import type { Expense } from '../types';
 import { WeeklyProgressChart } from './Charts';
 
@@ -22,7 +23,7 @@ export default function WeeklyBudget({ expenses, weeklyGoal, onGoalChange }: Pro
     expenses.forEach(e => {
       if (!e.date) return;
       const wk = weekOfYear(e.date);
-      weekMap[wk] = (weekMap[wk] || 0) + e.amount;
+      weekMap[wk] = (weekMap[wk] || 0) + expenseCost(e);
     });
 
     const weeks = [];

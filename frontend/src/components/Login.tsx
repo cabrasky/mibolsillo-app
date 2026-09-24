@@ -2,10 +2,12 @@
 import { useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
+import { useLocale, localizeError } from '../i18n';
 
 export default function Login() {
   const { login, googleLogin } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLocale();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -19,7 +21,7 @@ export default function Login() {
       await login(email, password);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message);
+      setError(localizeError(err, t));
     }
     setBusy(false);
   };

@@ -24,7 +24,7 @@ def _norm_cycle(data: dict) -> dict:
         elif ciclo in _VALID_CYCLES:
             data["billing_cycle"] = ciclo
         else:
-            raise HTTPException(status_code=400, detail=f"Ciclo no válido: {ciclo}")
+            raise HTTPException(status_code=400, detail=f"Invalid billing cycle: {ciclo}")
     return data
 
 

@@ -59,7 +59,7 @@ async def _locked_insert(db: AsyncSession, user_id: str, target: date) -> bool:
             """
             SELECT 1 FROM expenses
             WHERE user_id = :uid AND date >= :ms AND date < :me
-              AND purpose = :p AND tipo = :t AND amount = :a
+              AND purpose = :p AND type = :t AND amount = :a
             """
         ),
         {
@@ -82,14 +82,14 @@ async def _locked_insert(db: AsyncSession, user_id: str, target: date) -> bool:
         amount=RECURRING_AMOUNT,
         purpose=RECURRING_PURPOSE,
         motive="",
-        tipo=RECURRING_TIPO,
+        type=RECURRING_TIPO,
         method=RECURRING_METHOD,
-        ajeno=False,
-        deudores="",
-        deuda_metodo="",
-        devuelto=False,
-        me_corresponde=RECURRING_AMOUNT,
-        viaje="",
+        is_shared=False,
+        debtors="",
+        repayment_method="",
+        repaid=False,
+        personal_share=RECURRING_AMOUNT,
+        trip="",
     )
     db.add(expense)
     await db.flush()

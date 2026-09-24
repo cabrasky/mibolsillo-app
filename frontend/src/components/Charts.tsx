@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, AreaChart, Area, LineChart, Line
 } from 'recharts';
-import { getMonth, bucketOf } from '../types';
+import { expenseCost, getMonth, bucketOf } from '../types';
 import type { Expense, Income } from '../types';
 
 const COLORS = ['#6366f1', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6'];
@@ -30,7 +30,7 @@ const WEEKDAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 export function DailyTrendCharts({ expenses }: { expenses: Expense[] }) {
   const { week, month } = useMemo(() => {
     const byDay = new Map<string, number>();
-    expenses.forEach(e => byDay.set(e.date, (byDay.get(e.date) || 0) + e.amount));
+    expenses.forEach(e => byDay.set(e.date, (byDay.get(e.date) || 0) + expenseCost(e)));
     const today = new Date();
     const weekData = [];
     for (let i = 6; i >= 0; i--) {
@@ -82,13 +82,13 @@ export function MonthlyChart({ expenses }: { expenses: Expense[] }) {
   const { months, totals } = useMemo(() => {
     const data = SHORT_MONTHS.map((name, i) => {
       const exps = expenses.filter(e => getMonth(e.date) === i + 1);
-      return { name, total: exps.reduce((s, e) => s + e.amount, 0) };
+      return { name, total: exps.reduce((s, e) => s + expenseCost(e), 0) };
     });
     const t = {
-      fijo: expenses.filter(e => bucketOf(e) === 'fijo').reduce((s, e) => s + e.amount, 0),
-      puntual: expenses.filter(e => bucketOf(e) === 'puntual').reduce((s, e) => s + e.amount, 0),
-      viajes: expenses.filter(e => bucketOf(e) === 'viajes').reduce((s, e) => s + e.amount, 0),
-      inversion: expenses.filter(e => bucketOf(e) === 'inversion').reduce((s, e) => s + e.amount, 0),
+      fijo: expenses.filter(e => bucketOf(e) === 'fijo').reduce((s, e) => s + expenseCost(e), 0),
+      puntual: expenses.filter(e => bucketOf(e) === 'puntual').reduce((s, e) => s + expenseCost(e), 0),
+      viajes: expenses.filter(e => bucketOf(e) === 'viajes').reduce((s, e) => s + expenseCost(e), 0),
+      inversion: expenses.filter(e => bucketOf(e) === 'inversion').reduce((s, e) => s + expenseCost(e), 0),
     };
     const vida = t.fijo + t.puntual + t.viajes;
     return { months: data, totals: { ...t, vida } };
@@ -149,7 +149,7 @@ export function CashFlowChart({ expenses, incomes }: { expenses: Expense[]; inco
       const incs = incomes.filter(e => getMonth(e.date) === m && e.date.startsWith(String(year)));
       return {
         name,
-        gastos: exps.reduce((s, e) => s + e.amount, 0),
+        gastos: exps.reduce((s, e) => s + expenseCost(e), 0),
         ingresos: incs.reduce((s, i) => s + i.amount, 0),
       };
     });
@@ -199,7 +199,7 @@ export function BalanceEvolution({ expenses, incomes }: { expenses: Expense[]; i
       const exps = expenses.filter(e => getMonth(e.date) === m && e.date.startsWith(String(year)));
       const incs = incomes.filter(e => getMonth(e.date) === m && e.date.startsWith(String(year)));
       const monthInc = incs.reduce((s, i) => s + i.amount, 0);
-      const monthExp = exps.reduce((s, e) => s + e.amount, 0);
+      const monthExp = exps.reduce((s, e) => s + expenseCost(e), 0);
       running += (monthInc - monthExp);
       return { name, balance: running, ingresos: monthInc, gastos: monthExp };
     });
@@ -246,7 +246,7 @@ export function IncomeExpenseComparison({ expenses, incomes }: { expenses: Expen
     const expByCat: Record<string, number> = {};
     expenses.forEach(e => {
       const cat = e.proposito || 'Otros';
-      expByCat[cat] = (expByCat[cat] || 0) + e.amount;
+      expByCat[cat] = (expByCat[cat] || 0) + expenseCost(e);
     });
     const incByCat: Record<string, number> = {};
     incomes.forEach(i => {
@@ -338,8 +338,8 @@ export function SankeyChart({ expenses, incomes }: { expenses: Expense[]; income
 
     // ── Targets: separate into groups ──
     const expMap: Record<string, number> = {};
-    expenses.forEach(e => { expMap[e.proposito] = (expMap[e.proposito] || 0) + e.amount; });
-    const totalExp = expenses.reduce((s, e) => s + e.amount, 0);
+    expenses.forEach(e => { expMap[e.proposito] = (expMap[e.proposito] || 0) + expenseCost(e); });
+    const totalExp = expenses.reduce((s, e) => s + expenseCost(e), 0);
     const remainder = Math.max(0, totalInc - totalExp);
 
     type TargetGroup = 'savings' | 'fixed' | 'disc' | 'other';
@@ -589,13 +589,13 @@ export function CategoryCompare({ expenses, cats }: { expenses: any[]; cats: { n
   const series: any[] = [];
   for (let k = curM - 17; k <= curM; k++) { series.push({ label: fmtMonth(Math.floor(k / 12), k % 12), k }); }
 
-  const tot = (items: any[], ms: number) => items.filter(e => monthId(new Date(e.date)) === ms).reduce((s2, e) => s2 + e.amount, 0);
+  const tot = (items: Expense[], ms: number) => items.filter(e => monthId(new Date(e.date)) === ms).reduce((s2, e) => s2 + expenseCost(e), 0);
 
   const statCats = cats.map((c, ci) => {
     const items = byCat[c.name] || [];
     const color = c.color || CAT_COLORS[ci % CAT_COLORS.length];
     const monthsMap = new Map<number, number>();
-    items.forEach(e => { const k = monthId(new Date(e.date)); monthsMap.set(k, (monthsMap.get(k) || 0) + e.amount); });
+    items.forEach(e => { const k = monthId(new Date(e.date)); monthsMap.set(k, (monthsMap.get(k) || 0) + expenseCost(e)); });
     const vals = [...monthsMap.values()];
     return {
       name: c.name, color, items,

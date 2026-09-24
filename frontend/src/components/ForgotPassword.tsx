@@ -2,8 +2,10 @@
 import { useState } from 'react';
 import { forgotPassword } from '../api';
 import { Link } from 'react-router-dom';
+import { useLocale, localizeError } from '../i18n';
 
 export default function ForgotPassword() {
+  const { t } = useLocale();
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -18,7 +20,7 @@ export default function ForgotPassword() {
       const res = await forgotPassword(email);
       setMessage(res.message);
     } catch (err: any) {
-      setError(err.message);
+      setError(localizeError(err, t));
     }
     setBusy(false);
   };

@@ -179,17 +179,17 @@ async def _current_user(request: Request, db: AsyncSession) -> User:
     auth = request.headers.get("Authorization", "")
     token = (auth.split(" ", 1)[1] if auth.startswith("Bearer ") else "") or (request.query_params.get("token") or "")
     if not token:
-        raise HTTPException(status_code=401, detail="No autenticado")
+        raise HTTPException(status_code=401, detail="Not authenticated")
     payload = _verify_jwt(token)
     if not payload or not payload.get("sub"):
-        raise HTTPException(status_code=401, detail="Token inválido o expirado")
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
     user = (await db.execute(select(User).where(User.id == payload["sub"]))).scalar_one_or_none()
     if user is None:
-        raise HTTPException(status_code=401, detail="Usuario no encontrado")
+        raise HTTPException(status_code=401, detail="User not found")
     return user
 
 
-@router.get("/plantilla")
+@router.get("/template")
 async def plantilla(request: Request, db: AsyncSession = Depends(get_db)):
     await _current_user(request, db)
     buf = io.BytesIO()
@@ -198,7 +198,7 @@ async def plantilla(request: Request, db: AsyncSession = Depends(get_db)):
     return _xlsx_response(buf, "Plantilla Gastos.xlsx")
 
 
-@router.get("/exportar")
+@router.get("/export")
 async def exportar(request: Request, db: AsyncSession = Depends(get_db)):
     user = await _current_user(request, db)
     result = await db.execute(
@@ -208,9 +208,9 @@ async def exportar(request: Request, db: AsyncSession = Depends(get_db)):
     for e in result.scalars().all():
         rows.append({
             "date": e.date, "desc": e.description, "purpose": e.purpose or "", "motive": e.motive or "",
-            "tipo": e.tipo or "Puntual", "method": e.method or "Tarjeta", "ajeno": e.ajeno,
-            "deudores": e.deudores or "", "deuda_metodo": e.deuda_metodo or "", "devuelto": e.devuelto,
-            "me_corresponde": e.me_corresponde, "viaje": e.viaje or "", "amount": e.amount,
+            "tipo": e.type or "Puntual", "method": e.method or "Tarjeta", "ajeno": e.is_shared,
+            "deudores": e.debtors or "", "deuda_metodo": e.repayment_method or "", "devuelto": e.repaid,
+            "me_corresponde": e.personal_share, "viaje": e.trip or "", "amount": e.amount,
         })
     buf = io.BytesIO()
     _build_workbook(rows).save(buf)
@@ -218,23 +218,23 @@ async def exportar(request: Request, db: AsyncSession = Depends(get_db)):
     return _xlsx_response(buf, "Mis gastos.xlsx")
 
 
-@router.post("/importar")
+@router.post("/import")
 async def importar(request: Request, file: UploadFile = File(...), db: AsyncSession = Depends(get_db)):
     user = await _current_user(request, db)
     raw = await file.read()
     try:
         wb = load_workbook(io.BytesIO(raw), data_only=True, read_only=True)
     except Exception:
-        raise HTTPException(status_code=400, detail="No es un archivo Excel válido (.xlsx)")
+        raise HTTPException(status_code=400, detail="Invalid Excel file (.xlsx expected)")
     ws = wb.worksheets[0]
     it = ws.iter_rows(values_only=True)
     header = next(it, None)
     if header is None:
-        raise HTTPException(status_code=400, detail="La hoja está vacía")
+        raise HTTPException(status_code=400, detail="The worksheet is empty")
     m = _header_map(header)
     for req in ("date", "amount", "desc"):
         if req not in m:
-            raise HTTPException(status_code=400, detail=f"No encuentro la columna {req} en la cabecera. Revisa la plantilla.")
+            raise HTTPException(status_code=400, detail=f"Missing column {req} in the header")
 
     existing = set()
     res = await db.execute(select(Expense).where(Expense.user_id == user.id))
@@ -270,11 +270,11 @@ async def importar(request: Request, file: UploadFile = File(...), db: AsyncSess
         db.add(Expense(
             user_id=user.id, date=fecha, description=desc[:300], amount=amount,
             purpose=(str(gv("purpose") or "")).strip()[:64], motive=(str(gv("motive") or "")).strip()[:64],
-            tipo=(str(gv("tipo") or "Puntual")).strip()[:32] or "Puntual",
+            type=(str(gv("tipo") or "Puntual")).strip()[:32] or "Puntual",
             method=(str(gv("method") or "Tarjeta")).strip()[:32] or "Tarjeta",
-            ajeno=ajeno, deudores=(str(gv("deudores") or "")).strip()[:120],
-            deuda_metodo=(str(gv("deuda_metodo") or "")).strip()[:32], devuelto=devuelto,
-            me_corresponde=me, viaje=(str(gv("viaje") or "")).strip()[:120],
+            is_shared=ajeno, debtors=(str(gv("deudores") or "")).strip()[:120],
+            repayment_method=(str(gv("deuda_metodo") or "")).strip()[:32], repaid=devuelto,
+            personal_share=me, trip=(str(gv("viaje") or "")).strip()[:120],
         ))
         creados += 1
     await db.commit()

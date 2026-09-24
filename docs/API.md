@@ -64,17 +64,17 @@ modificado). Los campos de respuesta incluyen `id`, `user_id`, `created_at`, etc
 | `amount` | float | en euros, mayor que 0 |
 | `purpose` | string | categoría (p. ej. `Comida`, `Ocio`, `Productos`) |
 | `motive` | string | subcategoría / motivo |
-| `tipo` | string | `Puntual`, `Fijo`, `Viajes`, `Inversión`… |
+| `type` | string | `Puntual`, `Fijo`, `Viajes`, `Inversión`… |
 | `method` | string | `Tarjeta`, `Efectivo`, `Bizum`… |
-| `ajeno` | bool | gasto de otra persona |
-| `invitacion` | bool | es una invitación |
-| `deudores` | string | |
-| `personas` | string | JSON con reparto de gasto compartido |
-| `ref_cc` | string | vínculo a Cuentas Claras (interno) |
-| `deuda_metodo` | string | |
-| `devuelto` | bool | |
-| `me_corresponde` | float | tu parte del gasto compartido |
-| `viaje` | string | |
+| `is_shared` | bool | el gasto incluye importes de otras personas |
+| `is_invitation` | bool | es una invitación sin devolución |
+| `debtors` | string | nombres de quienes deben su parte |
+| `participants` | string | JSON con el reparto del gasto compartido |
+| `cc_reference` | string | vínculo a Cuentas Claras (interno) |
+| `repayment_method` | string | método de devolución |
+| `repaid` | bool | indica si la deuda ya fue devuelta |
+| `personal_share` | float | parte del gasto que te corresponde |
+| `trip` | string | viaje asociado |
 | `project_id` | string | id del proyecto al que enlazarlo |
 
 ### 3.2 Ingresos — `/incomes`

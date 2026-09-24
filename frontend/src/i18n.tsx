@@ -168,6 +168,23 @@ const ES: Record<string, string> = {
   'expense.placeholder': '\u00BFEn qu\u00E9 te gastaste el dinero?',
   'expense.requiredDesc': 'La descripci\u00F3n es obligatoria',
   'expense.requiredAmount': 'El importe es obligatorio',
+  'error.generic': 'Se ha producido un error',
+  'error.requestFailed': 'La solicitud ha fallado',
+  'error.descriptionRequired': 'La descripción es obligatoria',
+  'error.amountPositive': 'Introduce un importe mayor que 0',
+  'error.nameRequired': 'El nombre es obligatorio',
+  'error.goalPositive': 'El objetivo debe ser mayor que 0',
+  'error.passwordLength': 'La contraseña debe tener al menos 6 caracteres',
+  'error.passwordMismatch': 'Las contraseñas no coinciden',
+  'error.invalidLink': 'Enlace inválido',
+  'error.photoUpload': 'No se pudo subir la foto',
+  'error.photoDelete': 'No se pudo borrar la foto',
+  'error.split': 'No se pudo enviar el gasto compartido',
+  'error.auth': 'No se pudo autenticar la cuenta',
+  'error.credentials': 'Email o contraseña incorrectos',
+  'error.emailTaken': 'El email ya está registrado',
+  'error.invalidEmail': 'Email inválido',
+  'error.accessDenied': 'Acceso denegado',
   'expense.filterPurpose': 'Filtrar por prop\u00F3sito',
   'expense.filterMonth': 'Filtrar por mes',
 
@@ -449,6 +466,23 @@ const EN: Record<string, string> = {
   'expense.placeholder': 'What did you spend on?',
   'expense.requiredDesc': 'Description is required',
   'expense.requiredAmount': 'Amount is required',
+  'error.generic': 'An error occurred',
+  'error.requestFailed': 'The request failed',
+  'error.descriptionRequired': 'Description is required',
+  'error.amountPositive': 'Enter an amount greater than 0',
+  'error.nameRequired': 'Name is required',
+  'error.goalPositive': 'The goal must be greater than 0',
+  'error.passwordLength': 'Password must be at least 6 characters',
+  'error.passwordMismatch': 'Passwords do not match',
+  'error.invalidLink': 'Invalid link',
+  'error.photoUpload': 'Could not upload the photo',
+  'error.photoDelete': 'Could not delete the photo',
+  'error.split': 'Could not send the shared expense',
+  'error.auth': 'Could not authenticate the account',
+  'error.credentials': 'Incorrect email or password',
+  'error.emailTaken': 'Email is already registered',
+  'error.invalidEmail': 'Invalid email',
+  'error.accessDenied': 'Access denied',
   'expense.filterPurpose': 'Filter by purpose',
   'expense.filterMonth': 'Filter by month',
 
@@ -720,6 +754,23 @@ const PT: Record<string, string> = {
   'expense.placeholder': 'No que voc\u00EA gastou?',
   'expense.requiredDesc': 'A descri\u00E7\u00E3o \u00E9 obrigat\u00F3ria',
   'expense.requiredAmount': 'O valor \u00E9 obrigat\u00F3rio',
+  'error.generic': 'Ocorreu um erro',
+  'error.requestFailed': 'A solicita\u00E7\u00E3o falhou',
+  'error.descriptionRequired': 'A descri\u00E7\u00E3o \u00E9 obrigat\u00F3ria',
+  'error.amountPositive': 'Introduza um valor maior que 0',
+  'error.nameRequired': 'O nome \u00E9 obrigat\u00F3rio',
+  'error.goalPositive': 'O objetivo deve ser maior que 0',
+  'error.passwordLength': 'A palavra-passe deve ter pelo menos 6 caracteres',
+  'error.passwordMismatch': 'As palavras-passe n\u00E3o coincidem',
+  'error.invalidLink': 'Link inv\u00E1lido',
+  'error.photoUpload': 'N\u00E3o foi poss\u00EDvel carregar a foto',
+  'error.photoDelete': 'N\u00E3o foi poss\u00EDvel apagar a foto',
+  'error.split': 'N\u00E3o foi poss\u00EDvel enviar a despesa partilhada',
+  'error.auth': 'N\u00E3o foi poss\u00EDvel autenticar a conta',
+  'error.credentials': 'Email ou palavra-passe incorretos',
+  'error.emailTaken': 'O email j\u00E1 est\u00E1 registado',
+  'error.invalidEmail': 'Email inv\u00E1lido',
+  'error.accessDenied': 'Acesso negado',
   'expense.filterPurpose': 'Filtrar por prop\u00F3sito',
   'expense.filterMonth': 'Filtrar por m\u00EAs',
   'income.title': 'Receitas',
@@ -881,4 +932,15 @@ export function useLocale() {
 export function useT() {
   const { t } = useContext(I18nContext);
   return t;
+}
+
+export function localizeError(error: unknown, t: (key: string, fallback?: string) => string): string {
+  const message = error instanceof Error ? error.message : String(error || '');
+  const normalized = message.toLowerCase();
+  if (normalized.includes('incorrect email') || normalized.includes('invalid credentials')) return t('error.credentials');
+  if (normalized.includes('already registered')) return t('error.emailTaken');
+  if (normalized.includes('invalid email')) return t('error.invalidEmail');
+  if (normalized.includes('access denied') || normalized.includes('not enabled')) return t('error.accessDenied');
+  if (normalized.includes('token') || normalized.includes('authenticated')) return t('error.auth');
+  return message || t('error.generic');
 }

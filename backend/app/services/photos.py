@@ -18,12 +18,12 @@ async def store_photo(db: AsyncSession, expense_id: str, file: UploadFile) -> st
     """Guardar (o reemplazar) la foto del ticket. Devuelve el content-type validado."""
     ctype = (file.content_type or "").lower()
     if ctype not in ALLOWED_TYPES:
-        raise HTTPException(status_code=400, detail="Tipo no permitido (solo jpeg/png/webp)")
+        raise HTTPException(status_code=400, detail="Unsupported file type (only jpeg/png/webp are allowed)")
     data = await file.read()
     if not data:
-        raise HTTPException(status_code=400, detail="Archivo vacío")
+        raise HTTPException(status_code=400, detail="File is empty")
     if len(data) > MAX_BYTES:
-        raise HTTPException(status_code=400, detail="Máximo 15 MB")
+        raise HTTPException(status_code=400, detail="Maximum file size is 15 MB")
 
     photo = await db.get(ExpensePhoto, expense_id)
     if photo is None:
@@ -40,7 +40,7 @@ async def get_photo_response(db: AsyncSession, expense_id: str, original_type: s
     """Servir la foto en memoria (no hay fichero en disco)."""
     photo = await db.get(ExpensePhoto, expense_id)
     if photo is None:
-        raise HTTPException(status_code=404, detail="Sin foto")
+        raise HTTPException(status_code=404, detail="Photo not found")
     media_type = original_type if original_type in ALLOWED_TYPES else "application/octet-stream"
     return Response(
         content=photo.data,

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { REF, getMonth, bucketOf } from '../types';
+import { REF, expenseCost, getMonth, bucketOf } from '../types';
 import type { Expense } from '../types';
 
 interface Props {
@@ -11,11 +11,11 @@ export default function MonthlySummary({ expenses }: Props) {
     return REF.meses.map((name, i) => {
       const m = i + 1;
       const exps = expenses.filter(e => getMonth(e.date) === m);
-      const total = exps.reduce((s, e) => s + e.amount, 0);
-      const fijo = exps.filter(e => bucketOf(e) === 'fijo').reduce((s, e) => s + e.amount, 0);
-      const puntual = exps.filter(e => bucketOf(e) === 'puntual').reduce((s, e) => s + e.amount, 0);
-      const viajes = exps.filter(e => bucketOf(e) === 'viajes').reduce((s, e) => s + e.amount, 0);
-      const inversion = exps.filter(e => bucketOf(e) === 'inversion').reduce((s, e) => s + e.amount, 0);
+      const total = exps.reduce((s, e) => s + expenseCost(e), 0);
+      const fijo = exps.filter(e => bucketOf(e) === 'fijo').reduce((s, e) => s + expenseCost(e), 0);
+      const puntual = exps.filter(e => bucketOf(e) === 'puntual').reduce((s, e) => s + expenseCost(e), 0);
+      const viajes = exps.filter(e => bucketOf(e) === 'viajes').reduce((s, e) => s + expenseCost(e), 0);
+      const inversion = exps.filter(e => bucketOf(e) === 'inversion').reduce((s, e) => s + expenseCost(e), 0);
       const vida = fijo + puntual + viajes;
       return { name, total, fijo, puntual, viajes, vida, inversion, count: exps.length };
     });

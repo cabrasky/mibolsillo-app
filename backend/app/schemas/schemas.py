@@ -114,17 +114,17 @@ class ExpenseCreate(BaseModel):
     amount: float = Field(gt=0)
     purpose: str = ""
     motive: str = ""
-    tipo: str = ""
+    type: str = ""
     method: str = ""
-    ajeno: bool = False
-    invitacion: bool = False
-    deudores: str = ""
-    personas: str = ""
-    ref_cc: str = ""
-    deuda_metodo: str = ""
-    devuelto: bool = False
-    me_corresponde: float = 0.0
-    viaje: str = ""
+    is_shared: bool = False
+    is_invitation: bool = False
+    debtors: str = ""
+    participants: str = ""
+    cc_reference: str = ""
+    repayment_method: str = ""
+    repaid: bool = False
+    personal_share: float = Field(default=0.0, ge=0)
+    trip: str = ""
     project_id: str = ""
 
 
@@ -134,17 +134,17 @@ class ExpenseUpdate(BaseModel):
     amount: Optional[float] = Field(default=None, gt=0)
     purpose: Optional[str] = None
     motive: Optional[str] = None
-    tipo: Optional[str] = None
+    type: Optional[str] = None
     method: Optional[str] = None
-    ajeno: Optional[bool] = None
-    invitacion: Optional[bool] = None
-    deudores: Optional[str] = None
-    personas: Optional[str] = None
-    ref_cc: Optional[str] = None
-    deuda_metodo: Optional[str] = None
-    devuelto: Optional[bool] = None
-    me_corresponde: Optional[float] = None
-    viaje: Optional[str] = None
+    is_shared: Optional[bool] = None
+    is_invitation: Optional[bool] = None
+    debtors: Optional[str] = None
+    participants: Optional[str] = None
+    cc_reference: Optional[str] = None
+    repayment_method: Optional[str] = None
+    repaid: Optional[bool] = None
+    personal_share: Optional[float] = Field(default=None, ge=0)
+    trip: Optional[str] = None
     project_id: Optional[str] = None
 
 
@@ -156,17 +156,17 @@ class ExpenseOut(BaseModel):
     amount: float
     purpose: str
     motive: str
-    tipo: str
+    type: str
     method: str
-    ajeno: bool
-    invitacion: bool
-    deudores: str
-    personas: str | None = None
-    ref_cc: str | None = None
-    deuda_metodo: str
-    devuelto: bool
-    me_corresponde: float
-    viaje: str
+    is_shared: bool
+    is_invitation: bool
+    debtors: str
+    participants: str | None = None
+    cc_reference: str | None = None
+    repayment_method: str
+    repaid: bool
+    personal_share: float
+    trip: str
     project_id: str
     has_photo: bool = False
     created_at: datetime

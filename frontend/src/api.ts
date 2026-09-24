@@ -148,17 +148,17 @@ export interface ServerExpense {
   amount: number;
   purpose: string;
   motive: string;
-  tipo: string;
+  type: string;
   method: string;
-  ajeno: boolean;
-  invitacion: boolean;
-  deudores: string;
-  personas: string;
-  ref_cc: string;
-  deuda_metodo: string;
-  devuelto: boolean;
-  me_corresponde: number;
-  viaje: string;
+  is_shared: boolean;
+  is_invitation: boolean;
+  debtors: string;
+  participants: string;
+  cc_reference: string;
+  repayment_method: string;
+  repaid: boolean;
+  personal_share: number;
+  trip: string;
   project_id: string;
   has_photo?: boolean;
   created_at: string;
@@ -355,7 +355,7 @@ export async function apiDeleteCategory(id: string): Promise<void> {
 }
 
 export async function apiSendToCC(id: string): Promise<any> {
-  return request('POST', `/expenses/${id}/send-to-cc`, undefined, true);
+  return request('POST', `/expenses/${id}/split`, undefined, true);
 }
 
 /* ── Developer / API keys ──────────────────────────────────────────────────── */

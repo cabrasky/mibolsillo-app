@@ -1,4 +1,5 @@
 """Expenses CRUD router."""
+import json
 from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
@@ -12,6 +13,55 @@ from app.services.photos import store_photo, get_photo_response, delete_photo
 from app.services.recurring import ensure_recurring_expense
 
 router = APIRouter(prefix="/expenses", tags=["expenses"])
+
+def _to_api(expense: Expense) -> dict:
+    return {
+        "id": expense.id,
+        "user_id": expense.user_id,
+        "date": expense.date,
+        "description": expense.description,
+        "amount": expense.amount,
+        "purpose": expense.purpose,
+        "motive": expense.motive,
+        "type": expense.type,
+        "method": expense.method,
+        "is_shared": expense.is_shared,
+        "is_invitation": expense.is_invitation,
+        "debtors": expense.debtors,
+        "participants": expense.participants,
+        "cc_reference": expense.cc_reference,
+        "repayment_method": expense.repayment_method,
+        "repaid": expense.repaid,
+        "personal_share": expense.personal_share,
+        "trip": expense.trip,
+        "project_id": expense.project_id,
+        "has_photo": expense.has_photo,
+        "created_at": expense.created_at,
+    }
+
+
+def _calculated_my_share(data: dict) -> float:
+    """Calcula la parte propia a partir del reparto, no del importe bruto."""
+    amount = round(float(data.get("amount") or 0), 2)
+    try:
+        people = json.loads(data.get("participants") or "[]")
+    except (TypeError, ValueError):
+        people = []
+    if isinstance(people, list) and people:
+        debt = 0.0
+        for person in people:
+            if not isinstance(person, dict) or person.get("r") != "deb":
+                continue
+            try:
+                debt += round(float(person.get("m") or 0), 2)
+            except (TypeError, ValueError):
+                continue
+        return round(max(0, amount - debt), 2)
+    if data.get("is_invitation") and not data.get("is_shared") and not str(data.get("debtors") or "").strip():
+        return amount
+    if data.get("is_shared") or str(data.get("debtors") or "").strip():
+        return round(max(0, float(data.get("personal_share") or 0)), 2)
+    return amount
 
 
 @router.get("", response_model=list[ExpenseOut])
@@ -36,7 +86,7 @@ async def list_expenses(
         stmt = stmt.where(func.extract("year", Expense.date) == year)
     stmt = stmt.offset(skip).limit(limit)
     result = await db.execute(stmt)
-    return list(result.scalars().all())
+    return [_to_api(expense) for expense in result.scalars().all()]
 
 
 @router.get("/{expense_id}", response_model=ExpenseOut)
@@ -44,12 +94,14 @@ async def get_expense(expense_id: str, user=Depends(get_current_user), db: Async
     expense = await get_entity(db, Expense, expense_id, user.id)
     if not expense:
         raise HTTPException(status_code=404, detail="Expense not found")
-    return expense
+    return _to_api(expense)
 
 
 @router.post("", response_model=ExpenseOut, status_code=201)
 async def create_expense(body: ExpenseCreate, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    return await create_entity(db, Expense, user.id, body.model_dump())
+    data = body.model_dump()
+    data["personal_share"] = _calculated_my_share(data)
+    return _to_api(await create_entity(db, Expense, user.id, data))
 
 
 @router.put("/{expense_id}", response_model=ExpenseOut)
@@ -57,7 +109,17 @@ async def update_expense(expense_id: str, body: ExpenseUpdate, user=Depends(get_
     updated = await update_entity(db, Expense, expense_id, user.id, body.model_dump(exclude_unset=True))
     if not updated:
         raise HTTPException(status_code=404, detail="Expense not found")
-    return updated
+    updated.personal_share = _calculated_my_share({
+        "amount": updated.amount,
+        "is_shared": updated.is_shared,
+        "is_invitation": updated.is_invitation,
+        "debtors": updated.debtors,
+        "participants": updated.participants,
+        "personal_share": updated.personal_share,
+    })
+    await db.flush()
+    await db.refresh(updated)
+    return _to_api(updated)
 
 
 @router.delete("/{expense_id}", status_code=204)
@@ -85,15 +147,15 @@ def _personas_list(raw: str):
         return []
 
 
-@router.post("/{expense_id}/send-to-cc")
+@router.post("/{expense_id}/split")
 async def send_to_cc(expense_id: str, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """Empuja un gasto compartido (personas) a Cuentas Claras como reparto."""
     expense = await get_entity(db, Expense, expense_id, user.id)
     if not expense:
         raise HTTPException(status_code=404, detail="Expense not found")
-    personas = _personas_list(expense.personas)
+    personas = _personas_list(expense.participants)
     if not personas:
-        raise HTTPException(status_code=400, detail="Este gasto no tiene personas (Debe/Invitado) para enviar a CC")
+        raise HTTPException(status_code=400, detail="Shared expense has no participants to split")
     amount = float(expense.amount or 0)
     parts = []
     sum_parts = 0.0
@@ -108,7 +170,7 @@ async def send_to_cc(expense_id: str, user=Depends(get_current_user), db: AsyncS
     if self_part > 0.005:
         parts.append({"name": "", "amount": self_part, "role": "self"})
     if not parts:
-        raise HTTPException(status_code=400, detail="Sin importes repartibles")
+        raise HTTPException(status_code=400, detail="No distributable amounts found")
     name = (getattr(user, "name", "") or "").strip() or (user.email or "").split("@")[0]
     payload = {
         "title": expense.description or "Gasto compartido",
@@ -122,13 +184,13 @@ async def send_to_cc(expense_id: str, user=Depends(get_current_user), db: AsyncS
         async with _httpx.AsyncClient(timeout=40) as client:
             resp = await client.post(f"{CC_BASE}/api/integration/mibolsillo/split", json=payload, headers=headers)
     except Exception:
-        raise HTTPException(status_code=502, detail="Cuentas Claras no está disponible ahora (reintenta en unos segundos)")
+        raise HTTPException(status_code=502, detail="Split service is unavailable; retry in a few seconds")
     if resp.status_code == 403:
-        raise HTTPException(status_code=409, detail="Tu email no tiene cuenta en Cuentas Claras — créala en cuentas-claras.cabrasky.net")
+        raise HTTPException(status_code=409, detail="Your email has no account in the split service")
     if resp.status_code != 200:
-        raise HTTPException(status_code=502, detail=f"Cuentas Claras respondió {resp.status_code}")
+        raise HTTPException(status_code=502, detail=f"Split service returned {resp.status_code}")
     data = resp.json()
-    expense.ref_cc = _json.dumps(data, ensure_ascii=False)
+    expense.cc_reference = _json.dumps(data, ensure_ascii=False)
     await db.commit()
     await db.refresh(expense)
     return {"ok": True, "url": data.get("receipt", {}).get("url", ""), "session": data.get("session"), "receipt": data.get("receipt")}
@@ -150,7 +212,7 @@ async def upload_photo(
     expense.photo_type = await store_photo(db, expense.id, file)
     await db.commit()
     await db.refresh(expense)
-    return expense
+    return _to_api(expense)
 
 
 @router.get("/{expense_id}/photo", response_class=Response)
@@ -177,8 +239,8 @@ async def remove_photo(
     if not expense:
         raise HTTPException(status_code=404, detail="Expense not found")
     if not await delete_photo(db, expense.id) and not expense.photo_type:
-        raise HTTPException(status_code=404, detail="El gasto no tiene foto")
+        raise HTTPException(status_code=404, detail="Expense has no photo")
     expense.photo_type = ""
     await db.commit()
     await db.refresh(expense)
-    return expense
+    return _to_api(expense)
