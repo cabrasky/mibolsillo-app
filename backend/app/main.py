@@ -1,10 +1,15 @@
 """FastAPI application entry point."""
 import logging
+import uuid
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.config import settings
 from app.database import engine, Base, async_session_factory
@@ -70,6 +75,74 @@ app = FastAPI(
     version="1.1.0",
     lifespan=lifespan,
 )
+
+
+@app.middleware("http")
+async def add_request_id(request: Request, call_next):
+    request.state.request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = request.state.request_id
+    return response
+
+
+def _request_id(request: Request) -> str:
+    return getattr(request.state, "request_id", str(uuid.uuid4()))
+
+
+@app.exception_handler(HTTPException)
+async def http_error_handler(request: Request, exc: HTTPException):
+    request_id = _request_id(request)
+    return JSONResponse(
+        status_code=exc.status_code,
+        headers=exc.headers,
+        content={
+            "detail": exc.detail,
+            "error_code": f"http_{exc.status_code}",
+            "request_id": request_id,
+        },
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(request: Request, exc: RequestValidationError):
+    request_id = _request_id(request)
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": "Request validation failed",
+            "error_code": "validation_error",
+            "errors": jsonable_encoder(exc.errors()),
+            "request_id": request_id,
+        },
+    )
+
+
+@app.exception_handler(SQLAlchemyError)
+async def database_error_handler(request: Request, exc: SQLAlchemyError):
+    request_id = _request_id(request)
+    logger.exception("Database error request_id=%s path=%s", request_id, request.url.path)
+    return JSONResponse(
+        status_code=503,
+        content={
+            "detail": "Database unavailable or schema is out of date. Run migrations and retry.",
+            "error_code": "database_error",
+            "request_id": request_id,
+        },
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_error_handler(request: Request, exc: Exception):
+    request_id = _request_id(request)
+    logger.exception("Unhandled API error request_id=%s path=%s", request_id, request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "Internal server error. Contact support with the request ID.",
+            "error_code": "internal_server_error",
+            "request_id": request_id,
+        },
+    )
 
 # CORS
 app.add_middleware(

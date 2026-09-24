@@ -185,6 +185,8 @@ const ES: Record<string, string> = {
   'error.emailTaken': 'El email ya está registrado',
   'error.invalidEmail': 'Email inválido',
   'error.accessDenied': 'Acceso denegado',
+  'error.database': 'La base de datos no está disponible o necesita una migración',
+  'error.internal': 'Error interno del servidor',
   'expense.filterPurpose': 'Filtrar por prop\u00F3sito',
   'expense.filterMonth': 'Filtrar por mes',
 
@@ -483,6 +485,8 @@ const EN: Record<string, string> = {
   'error.emailTaken': 'Email is already registered',
   'error.invalidEmail': 'Invalid email',
   'error.accessDenied': 'Access denied',
+  'error.database': 'The database is unavailable or needs a migration',
+  'error.internal': 'Internal server error',
   'expense.filterPurpose': 'Filter by purpose',
   'expense.filterMonth': 'Filter by month',
 
@@ -771,6 +775,8 @@ const PT: Record<string, string> = {
   'error.emailTaken': 'O email j\u00E1 est\u00E1 registado',
   'error.invalidEmail': 'Email inv\u00E1lido',
   'error.accessDenied': 'Acesso negado',
+  'error.database': 'A base de dados não está disponível ou precisa de uma migração',
+  'error.internal': 'Erro interno do servidor',
   'expense.filterPurpose': 'Filtrar por prop\u00F3sito',
   'expense.filterMonth': 'Filtrar por m\u00EAs',
   'income.title': 'Receitas',
@@ -937,10 +943,16 @@ export function useT() {
 export function localizeError(error: unknown, t: (key: string, fallback?: string) => string): string {
   const message = error instanceof Error ? error.message : String(error || '');
   const normalized = message.toLowerCase();
-  if (normalized.includes('incorrect email') || normalized.includes('invalid credentials')) return t('error.credentials');
-  if (normalized.includes('already registered')) return t('error.emailTaken');
-  if (normalized.includes('invalid email')) return t('error.invalidEmail');
-  if (normalized.includes('access denied') || normalized.includes('not enabled')) return t('error.accessDenied');
-  if (normalized.includes('token') || normalized.includes('authenticated')) return t('error.auth');
-  return message || t('error.generic');
+  const requestId = typeof error === 'object' && error !== null && 'requestId' in error
+    ? String((error as { requestId?: string }).requestId || '') : '';
+  let localized = '';
+  if (normalized.includes('database unavailable') || normalized.includes('schema is out of date')) localized = t('error.database');
+  else if (normalized.includes('internal server error')) localized = t('error.internal');
+  else if (normalized.includes('incorrect email') || normalized.includes('invalid credentials')) localized = t('error.credentials');
+  else if (normalized.includes('already registered')) localized = t('error.emailTaken');
+  else if (normalized.includes('invalid email')) localized = t('error.invalidEmail');
+  else if (normalized.includes('access denied') || normalized.includes('not enabled')) localized = t('error.accessDenied');
+  else if (normalized.includes('token') || normalized.includes('authenticated')) localized = t('error.auth');
+  else localized = message || t('error.generic');
+  return requestId ? `${localized} (${requestId})` : localized;
 }

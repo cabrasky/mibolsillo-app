@@ -27,6 +27,20 @@ export function setStoredUser(user: any | null) {
 
 /* ── Generic request ───────────────────────────────────────────────────────── */
 
+export class ApiError extends Error {
+  readonly status: number;
+  readonly code?: string;
+  readonly requestId?: string;
+
+  constructor(message: string, status: number, code?: string, requestId?: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.code = code;
+    this.requestId = requestId;
+  }
+}
+
 async function request<T>(method: string, path: string, body?: unknown, auth = false): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (auth) {
@@ -40,7 +54,8 @@ async function request<T>(method: string, path: string, body?: unknown, auth = f
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || 'Request failed');
+    const detail = typeof err.detail === 'string' ? err.detail : 'Request failed';
+    throw new ApiError(detail, res.status, err.error_code, err.request_id || res.headers.get('X-Request-ID') || undefined);
   }
   if (res.status === 204) return undefined as T;
   return res.json();
