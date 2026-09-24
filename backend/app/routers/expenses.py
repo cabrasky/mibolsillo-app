@@ -83,12 +83,9 @@ async def list_expenses(
     try:
         await ensure_recurring_expense(db, user.id, bool(getattr(user, "is_admin", False)))
     except SQLAlchemyError:
+        await db.rollback()
         logger.exception("Expense recurring check failed request_id=%s", request_id)
-        raise HTTPException(
-            status_code=503,
-            detail="Database error while checking recurring expenses",
-            headers={"X-Error-Code": "recurring_expenses_database_error"},
-        )
+        # Recurring expenses are optional; they must never block the expense list.
     stmt = select(Expense).where(Expense.user_id == user.id).order_by(Expense.date.desc())
     if month and year:
         stmt = stmt.where(
