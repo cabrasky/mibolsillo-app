@@ -773,8 +773,12 @@ hr { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
 .back-link:hover { color: var(--primary-strong); background: color-mix(in srgb, var(--primary) 10%, transparent); }
 
 /* Personas en gasto compartido */
-.persona-row{display:grid;grid-template-columns:1fr 120px auto 30px;gap:8px;align-items:center;margin-bottom:8px}
-.persona-row input{padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font-size:13.5px;min-width:0}
+.persona-row{display:block;margin-bottom:10px}
+.persona-line{display:grid;grid-template-columns:1fr 120px auto 30px;gap:8px;align-items:center}
+.persona-line input{padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font-size:13.5px;min-width:0}
+.persona-repay{display:flex;gap:8px;align-items:center;margin-top:6px;padding-left:2px}
+.persona-repay label{font-size:12px;color:var(--muted)}
+.persona-repay select{padding:5px 8px;border-radius:7px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font-size:12.5px}
 .role-toggle{display:flex;gap:4px}
 .role-toggle button{padding:5px 10px;border-radius:7px;border:1px solid var(--bd);background:transparent;color:var(--muted);font-size:12px;cursor:pointer}
 .role-toggle button.on.deb{background:rgba(239,68,68,.15);border-color:var(--bad);color:#fda4af}

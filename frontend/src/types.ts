@@ -83,6 +83,7 @@ export const PROPOSITOS = ['Ocio', 'Comida', 'Bebida', 'Transporte', 'Estancia',
 export const MOTIVOS = ['Salir', 'Planes en casa', 'Viajes', 'Trabajo', 'Estudios', 'Evento', 'Caprichos', 'Mi cumple', 'Regalos'];
 export const TIPOS = ['Recurrente', 'Viajes', 'Puntual'];
 export const METODOS = ['Tarjeta', 'Bizum', 'Split App', 'Efectivo', 'Deposito', 'Online', 'Transferencia'];
+export const REFUND_METHODS = ['Bizum', 'Efectivo', 'Tricount', 'Transferencia', 'Otro'];
 
 export const REF = {
   // Modelo de la plantilla "Gastos": Propósito = categoría real (Datos!M2:M10),
@@ -92,6 +93,7 @@ export const REF = {
   motivos: MOTIVOS,
   tipos: TIPOS,
   metodos: METODOS,
+  refundMethods: REFUND_METHODS,
   meses: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
   billingCycles: ['weekly', 'monthly', 'quarterly', 'yearly'] as const,
   incomeCategories: ['Salario', 'Freelance', 'Inversion', 'Regalo', 'Venta', 'Devolucion', 'Otro'],

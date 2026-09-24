@@ -14,14 +14,19 @@ interface Props {
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
-type Persona = { n: string; m: number; r: 'deb' | 'inv' };
+type Persona = { n: string; m: number; r: 'deb' | 'inv'; repaid: boolean; method: string };
 
 function parsePersonas(raw?: string): Persona[] {
   if (!raw) return [];
   try {
     const a = JSON.parse(raw);
     if (!Array.isArray(a)) return [];
-    return a.filter((x: any) => x && typeof x.n === 'string').map((x: any) => ({ n: x.n, m: Number(x.m) || 0, r: x.r === 'inv' ? 'inv' as const : 'deb' as const }));
+    return a.filter((x: any) => x && typeof x.n === 'string').map((x: any) => ({
+      n: x.n, m: Number(x.m) || 0,
+      r: x.r === 'inv' ? 'inv' as const : 'deb' as const,
+      repaid: !!x.repaid,
+      method: typeof x.method === 'string' ? x.method : '',
+    }));
   } catch { return []; }
 }
 
@@ -44,8 +49,6 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
   const [invitacion, setInvitacion] = useState(0);
   const [deudores, setDeudores] = useState('');
   const [personas, setPersonas] = useState<Persona[]>([]);
-  const [deudaMetodo, setDeudaMetodo] = useState('Bizum');
-  const [devuelto, setDevuelto] = useState<'yes' | 'no'>('no');
   const [viaje, setViaje] = useState('');
   const [errors, setErrors] = useState<{ desc?: string; amount?: string }>({});
   const [sug, setSug] = useState<Suggestion | null>(null);
@@ -83,17 +86,25 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
       setAjeno(editExpense.ajeno || 0);
       setInvitacion(editExpense.invitacion ? 1 : 0);
       setDeudores(editExpense.deudores || '');
-      setPersonas(editExpense.personas ? parsePersonas(editExpense.personas) : (() => {
-        const raw = (editExpense.deudores || '').trim();
-        if (!raw) return [];
-        const names = raw.split(/\s*(?:,|;|\s+y\s+|\s+e\s+)\s*/).map(x => x.trim()).filter(Boolean);
-        if (!names.length) return [];
-        const tot = Number(editExpense.ajeno) || 0;
-        const per = Math.round((tot / names.length) * 100) / 100;
-        return names.map((n, i) => ({ n, m: i === names.length - 1 ? Math.round((tot - per * (names.length - 1)) * 100) / 100 : per, r: 'deb' as const }));
+      setPersonas((() => {
+        let parsed = editExpense.personas ? parsePersonas(editExpense.personas) : (() => {
+          const raw = (editExpense.deudores || '').trim();
+          if (!raw) return [];
+          const names = raw.split(/\s*(?:,|;|\s+y\s+|\s+e\s+)\s*/).map(x => x.trim()).filter(Boolean);
+          if (!names.length) return [];
+          const tot = Number(editExpense.ajeno) || 0;
+          const per = Math.round((tot / names.length) * 100) / 100;
+          return names.map((n, i) => ({ n, m: i === names.length - 1 ? Math.round((tot - per * (names.length - 1)) * 100) / 100 : per, r: 'deb' as const, repaid: false, method: '' }));
+        })();
+        // Migración lazy: si el gasto conserva el flag global "devuelto", se
+        // propaga a cada deudor (dato legacy previo a las devoluciones por persona).
+        if (parsed.length && editExpense.devuelto === 'yes') {
+          parsed = parsed.map(p => p.r === 'deb'
+            ? { ...p, repaid: true, method: p.method || editExpense.deudaMetodo || 'Bizum' }
+            : p);
+        }
+        return parsed;
       })());
-      setDeudaMetodo(editExpense.deudaMetodo || 'Bizum');
-      setDevuelto(editExpense.devuelto || 'no');
       setViaje(editExpense.viaje || '');
       setShowShared(!!(editExpense.ajeno || editExpense.deudores || editExpense.devuelto === 'yes' || editExpense.viaje));
     } else {
@@ -109,8 +120,6 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
       setInvitacion(0);
       setDeudores('');
       setPersonas([]);
-      setDeudaMetodo('Bizum');
-      setDevuelto('no');
       setViaje('');
       setShowShared(false);
     }
@@ -137,15 +146,17 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
     const per = personas.filter(x => x.n.trim());
     const debtors = per.filter(x => x.r === 'deb');
     const allInv = per.length > 0 && per.every(x => x.r === 'inv');
+    const allRepaid = debtors.length > 0 && debtors.every(x => x.repaid);
+    const firstRepaidMethod = debtors.find(x => x.repaid)?.method || '';
     const data: any = {
       date, desc: desc.trim(), amount: round2(amt), proposito, metodo,
       motivo: motivo.trim(), tipo: tipo.trim(),
       ajeno: showShared ? Math.min(ajenoEf, round2(amt)) : 0,
       invitacion: allInv ? 1 : (invitacion ? 1 : 0),
       deudores: showShared ? (per.length ? debtors.map(x => x.n.trim()).join(', ') : deudores.trim()) : '',
-      personas: per.length ? JSON.stringify(per.map(x => ({ n: x.n.trim(), m: round2(Number(x.m) || 0), r: x.r }))) : (editExpense?.personas || ''),
-      deudaMetodo: showShared ? deudaMetodo : 'Bizum',
-      devuelto: showShared ? devuelto : 'no',
+      personas: per.length ? JSON.stringify(per.map(x => ({ n: x.n.trim(), m: round2(Number(x.m) || 0), r: x.r, repaid: !!x.repaid, method: x.method || '' }))) : (editExpense?.personas || ''),
+      deudaMetodo: showShared ? (firstRepaidMethod || 'Bizum') : 'Bizum',
+      devuelto: showShared ? (allRepaid ? 'yes' : 'no') : 'no',
       meCorresponde: showShared ? round2(Math.max(0, amt - (per.length ? debtSum : ajeno))) : round2(amt),
       viaje: showShared ? viaje.trim() : '',
       proyectoId,
@@ -160,7 +171,7 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
   };
 
   const upP = (i: number, patch: Partial<Persona>) => setPersonas(ps => ps.map((x, k) => (k === i ? { ...x, ...patch } : x)));
-  const addP = () => setPersonas(ps => [...ps, { n: '', m: 0, r: 'deb' }]);
+  const addP = () => setPersonas(ps => [...ps, { n: '', m: 0, r: 'deb', repaid: false, method: 'Bizum' }]);
   const delP = (i: number) => setPersonas(ps => ps.filter((_, k) => k !== i));
   const allInvited = () => setPersonas(ps => ps.map(x => ({ ...x, r: 'inv' as const })));
 
@@ -280,14 +291,29 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
                 )}
                 {personas.map((p, i) => (
                   <div key={i} className="persona-row">
-                    <input type="text" value={p.n} placeholder="Nombre" onChange={e => upP(i, { n: e.target.value })} />
-                    <input type="number" step="0.01" min="0" value={p.m || ''} placeholder="0,00"
-                      onChange={e => upP(i, { m: Math.max(0, Number(e.target.value)) })} />
-                    <div className="role-toggle">
-                      <button type="button" className={p.r === 'deb' ? 'on deb' : ''} onClick={() => upP(i, { r: 'deb' })}>Debe</button>
-                      <button type="button" className={p.r === 'inv' ? 'on inv' : ''} onClick={() => upP(i, { r: 'inv' })}>Invitado</button>
+                    <div className="persona-line">
+                      <input type="text" value={p.n} placeholder="Nombre" onChange={e => upP(i, { n: e.target.value })} />
+                      <input type="number" step="0.01" min="0" value={p.m || ''} placeholder="0,00"
+                        onChange={e => upP(i, { m: Math.max(0, Number(e.target.value)) })} />
+                      <div className="role-toggle">
+                        <button type="button" className={p.r === 'deb' ? 'on deb' : ''} onClick={() => upP(i, { r: 'deb' })}>Debe</button>
+                        <button type="button" className={p.r === 'inv' ? 'on inv' : ''} onClick={() => upP(i, { r: 'inv' })}>Invitado</button>
+                      </div>
+                      <button type="button" className="btn ghost x" onClick={() => delP(i)} title="Quitar">✕</button>
                     </div>
-                    <button type="button" className="btn ghost x" onClick={() => delP(i)} title="Quitar">✕</button>
+                    {p.r === 'deb' && (
+                      <div className="persona-repay">
+                        <label>Devuelto</label>
+                        <select value={p.repaid ? 'yes' : 'no'} onChange={e => upP(i, { repaid: e.target.value === 'yes' })}>
+                          <option value="no">No</option>
+                          <option value="yes">Sí</option>
+                        </select>
+                        <label>Cómo</label>
+                        <select value={p.method || 'Bizum'} onChange={e => upP(i, { method: e.target.value })}>
+                          {REF.refundMethods.map(m => <option key={m} value={m}>{m}</option>)}
+                        </select>
+                      </div>
+                    )}
                   </div>
                 ))}
                 <div className="form-row" style={{ gap: 8, marginTop: 4 }}>
@@ -299,20 +325,7 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
                     </>
                   )}
                 </div>
-                <div className="form-row three">
-                  <div className="form-group">
-                    <label>Método devolución</label>
-                    <select value={deudaMetodo} onChange={e => setDeudaMetodo(e.target.value)}>
-                      {REF.metodos.map(m => <option key={m} value={m}>{m}</option>)}
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Devuelto</label>
-                    <select value={devuelto} onChange={e => setDevuelto(e.target.value as 'yes' | 'no')}>
-                      <option value="no">No</option>
-                      <option value="yes">Sí</option>
-                    </select>
-                  </div>
+                <div className="form-row">
                   <div className="form-group">
                     <label>Viaje</label>
                     <input type="text" value={viaje} onChange={e => setViaje(e.target.value)} placeholder="Nombre del viaje" />
