@@ -8,7 +8,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.config import settings
@@ -166,10 +166,33 @@ app.include_router(developer.router, prefix="/api")
 
 
 @app.get("/api/health")
-async def health():
+async def health(request: Request):
     try:
         with open("/app/version.txt") as f:
             version = f.read().strip()
     except OSError:
         version = "dev"
-    return {"status": "ok", "app": settings.app_name, "version": version}
+    request_id = _request_id(request)
+    try:
+        async with engine.connect() as connection:
+            await connection.execute(text("""
+                SELECT id, date, description, amount, purpose, motive, type, method,
+                       is_shared, is_invitation, debtors, participants, cc_reference,
+                       repayment_method, repaid, personal_share, trip, project_id,
+                       photo_type, created_at
+                FROM expenses LIMIT 0
+            """))
+    except SQLAlchemyError:
+        logger.exception("Health check detected an invalid expenses schema request_id=%s", request_id)
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "degraded",
+                "app": settings.app_name,
+                "version": version,
+                "detail": "Expenses database schema is not ready. Check migration 007.",
+                "error_code": "database_schema_error",
+                "request_id": request_id,
+            },
+        )
+    return {"status": "ok", "app": settings.app_name, "version": version, "request_id": request_id}

@@ -118,8 +118,8 @@ def run_alembic_upgrade(
         )
         out = (proc.stdout or "").strip()
         err = (proc.stderr or "").strip()
-        if out or err:
-            logger.info("alembic upgrade: out=%s err=%s rc=%d", out, err, proc.returncode)
+        if out or err or proc.returncode:
+            logger.warning("alembic upgrade: out=%s err=%s rc=%d", out, err, proc.returncode)
         return proc.returncode == 0
     except Exception:
         logger.exception("alembic upgrade subprocess failed")
