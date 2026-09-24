@@ -14,8 +14,11 @@ This module closes that class of bug at startup:
   when an ``alembic.ini`` is present alongside the backend package).
 * :func:`sync_missing_columns` — inspect each mapped table and
   ``ALTER TABLE ADD COLUMN IF NOT EXISTS`` for anything present in the model
-  but absent in the live DB. Idempotent, additive-only, safe to re-run on
-  every boot.
+  but absent in the live DB. Also reconciles the legacy Spanish expense
+  columns (``tipo``/``type``, ``ajeno``/``is_shared``, …) into their English
+  replacements: rename in place when only the legacy column exists, or
+  backfill + drop when both exist (drift from an earlier additive sync).
+  Idempotent and safe to re-run on every boot.
 """
 
 from __future__ import annotations
@@ -130,7 +133,8 @@ async def sync_missing_columns(engine, base: type[DeclarativeBase]) -> int:
     """Add columns present in ``base.metadata`` but missing in the live DB.
 
     Works with an ``AsyncEngine`` (pass the app's ``engine`` directly).
-    - Idempotent, additive-only: never renames, drops, or type-changes.
+    - Idempotent: adds missing columns, and reconciles legacy Spanish expense
+      columns (rename in place, or backfill + drop when both old and new exist).
     - Any DDL failure is logged but does not raise, so a single bad table
       never blocks boot.
 
@@ -143,23 +147,44 @@ async def sync_missing_columns(engine, base: type[DeclarativeBase]) -> int:
     async with engine.connect() as conn:
         live_expense_columns = await conn.run_sync(_columns)
 
-    renamed = 0
+    reconciled = 0
     for old_name, new_name in LEGACY_EXPENSE_COLUMNS.items():
-        if old_name not in live_expense_columns or new_name in live_expense_columns:
+        has_old = old_name in live_expense_columns
+        has_new = new_name in live_expense_columns
+        if not has_old:
+            # Already reconciled on a previous boot (only the English column
+            # remains); nothing to migrate.
             continue
         try:
             async with engine.begin() as conn:
-                await conn.execute(_text(
-                    f'ALTER TABLE "expenses" RENAME COLUMN "{old_name}" TO "{new_name}"'
-                ))
-            live_expense_columns.remove(old_name)
+                if not has_new:
+                    # Only the legacy column exists → rename in place (keeps data).
+                    await conn.execute(_text(
+                        f'ALTER TABLE "expenses" RENAME COLUMN "{old_name}" TO "{new_name}"'
+                    ))
+                else:
+                    # Both exist (drift from an earlier additive-only sync): copy
+                    # the legacy values into the English column and drop the legacy
+                    # one. The English column is what the model reads, and the
+                    # legacy column still holds the original data for rows written
+                    # before the rename.
+                    await conn.execute(_text(
+                        f'UPDATE "expenses" SET "{new_name}" = "{old_name}" '
+                        f'WHERE "{old_name}" IS NOT NULL'
+                    ))
+                    await conn.execute(_text(
+                        f'ALTER TABLE "expenses" DROP COLUMN "{old_name}"'
+                    ))
+            live_expense_columns.discard(old_name)
             live_expense_columns.add(new_name)
-            renamed += 1
+            reconciled += 1
         except Exception:
-            logger.exception("schema-sync: cannot rename expenses.%s to %s", old_name, new_name)
+            logger.exception(
+                "schema-sync: cannot reconcile expenses.%s -> %s", old_name, new_name,
+            )
 
-    if renamed:
-        logger.info("schema-sync: renamed %d legacy expense column(s)", renamed)
+    if reconciled:
+        logger.info("schema-sync: reconciled %d legacy expense column(s)", reconciled)
 
     def _introspect(sync_engine):
         """Single sync pass: return {table_name: [missing_col_objects]}."""
