@@ -2,12 +2,14 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
 import { getOAuthConfig, updateOAuthConfig, getSmtpConfig, updateSmtpConfig } from '../api';
+import { useLocale, localizeError } from '../i18n';
 
 export default function AdminPanel() {
   const { user } = useAuth();
+  const { t } = useLocale();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
-  const [msg, setMsg] = useState('');
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   // OAuth state
   const [clientId, setClientId] = useState('');
@@ -24,11 +26,11 @@ export default function AdminPanel() {
   const [smtpFromName, setSmtpFromName] = useState('Gastos App');
   const [smtpPasswordSet, setSmtpPasswordSet] = useState(false);
 
-  useEffect(() => { loadConfig(); }, []);
+  useEffect(() => { loadConfig(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadConfig = async () => {
     try {
-      setMsg('');
+      setMsg(null);
       const [oauthData, smtpData] = await Promise.all([
         getOAuthConfig(),
         getSmtpConfig(),
@@ -46,7 +48,7 @@ export default function AdminPanel() {
       setSmtpFromName(smtpData.from_name);
       setSmtpPasswordSet(smtpData.password_set);
     } catch (e: any) {
-      setMsg('Error: ' + e.message);
+      setMsg({ ok: false, text: localizeError(e, t) });
     }
     setLoading(false);
   };
@@ -54,7 +56,7 @@ export default function AdminPanel() {
   const handleSaveOAuth = async () => {
     try {
       setSaving('oauth');
-      setMsg('');
+      setMsg(null);
       await updateOAuthConfig({
         provider: 'google',
         client_id: clientId,
@@ -62,9 +64,9 @@ export default function AdminPanel() {
         redirect_uri: redirectUri,
         enabled: oauthEnabled,
       });
-      setMsg('Configuración OAuth guardada ✅');
+      setMsg({ ok: true, text: t('admin.oauthSaved') });
     } catch (e: any) {
-      setMsg('Error: ' + e.message);
+      setMsg({ ok: false, text: localizeError(e, t) });
     }
     setSaving(null);
   };
@@ -72,7 +74,7 @@ export default function AdminPanel() {
   const handleSaveSmtp = async () => {
     try {
       setSaving('smtp');
-      setMsg('');
+      setMsg(null);
       await updateSmtpConfig({
         host: smtpHost,
         port: smtpPort,
@@ -83,30 +85,30 @@ export default function AdminPanel() {
       });
       setSmtpPassword('');
       setSmtpPasswordSet(true);
-      setMsg('Configuración SMTP guardada ✅');
+      setMsg({ ok: true, text: t('admin.smtpSaved') });
     } catch (e: any) {
-      setMsg('Error: ' + e.message);
+      setMsg({ ok: false, text: localizeError(e, t) });
     }
     setSaving(null);
   };
 
   if (!user?.is_admin) {
-    return <div className="admin-panel"><p>Acceso denegado. Solo administradores.</p></div>;
+    return <div className="admin-panel"><p>{t('admin.denied')}</p></div>;
   }
-  if (loading) return <div className="loading">Cargando...</div>;
+  if (loading) return <div className="loading">{t('common.loading')}</div>;
 
   return (
     <div className="admin-panel">
       <div className="admin-header">
-        <h2>Admin — Configuración</h2>
+        <h2>{t('admin.title')}</h2>
       </div>
 
       <div className="admin-section">
         <h3>🔐 Google OAuth</h3>
         <p className="hint">
-          Configura las credenciales de OAuth desde{' '}
+          {t('admin.oauthHintA')}{' '}
           <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Google Cloud Console</a>.
-          La URL de redirección debe ser <code>{redirectUri || window.location.origin + '/api/auth/google/callback'}</code>
+          {' '}{t('admin.oauthHintB')} <code>{redirectUri || window.location.origin + '/api/auth/google/callback'}</code>
         </p>
         <div className="auth-form">
           <label>Client ID</label>
@@ -117,39 +119,39 @@ export default function AdminPanel() {
           <input type="text" value={redirectUri} onChange={e => setRedirectUri(e.target.value)} placeholder="https://gastos.cabrasky.net/api/auth/google/callback" />
           <label className="checkbox-label">
             <input type="checkbox" checked={oauthEnabled} onChange={e => setOauthEnabled(e.target.checked)} />
-            {' '}OAuth habilitado
+            {' '}{t('admin.oauthEnabled')}
           </label>
           <button className="btn primary" onClick={handleSaveOAuth} disabled={saving === 'oauth'}>
-            {saving === 'oauth' ? 'Guardando...' : 'Guardar OAuth'}
+            {saving === 'oauth' ? t('common.saving') : t('admin.saveOauth')}
           </button>
         </div>
       </div>
 
       <div className="admin-section">
-        <h3>📧 SMTP — Correo saliente</h3>
+        <h3>{t('admin.smtpTitle')}</h3>
         <p className="hint">
-          Configuraci&oacute;n del servidor SMTP para enviar correos de recuperaci&oacute;n de contrase&ntilde;a.
+          {t('admin.smtpHint')}
         </p>
         <div className="auth-form">
           <label>Host</label>
           <input type="text" value={smtpHost} onChange={e => setSmtpHost(e.target.value)} placeholder="mail.cabrasky.net" />
-          <label>Puerto</label>
+          <label>{t('admin.port')}</label>
           <input type="number" value={smtpPort} onChange={e => setSmtpPort(Number(e.target.value))} placeholder="587" />
-          <label>Usuario</label>
+          <label>{t('admin.user')}</label>
           <input type="text" value={smtpUser} onChange={e => setSmtpUser(e.target.value)} placeholder="gastos@cabrasky.net" />
-          <label>Contrase&ntilde;a {smtpPasswordSet && <span className="hint">(ya configurada — d&eacute;jala vac&iacute;a para mantenerla)</span>}</label>
-          <input type="password" value={smtpPassword} onChange={e => setSmtpPassword(e.target.value)} placeholder={smtpPasswordSet ? '•••••••• (dejar vacío para mantener)' : 'Contraseña SMTP'} />
-          <label>From Email</label>
+          <label>{t('auth.password')} {smtpPasswordSet && <span className="hint">{t('admin.passwordSet')}</span>}</label>
+          <input type="password" value={smtpPassword} onChange={e => setSmtpPassword(e.target.value)} placeholder={smtpPasswordSet ? t('admin.passwordKeepPh') : t('admin.smtpPasswordPh')} />
+          <label>{t('admin.fromEmail')}</label>
           <input type="email" value={smtpFromEmail} onChange={e => setSmtpFromEmail(e.target.value)} placeholder="gastos@cabrasky.net" />
-          <label>From Name</label>
+          <label>{t('admin.fromName')}</label>
           <input type="text" value={smtpFromName} onChange={e => setSmtpFromName(e.target.value)} placeholder="Gastos App" />
           <button className="btn primary" onClick={handleSaveSmtp} disabled={saving === 'smtp'}>
-            {saving === 'smtp' ? 'Guardando...' : 'Guardar SMTP'}
+            {saving === 'smtp' ? t('common.saving') : t('admin.saveSmtp')}
           </button>
         </div>
       </div>
 
-      {msg && <p className={msg.startsWith('Error') ? 'error' : 'success'}>{msg}</p>}
+      {msg && <p className={msg.ok ? 'success' : 'error'}>{msg.text}</p>}
     </div>
   );
 }

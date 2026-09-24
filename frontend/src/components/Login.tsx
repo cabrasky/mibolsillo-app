@@ -30,28 +30,28 @@ export default function Login() {
     <div className="auth-page">
       <div className="auth-card">
         <div style={{ textAlign: 'left', marginBottom: 4 }}>
-          <Link to="/" className="back-link">← Volver a la portada</Link>
+          <Link to="/" className="back-link">{t('common.backHome')}</Link>
         </div>
         <h1>Gastos App</h1>
-        <h2>Iniciar sesión</h2>
+        <h2>{t('auth.login')}</h2>
         <form onSubmit={handleSubmit}>
-          <label>Email</label>
+          <label>{t('common.email')}</label>
           <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-          <label>Contraseña</label>
+          <label>{t('auth.password')}</label>
           <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
           {error && <p className="error">{error}</p>}
           <button className="btn primary" type="submit" disabled={busy}>
-            {busy ? 'Entrando...' : 'Entrar'}
+            {busy ? t('auth.entering') : t('auth.enter')}
           </button>
         </form>
         <button className="btn google-btn" onClick={googleLogin}>
-          Continuar con Google
+          {t('auth.google')}
         </button>
         <p className="auth-link">
-          ¿No tienes cuenta? <Link to="/register">Regístrate</Link>
+          {t('auth.noAccount')} <Link to="/register">{t('auth.signUp')}</Link>
         </p>
         <p className="auth-link">
-          <Link to="/forgot-password">¿Olvidaste tu contraseña?</Link>
+          <Link to="/forgot-password">{t('auth.forgot')}</Link>
         </p>
       </div>
     </div>

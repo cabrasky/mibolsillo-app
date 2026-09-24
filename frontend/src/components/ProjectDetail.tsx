@@ -2,6 +2,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { expenseCost } from '../types';
 import { loadData, deleteExpense, updateExpense } from '../store';
+import { useLocale, fill, refLabel } from '../i18n';
 import { IconArrowLeft, IconPlus, IconTrash } from './Icons';
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 export default function ProjectDetail({ onRefresh, onEditExpense, onAddToProject }: Props) {
   const { id = '' } = useParams();
   const navigate = useNavigate();
+  const { t } = useLocale();
   const data = loadData();
   const project = data.projects.find(p => p.id === id);
   const items = data.expenses
@@ -23,8 +25,8 @@ export default function ProjectDetail({ onRefresh, onEditExpense, onAddToProject
     return (
       <div className="card">
         <div className="empty">
-          <p>Proyecto no encontrado</p>
-          <Link to="/projects" className="btn outline">← Volver a Proyectos</Link>
+          <p>{t('proj.notFound')}</p>
+          <Link to="/projects" className="btn outline">{t('proj.backToList')}</Link>
         </div>
       </div>
     );
@@ -34,13 +36,13 @@ export default function ProjectDetail({ onRefresh, onEditExpense, onAddToProject
   const pending = items.filter(e => e.devuelto !== 'yes').reduce((s, e) => s + e.meCorresponde, 0);
 
   const handleUnlink = (expenseId: string) => {
-    if (!confirm('Quitar este gasto del proyecto (pasa a uso general)?')) return;
+    if (!confirm(t('proj.confirmUnlink'))) return;
     updateExpense(expenseId, { proyectoId: '' });
     onRefresh();
   };
 
   const handleDelete = (expenseId: string) => {
-    if (!confirm('Eliminar este gasto?')) return;
+    if (!confirm(t('common.confirmDeleteExpense'))) return;
     deleteExpense(expenseId);
     onRefresh();
   };
@@ -48,46 +50,46 @@ export default function ProjectDetail({ onRefresh, onEditExpense, onAddToProject
   return (
     <div>
       <div className="page-head">
-        <button className="back-btn" onClick={() => navigate('/projects')} title="Volver a Proyectos">
+        <button className="back-btn" onClick={() => navigate('/projects')} title={t('proj.backTitle')} aria-label={t('proj.backTitle')}>
           <IconArrowLeft size={18} />
         </button>
         <div>
           <div className="page-title">📁 {project.name}</div>
-          <div className="page-sub">Desglose del proyecto · {items.length} elemento(s)</div>
+          <div className="page-sub">{fill(t('proj.subtitle'), { n: items.length })}</div>
         </div>
       </div>
 
       <div className="proj-hero">
         <div>
           <div style={{ fontSize: '.78rem', opacity: .85, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em' }}>
-            Invertido en {project.name}
+            {fill(t('proj.investedIn'), { name: project.name })}
           </div>
           <div className="proj-total">{total.toFixed(2)} €</div>
-          <div className="proj-meta">Pendiente por ti: {pending.toFixed(2)} €</div>
+          <div className="proj-meta">{fill(t('proj.pendingByYou'), { v: `${pending.toFixed(2)} €` })}</div>
         </div>
         <button
           className="btn"
           onClick={() => onAddToProject(project.id)}
           style={{ background: 'rgba(255,255,255,.18)', color: '#fff', backdropFilter: 'blur(4px)', boxShadow: 'none' }}
         >
-          <IconPlus size={16} /> Añadir gasto
+          <IconPlus size={16} /> {t('expense.addBtn')}
         </button>
       </div>
 
       <div className="card">
         <div className="card-header">
-          <h3>Elementos del proyecto</h3>
+          <h3>{t('proj.items')}</h3>
           <span className="card-total">{total.toFixed(2)} EUR</span>
         </div>
         {items.length === 0 ? (
           <div className="empty">
-            <p>Este proyecto aún no tiene gastos. Añade el primero con el botón "Añadir gasto".</p>
+            <p>{t('proj.noItems')}</p>
           </div>
         ) : (
           <div className="table-wrap">
             <table>
               <thead>
-                <tr><th>Fecha</th><th>Elemento</th><th>Proposito</th><th>Metodo</th><th>Importe</th><th></th></tr>
+                <tr><th>{t('common.date')}</th><th>{t('proj.item')}</th><th>{t('expense.purpose')}</th><th>{t('expense.method')}</th><th>{t('common.amount')}</th><th></th></tr>
               </thead>
               <tbody>
                 {items.map(e => (
@@ -95,16 +97,16 @@ export default function ProjectDetail({ onRefresh, onEditExpense, onAddToProject
                     <td>{e.date}</td>
                     <td>
                       <strong>{e.desc}</strong>
-                      {e.motivo && <span className="td-meta">{e.motivo}</span>}
+                      {e.motivo && <span className="td-meta">{refLabel('motives', e.motivo, t)}</span>}
                     </td>
-                    <td>{e.proposito ? <span className={`tag tag-${e.proposito.toLowerCase().replace(/[\/\s]/g, '')}`}>{e.proposito}</span> : '-'}</td>
-                    <td className="td-muted">{e.metodo || '-'}</td>
+                    <td>{e.proposito ? <span className={`tag tag-${e.proposito.toLowerCase().replace(/[\/\s]/g, '')}`}>{refLabel('categories', e.proposito, t)}</span> : '-'}</td>
+                    <td className="td-muted">{e.metodo ? refLabel('methods', e.metodo, t) : '-'}</td>
                     <td className="td-amount">{e.amount.toFixed(2)} EUR</td>
                     <td>
                       <div className="row-actions">
-                        <button className="btn sm outline" onClick={() => onEditExpense(e.id)} title="Editar gasto">Editar</button>
-                        <button className="btn sm outline" onClick={() => handleUnlink(e.id)} title="Quitar del proyecto">Quitar</button>
-                        <button className="btn sm danger" onClick={() => handleDelete(e.id)} title="Eliminar"><IconTrash size={14} /></button>
+                        <button className="btn sm outline" onClick={() => onEditExpense(e.id)} title={t('expense.editLabel')}>{t('common.edit')}</button>
+                        <button className="btn sm outline" onClick={() => handleUnlink(e.id)} title={t('proj.unlinkTitle')}>{t('common.remove')}</button>
+                        <button className="btn sm danger" onClick={() => handleDelete(e.id)} title={t('common.delete')}><IconTrash size={14} /></button>
                       </div>
                     </td>
                   </tr>
@@ -117,7 +119,7 @@ export default function ProjectDetail({ onRefresh, onEditExpense, onAddToProject
 
       {items.length > 0 && (
         <p className="hint" style={{ color: 'var(--text-muted)', fontSize: '.78rem', padding: '0 4px' }}>
-          Consejo: usa "Editar" para cambiar detalles del elemento o "Quitar" para sacarlo del proyecto sin borrarlo.
+          {t('proj.tip')}
         </p>
       )}
     </div>

@@ -1,4 +1,5 @@
 /* ── API service for gastos-app backend ─────────────────────────────────────── */
+import { tNow } from './i18n';
 
 const BASE = import.meta.env.VITE_API_URL || '/api';
 
@@ -210,7 +211,7 @@ export async function apiUploadExpensePhoto(id: string, file: Blob, filename: st
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || 'No se pudo subir la foto');
+    throw new Error(err.detail || tNow('error.photoUpload'));
   }
 }
 
@@ -224,7 +225,7 @@ export async function fetchExpensePhotoUrl(id: string): Promise<{ url: string; r
   const res = await fetch(`${BASE}/expenses/${id}/photo`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
-  if (!res.ok) throw new Error('No se pudo cargar la foto');
+  if (!res.ok) throw new Error(tNow('error.photoLoad'));
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   return { url, revoke: () => URL.revokeObjectURL(url) };

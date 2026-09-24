@@ -32,8 +32,8 @@ export default function ResetPassword() {
 
     setBusy(true);
     try {
-      const res = await resetPassword(token, password);
-      setMessage(res.message);
+      await resetPassword(token, password);
+      setMessage(t('auth.resetDone'));
       setTimeout(() => navigate('/login'), 3000);
     } catch (err: any) {
       setError(localizeError(err, t));
@@ -46,13 +46,13 @@ export default function ResetPassword() {
       <div className="auth-page">
         <div className="auth-card">
         <div style={{ textAlign: 'left', marginBottom: 4 }}>
-          <Link to="/" className="back-link">← Volver a la portada</Link>
+          <Link to="/" className="back-link">{t('common.backHome')}</Link>
         </div>
           <h1>Gastos App</h1>
           <h2>{t('error.invalidLink')}</h2>
-          <p>El enlace de recuperación no es válido o ha expirado.</p>
+          <p>{t('auth.invalidLinkText')}</p>
           <p className="auth-link">
-            <Link to="/forgot-password">Solicitar un nuevo enlace</Link>
+            <Link to="/forgot-password">{t('auth.requestNew')}</Link>
           </p>
         </div>
       </div>
@@ -63,34 +63,34 @@ export default function ResetPassword() {
     <div className="auth-page">
       <div className="auth-card">
         <h1>Gastos App</h1>
-        <h2>Nueva contraseña</h2>
+        <h2>{t('auth.newPassword')}</h2>
         <form onSubmit={handleSubmit}>
-          <label>Nueva contraseña</label>
+          <label>{t('auth.newPassword')}</label>
           <input
             type="password"
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
             minLength={6}
-            placeholder="Mínimo 6 caracteres"
+            placeholder={t('auth.minChars')}
           />
-          <label>Confirmar contraseña</label>
+          <label>{t('auth.confirmPassword')}</label>
           <input
             type="password"
             value={confirm}
             onChange={e => setConfirm(e.target.value)}
             required
             minLength={6}
-            placeholder="Repite la contraseña"
+            placeholder={t('auth.repeatPh')}
           />
           {error && <p className="error">{error}</p>}
           {message && <p className="success">{message}</p>}
           <button className="btn primary" type="submit" disabled={busy}>
-            {busy ? 'Guardando...' : 'Cambiar contraseña'}
+            {busy ? t('common.saving') : t('profile.changeBtn')}
           </button>
         </form>
         <p className="auth-link">
-          <Link to="/login">Volver a inicio de sesión</Link>
+          <Link to="/login">{t('auth.backToLogin')}</Link>
         </p>
       </div>
     </div>

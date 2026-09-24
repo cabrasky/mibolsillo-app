@@ -5,21 +5,23 @@ import {
 } from 'recharts';
 import { expenseCost } from '../types';
 import type { Expense, Income } from '../types';
+import { useLocale, fill, LOCALE_TAG } from '../i18n';
 
 /* ── Comparativas de periodos superpuestos (meses / semanas / trimestres / años) ── */
 
 const PALETTE = ['#6366f1', '#f59e0b', '#10b981', '#ec4899', '#06b6d4', '#8b5cf6'];
 const MAX_SERIES = 6;
-const SHORT_MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']; // lunes → domingo
-const DIM_LABEL: Record<Dim, string> = { meses: 'Meses', semanas: 'Semanas', trimestres: 'Trimestres', anios: 'Años' };
+type T = (key: string) => string;
+const DIMS: Dim[] = ['meses', 'semanas', 'trimestres', 'anios'];
+// Inicial del día de la semana (1 = lunes) en el idioma activo; 1-ene-2024 fue lunes
+const weekdayLetter = (pos: number, tag: string) => new Date(2024, 0, pos).toLocaleDateString(tag, { weekday: 'narrow' }).toUpperCase();
 
 type Dim = 'meses' | 'semanas' | 'trimestres' | 'anios';
 type Metric = 'gasto' | 'ingreso' | 'balance';
 const METRICS: { key: Metric; label: string }[] = [
-  { key: 'gasto', label: 'Gastos' },
-  { key: 'ingreso', label: 'Ingresos' },
-  { key: 'balance', label: 'Balance' },
+  { key: 'gasto', label: 'dashboard.expenses' },
+  { key: 'ingreso', label: 'dashboard.incomes' },
+  { key: 'balance', label: 'dashboard.balanceLabel' },
 ];
 
 const tooltipStyle = {
@@ -29,7 +31,6 @@ const tooltipStyle = {
   color: 'var(--text)',
   fontSize: 13,
 };
-const eur = (n: number) => n.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 const pad = (n: number) => String(n).padStart(2, '0');
 
 /** Parse 'YYYY-MM-DD' como fecha LOCAL (sin desfase de zona horaria). */
@@ -77,13 +78,13 @@ function isPartial(key: string, dim: Dim): boolean {
   return key === periodKeyOfDate(new Date(), dim);
 }
 
-function periodLabel(key: string, dim: Dim): string {
+function periodLabel(key: string, dim: Dim, t: T): string {
   if (dim === 'meses') {
     const [y, m] = key.split('-').map(Number);
-    return `${SHORT_MONTHS[m - 1]} ${String(y).slice(2)}`;
+    return `${t(`ref.months.short.${m}`)} ${String(y).slice(2)}`;
   }
-  if (dim === 'semanas') { const [y, w] = key.split('-W'); return `S${w}${y !== String(new Date().getFullYear()) ? ` ${y.slice(2)}` : ''}`; }
-  if (dim === 'trimestres') { const [y, q] = key.split('-Q'); return `Q${q} ${String(y).slice(2)}`; }
+  if (dim === 'semanas') { const [y, w] = key.split('-W'); return `${fill(t('weekly.weekLetter'), { n: w })}${y !== String(new Date().getFullYear()) ? ` ${y.slice(2)}` : ''}`; }
+  if (dim === 'trimestres') { const [y, q] = key.split('-Q'); return `${fill(t('cmp.quarter'), { q })} ${String(y).slice(2)}`; }
   return key;
 }
 
@@ -106,21 +107,21 @@ function periodLength(key: string, dim: Dim): number {
   return isPartial(key, dim) ? now.getMonth() + 1 : 12;
 }
 
-function xLabel(pos: number, dim: Dim): string {
+function xLabel(pos: number, dim: Dim, t: T, tag: string): string {
   if (dim === 'meses') return String(pos);
-  if (dim === 'semanas') return WEEKDAYS[pos - 1];
-  if (dim === 'trimestres') return `S${pos}`;
-  return SHORT_MONTHS[pos - 1];
+  if (dim === 'semanas') return weekdayLetter(pos, tag);
+  if (dim === 'trimestres') return fill(t('weekly.weekLetter'), { n: pos });
+  return t(`ref.months.short.${pos}`);
 }
 
-const xTitle: Record<Dim, string> = {
-  meses: 'Día del mes', semanas: 'Día de la semana', trimestres: 'Semana del trimestre', anios: 'Mes del año',
-};
 const defaultN: Record<Dim, number> = { meses: 3, semanas: 4, trimestres: 4, anios: 3 };
 /** Máximo de chips (periodos con datos) que se ofrecen por dimensión, los más recientes. */
 const MAX_OPTIONS: Record<Dim, number> = { meses: 18, semanas: 18, trimestres: 12, anios: 10 };
 
 export default function PeriodCompare({ expenses, incomes }: { expenses: Expense[]; incomes: Income[] }) {
+  const { t, locale } = useLocale();
+  const tag = LOCALE_TAG[locale];
+  const eur = (n: number) => n.toLocaleString(tag, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
   const [dim, setDim] = useState<Dim>('meses');
   const [metric, setMetric] = useState<Metric>('gasto');
   const [sel, setSel] = useState<Partial<Record<Dim, string[]>>>({});
@@ -175,7 +176,7 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
     const maxPos = dim === 'meses' ? 31 : dim === 'semanas' ? 7 : dim === 'trimestres' ? 13 : 12;
     const rows: Record<string, any>[] = [];
     for (let p = 1; p <= maxPos; p++) {
-      const row: Record<string, any> = { x: xLabel(p, dim) };
+      const row: Record<string, any> = { x: xLabel(p, dim, t, tag) };
       active.forEach(k => {
         const v = acc.get(k)?.get(p);
         row[k] = v !== undefined ? Math.round(v * 100) / 100 : (p <= periodLength(k, dim) ? 0 : null);
@@ -184,11 +185,11 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
     }
     const totals = active.map(k => {
       const sum = [...(acc.get(k)?.values() || [])].reduce((s, v) => s + v, 0);
-      return { key: k, label: periodLabel(k, dim), total: Math.round(sum * 100) / 100 };
+      return { key: k, label: periodLabel(k, dim, t), total: Math.round(sum * 100) / 100 };
     });
     const grand = totals.reduce((s, t) => s + t.total, 0);
     return { seriesRows: rows, totals, grand };
-  }, [active, expenses, incomes, metric, dim]);
+  }, [active, expenses, incomes, metric, dim, t, tag]);
 
   const colorOf = (k: string) => PALETTE[active.indexOf(k) % PALETTE.length];
   const completeTotals = totals.filter(t => !isPartial(t.key, dim));
@@ -197,18 +198,18 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
 
   return (
     <div className="card">
-      <h3>Comparativas de periodos</h3>
+      <h3>{t('cmp.title')}</h3>
 
       {/* Dimensión */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-        {(Object.keys(DIM_LABEL) as Dim[]).map(d => (
+        {DIMS.map(d => (
           <button key={d} onClick={() => setDim(d)}
             style={{
               border: dim === d ? '1.5px solid var(--primary)' : '1px solid var(--border)',
               background: dim === d ? 'var(--primary)' : 'transparent',
               color: dim === d ? '#fff' : 'var(--text)',
               borderRadius: 999, padding: '5px 14px', fontSize: 13, cursor: 'pointer', fontWeight: 700,
-            }}>{DIM_LABEL[d]}</button>
+            }}>{t(`cmp.dim.${d}`)}</button>
         ))}
       </div>
 
@@ -221,7 +222,7 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
               background: metric === m.key ? 'var(--primary)' + '22' : 'transparent',
               color: 'var(--text)',
               borderRadius: 999, padding: '4px 12px', fontSize: 12.5, cursor: 'pointer', fontWeight: metric === m.key ? 700 : 500,
-            }}>{m.label}</button>
+            }}>{t(m.label)}</button>
         ))}
       </div>
 
@@ -230,10 +231,10 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
         {candidates.map(k => {
           const on = active.includes(k);
           const partial = isPartial(k, dim);
-          const label = periodLabel(k, dim) + (partial ? ' *' : '');
+          const label = periodLabel(k, dim, t) + (partial ? ' *' : '');
           return (
             <button key={k} onClick={() => toggle(k)}
-              title={periodLabel(k, dim) + (partial ? ' — en curso (incompleto)' : '')}
+              title={periodLabel(k, dim, t) + (partial ? ` ${t('cmp.inProgress')}` : '')}
               style={{
                 border: on ? `1.5px solid ${colorOf(k)}` : '1px solid var(--border)',
                 background: on ? colorOf(k) + '22' : 'transparent',
@@ -242,17 +243,17 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
               }}>{label}</button>
           );
         })}
-        {candidates.length === 0 && <span className="muted" style={{ fontSize: 12 }}>Sin movimientos</span>}
+        {candidates.length === 0 && <span className="muted" style={{ fontSize: 12 }}>{t('cmp.noMoves')}</span>}
       </div>
       {active.length >= MAX_SERIES && (
-        <p className="muted" style={{ fontSize: 11, marginTop: 4 }}>Máximo {MAX_SERIES} periodos visibles a la vez (desmarca alguno para añadir otro).</p>
+        <p className="muted" style={{ fontSize: 11, marginTop: 4 }}>{fill(t('cmp.maxSeries'), { n: MAX_SERIES })}</p>
       )}
 
       {active.length > 0 && (
         <>
           {/* Líneas superpuestas */}
           <div style={{ marginTop: 14 }}>
-            <h4 style={{ fontSize: 13, marginBottom: 4 }}>Evolución superpuesta · por {xTitle[dim].toLowerCase()}</h4>
+            <h4 style={{ fontSize: 13, marginBottom: 4 }}>{fill(t('cmp.overlay'), { x: t(`cmp.x.${dim}`) })}</h4>
             <ResponsiveContainer width="100%" height={240}>
               <LineChart data={seriesRows} margin={{ top: 8, right: 10, left: -14, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -260,7 +261,7 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
                 <YAxis tick={{ fontSize: 10, fill: 'var(--muted)' }} tickFormatter={(v: number) => eur(v)} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: any, name: any) => [eur(Number(v) || 0), String(name)]} />
                 {active.map(k => (
-                  <Line key={k} type="monotone" dataKey={k} name={periodLabel(k, dim)}
+                  <Line key={k} type="monotone" dataKey={k} name={periodLabel(k, dim, t)}
                     stroke={colorOf(k)} strokeWidth={2.2} dot={{ r: 2.5 }} connectNulls={false} />
                 ))}
               </LineChart>
@@ -269,15 +270,15 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
 
           {/* Totales en barras */}
           <div style={{ marginTop: 14 }}>
-            <h4 style={{ fontSize: 13, marginBottom: 4 }}>Totales por periodo</h4>
+            <h4 style={{ fontSize: 13, marginBottom: 4 }}>{t('cmp.totals')}</h4>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={totals} margin={{ top: 8, right: 10, left: -14, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'var(--muted)' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: 'var(--muted)' }} tickFormatter={(v: number) => eur(v)} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [eur(Number(v)), metric === 'balance' ? 'Balance' : metric === 'gasto' ? 'Gastos' : 'Ingresos']} cursor={{ fill: 'var(--border)', opacity: 0.25 }} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [eur(Number(v)), t(METRICS.find(m => m.key === metric)!.label)]} cursor={{ fill: 'var(--border)', opacity: 0.25 }} />
                 <Bar dataKey="total" radius={[4, 4, 0, 0]} maxBarSize={44}>
-                  {totals.map(t => <Cell key={t.key} fill={colorOf(t.key)} />)}
+                  {totals.map(tot => <Cell key={tot.key} fill={colorOf(tot.key)} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -285,31 +286,31 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
 
           {/* Totales numéricos */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 12 }}>
-            {totals.map(t => {
-              const diff = avg !== 0 ? Math.round(((t.total - avg) / Math.abs(avg)) * 100) : 0;
-              const partial = isPartial(t.key, dim);
+            {totals.map(tot => {
+              const diff = avg !== 0 ? Math.round(((tot.total - avg) / Math.abs(avg)) * 100) : 0;
+              const partial = isPartial(tot.key, dim);
               return (
-                <div key={t.key} style={{ minWidth: 120, flex: 1, border: '1px solid var(--border)', borderRadius: 12, padding: '8px 12px' }}>
+                <div key={tot.key} style={{ minWidth: 120, flex: 1, border: '1px solid var(--border)', borderRadius: 12, padding: '8px 12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: 12.5 }}>
-                    <span style={{ width: 9, height: 9, borderRadius: 99, background: colorOf(t.key), display: 'inline-block' }} />
-                    {t.label}{partial ? ' *' : ''}
+                    <span style={{ width: 9, height: 9, borderRadius: 99, background: colorOf(tot.key), display: 'inline-block' }} />
+                    {tot.label}{partial ? ' *' : ''}
                   </div>
-                  <div style={{ fontWeight: 800, fontSize: 15, marginTop: 3 }}>{eur(t.total)}</div>
+                  <div style={{ fontWeight: 800, fontSize: 15, marginTop: 3 }}>{eur(tot.total)}</div>
                   <div style={{ fontSize: 11, color: 'var(--muted)' }}>
-                    {partial ? <span style={{ color: 'var(--warning)', fontWeight: 700 }}>en curso · incompleto</span> : totals.length > 1 && (
+                    {partial ? <span style={{ color: 'var(--warning)', fontWeight: 700 }}>{t('cmp.partial')}</span> : totals.length > 1 && (
                       diff >= 0 ? <span style={{ color: '#10b981' }}>▲ {diff}%</span> : <span style={{ color: '#ef4444' }}>▼ {Math.abs(diff)}%</span>
                     )}
-                    {!partial && totals.length > 1 && ' vs media'}
+                    {!partial && totals.length > 1 && ` ${t('cmp.vsAvg')}`}
                   </div>
                 </div>
               );
             })}
             {totals.length > 1 && (
               <div style={{ minWidth: 120, flex: 1, border: '1px solid var(--border)', borderRadius: 12, padding: '8px 12px', background: 'var(--surface2)' }}>
-                <div style={{ fontWeight: 700, fontSize: 12.5 }}>Total conjunto</div>
+                <div style={{ fontWeight: 700, fontSize: 12.5 }}>{t('cmp.grand')}</div>
                 <div style={{ fontWeight: 800, fontSize: 15, marginTop: 3 }}>{eur(grand)}</div>
                 <div style={{ fontSize: 11, color: 'var(--muted)' }}>
-                  {anyPartial ? `media (completos) ${eur(Math.round(avg * 100) / 100)}` : `media ${eur(Math.round(avg * 100) / 100)}`}
+                  {fill(t(anyPartial ? 'cmp.avgComplete' : 'cmp.avg'), { v: eur(Math.round(avg * 100) / 100) })}
                 </div>
               </div>
             )}

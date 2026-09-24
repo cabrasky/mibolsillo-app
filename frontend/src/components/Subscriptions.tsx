@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { REF } from '../types';
-import { useLocale } from '../i18n';
+import { useLocale, refLabel } from '../i18n';
 import type { Subscription } from '../types';
 import { addSubscription, updateSubscription, deleteSubscription, advanceSubscription, addExpense } from '../store';
 import {
@@ -11,13 +11,6 @@ interface Props {
   subscriptions: Subscription[];
   onRefresh: () => void;
 }
-
-const CYCLE_LABELS: Record<string, string> = {
-  weekly: '/semana',
-  monthly: '/mes',
-  quarterly: '/trimestre',
-  yearly: '/ano',
-};
 
 const CYCLE_MONTH_FACTOR: Record<string, number> = {
   weekly: 4.33,
@@ -120,7 +113,7 @@ export default function SubscriptionsPage({ subscriptions, onRefresh }: Props) {
   };
 
   const handleDelete = (id: string) => {
-    if (!confirm('Eliminar esta subscripcion?')) return;
+    if (!confirm(t('sub.confirmDelete'))) return;
     deleteSubscription(id);
     onRefresh();
   };
@@ -136,19 +129,19 @@ export default function SubscriptionsPage({ subscriptions, onRefresh }: Props) {
     <div>
       <div className="stats">
         <div className="stat">
-          <div className="label">Subscripciones activas</div>
+          <div className="label">{t('sub.active')}</div>
           <div className="value primary">{active.length}</div>
         </div>
         <div className="stat">
-          <div className="label">Coste mensual</div>
+          <div className="label">{t('sub.monthlyCost')}</div>
           <div className="value negative">{totals.monthly.toFixed(2)} EUR</div>
         </div>
         <div className="stat">
-          <div className="label">Coste anual</div>
+          <div className="label">{t('sub.yearlyCost')}</div>
           <div className="value negative">{totals.yearly.toFixed(2)} EUR</div>
         </div>
         <div className="stat">
-          <div className="label">Proximos 30d</div>
+          <div className="label">{t('sub.upcoming30')}</div>
           <div className="value warning">{upcoming.length}</div>
         </div>
       </div>
@@ -156,7 +149,7 @@ export default function SubscriptionsPage({ subscriptions, onRefresh }: Props) {
       {/* Upcoming */}
       {upcoming.length > 0 && (
         <div className="card">
-          <h3>Proximos cobros (30 dias)</h3>
+          <h3>{t('sub.upcoming')}</h3>
           <div className="upcoming-grid">
             {upcoming.map(s => {
               const days = daysUntil(s.nextBilling);
@@ -165,12 +158,12 @@ export default function SubscriptionsPage({ subscriptions, onRefresh }: Props) {
                   <div className="upcoming-name">{s.name}</div>
                   <div className="upcoming-amount">{s.amount.toFixed(2)} EUR</div>
                   <div className="upcoming-meta">
-                    {days === 0 ? 'Hoy' : days === 1 ? 'Manana' : `En ${days} dias`}
+                    {days === 0 ? t('sub.today') : days === 1 ? t('sub.tomorrow') : `${t('sub.in')} ${days} ${t('sub.days')}`}
                     {' '}· {s.nextBilling}
                   </div>
                   <div className="upcoming-actions">
-                    <button className="btn sm primary" onClick={() => handleMarkPaid(s)} title="Marcar como pagado">
-                      <IconCheckCircle size={14} /> Pagado
+                    <button className="btn sm primary" onClick={() => handleMarkPaid(s)} title={t('sub.markPaidTitle')}>
+                      <IconCheckCircle size={14} /> {t('sub.markPaid')}
                     </button>
                   </div>
                 </div>
@@ -183,23 +176,23 @@ export default function SubscriptionsPage({ subscriptions, onRefresh }: Props) {
       {/* Active list */}
       <div className="card">
         <div className="card-header">
-          <h3>Subscripciones activas</h3>
+          <h3>{t('sub.active')}</h3>
           <button className="btn primary sm" onClick={openNew}>
-            <IconPlus size={14} /> Nueva
+            <IconPlus size={14} /> {t('common.new')}
           </button>
         </div>
         {active.length === 0 ? (
-          <div className="empty">Sin subscripciones activas</div>
+          <div className="empty">{t('sub.noActive')}</div>
         ) : (
           <div className="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Nombre</th>
-                  <th>Importe</th>
-                  <th>Ciclo</th>
-                  <th>Proximo cobro</th>
-                  <th>Categoria</th>
+                  <th>{t('sub.name')}</th>
+                  <th>{t('common.amount')}</th>
+                  <th>{t('sub.cycle')}</th>
+                  <th>{t('sub.nextCharge')}</th>
+                  <th>{t('sub.category')}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -210,22 +203,22 @@ export default function SubscriptionsPage({ subscriptions, onRefresh }: Props) {
                     <tr key={s.id}>
                       <td><strong>{s.name}</strong></td>
                       <td style={{ fontWeight: 700 }}>{s.amount.toFixed(2)} EUR</td>
-                      <td>{CYCLE_LABELS[s.billingCycle] || s.billingCycle}</td>
+                      <td>{t(`sub.per.${s.billingCycle}`)}</td>
                       <td>
                         <span className={`pill ${days <= 3 ? 'pill-danger' : days <= 7 ? 'pill-warning' : 'pill-ok'}`}>
-                          {days === 0 ? 'Hoy' : days === 1 ? 'Manana' : `${s.nextBilling} (${days}d)`}
+                          {days === 0 ? t('sub.today') : days === 1 ? t('sub.tomorrow') : `${s.nextBilling} (${days}d)`}
                         </span>
                       </td>
-                      <td style={{ fontSize: '.8rem' }}>{s.category || '-'}</td>
+                      <td style={{ fontSize: '.8rem' }}>{s.category ? refLabel('categories', s.category, t) : '-'}</td>
                       <td>
                         <div className="row-actions">
-                          <button className="btn sm primary" onClick={() => handleMarkPaid(s)} title="Pagar ahora">
+                          <button className="btn sm primary" onClick={() => handleMarkPaid(s)} title={t('sub.pay')}>
                             <IconCheckCircle size={14} />
                           </button>
-                          <button className="btn sm outline" onClick={() => openEdit(s)} title="Editar">
+                          <button className="btn sm outline" onClick={() => openEdit(s)} title={t('common.edit')}>
                             <IconEdit size={14} />
                           </button>
-                          <button className="btn sm outline" onClick={() => handleDelete(s.id)} title="Eliminar">
+                          <button className="btn sm outline" onClick={() => handleDelete(s.id)} title={t('common.delete')}>
                             <IconTrash size={14} />
                           </button>
                         </div>
@@ -242,21 +235,21 @@ export default function SubscriptionsPage({ subscriptions, onRefresh }: Props) {
       {/* Inactive */}
       {inactive.length > 0 && (
         <div className="card">
-          <h3>Inactivas / Canceladas</h3>
+          <h3>{t('sub.inactive')}</h3>
           <div className="table-wrap">
             <table>
               <thead>
-                <tr><th>Nombre</th><th>Importe</th><th>Ciclo</th><th></th></tr>
+                <tr><th>{t('sub.name')}</th><th>{t('common.amount')}</th><th>{t('sub.cycle')}</th><th></th></tr>
               </thead>
               <tbody>
                 {inactive.map(s => (
                   <tr key={s.id} style={{ opacity: 0.5 }}>
                     <td>{s.name}</td>
                     <td>{s.amount.toFixed(2)} EUR</td>
-                    <td>{CYCLE_LABELS[s.billingCycle]}</td>
+                    <td>{t(`sub.per.${s.billingCycle}`)}</td>
                     <td>
-                      <button className="btn sm outline" onClick={() => updateSubscription(s.id, { active: true })}>Reactivar</button>
-                      <button className="btn sm danger" onClick={() => handleDelete(s.id)}>
+                      <button className="btn sm outline" onClick={() => updateSubscription(s.id, { active: true })}>{t('sub.reactivate')}</button>
+                      <button className="btn sm danger" onClick={() => handleDelete(s.id)} title={t('common.delete')}>
                         <IconTrash size={14} />
                       </button>
                     </td>
@@ -273,58 +266,55 @@ export default function SubscriptionsPage({ subscriptions, onRefresh }: Props) {
         <div className="modal-overlay" onClick={() => setShowForm(false)}>
           <div className="modal modal-sm" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>{editing ? 'Editar' : 'Nueva'} Subscripcion</h2>
+              <h2>{editing ? t('sub.edit') : t('sub.add')}</h2>
               <button className="modal-close" onClick={() => setShowForm(false)}>
                 <IconX size={20} />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="modal-body">
               <div className="form-group">
-                <label>Nombre</label>
-                <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Netflix, Spotify..." autoFocus />
+                <label>{t('sub.name')}</label>
+                <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('sub.placeholder')} autoFocus />
               </div>
               <div className="form-row three">
                 <div className="form-group">
-                  <label>Importe (EUR)</label>
+                  <label>{t('common.amountEur')}</label>
                   <input type="number" step="0.01" value={amount} onChange={e => setAmount(Number(e.target.value))} />
                 </div>
                 <div className="form-group">
-                  <label>Ciclo</label>
+                  <label>{t('sub.cycle')}</label>
                   <select value={billingCycle} onChange={e => setBillingCycle(e.target.value as any)}>
-                    <option value="weekly">Semanal</option>
-                    <option value="monthly">Mensual</option>
-                    <option value="quarterly">Trimestral</option>
-                    <option value="yearly">Anual</option>
+                    {REF.billingCycles.map(c => <option key={c} value={c}>{t(`ref.cycles.${c}`)}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Proximo cobro</label>
+                  <label>{t('sub.nextCharge')}</label>
                   <input type="date" value={nextBilling} onChange={e => setNextBilling(e.target.value)} />
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Categoria (Proposito)</label>
+                  <label>{t('expense.categoryPurpose')}</label>
                   <select value={category} onChange={e => setCategory(e.target.value)}>
-                    <option value="">Sin asignar</option>
-                    {REF.propositos.map(c => <option key={c} value={c}>{c}</option>)}
+                    <option value="">{t('sub.unassigned')}</option>
+                    {REF.propositos.map(c => <option key={c} value={c}>{refLabel('categories', c, t)}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Metodo de pago</label>
+                  <label>{t('expense.payMethod')}</label>
                   <select value={metodo} onChange={e => setMetodo(e.target.value)}>
-                    {REF.metodos.map(m => <option key={m} value={m}>{m}</option>)}
+                    {REF.metodos.map(m => <option key={m} value={m}>{refLabel('methods', m, t)}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Notas</label>
-                  <input type="text" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Opcional" />
+                  <label>{t('common.notes')}</label>
+                  <input type="text" value={notes} onChange={e => setNotes(e.target.value)} placeholder={t('common.optional')} />
                 </div>
               </div>
               {formError && <p className="field-error">{formError}</p>}
               <div className="form-actions">
-                <button type="submit" className="btn primary">{editing ? 'Guardar' : 'Anadir'}</button>
-                <button type="button" className="btn outline" onClick={() => setShowForm(false)}>Cancelar</button>
+                <button type="submit" className="btn primary">{editing ? t('common.save') : t('common.add')}</button>
+                <button type="button" className="btn outline" onClick={() => setShowForm(false)}>{t('common.cancel')}</button>
               </div>
             </form>
           </div>

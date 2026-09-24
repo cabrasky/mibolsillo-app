@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { Expense } from '../types';
 import { REF } from '../types';
 import { updateExpense } from '../store';
+import { useLocale, LOCALE_TAG, fill, refLabel } from '../i18n';
 import { personasOf, repaySummary, serializePersonas, type Persona } from '../personas';
 import { IconCheckCircle, IconXCircle } from './Icons';
 
@@ -14,7 +15,6 @@ interface Props {
 type Item = { e: Expense; idx: number; p: Persona };
 type Group = { name: string; items: Item[]; total: number };
 
-const fmt = (n: number) => `${n.toFixed(2)} EUR`;
 const sum = (l: Item[]) => l.reduce((s, x) => s + (Number(x.p.m) || 0), 0);
 
 function byPerson(items: Item[]): Group[] {
@@ -29,8 +29,11 @@ function byPerson(items: Item[]): Group[] {
 }
 
 export default function PendingPayments({ expenses, onRefresh }: Props) {
+  const { t, locale } = useLocale();
   const [tab, setTab] = useState<'pending' | 'repaid'>('pending');
   const [pay, setPay] = useState<Item[] | null>(null);
+  const fmt = (n: number) => `${n.toLocaleString(LOCALE_TAG[locale], { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+  const methodName = (m: string) => refLabel('methods', m, t);
 
   const all = useMemo(() => {
     const out: Item[] = [];
@@ -57,19 +60,19 @@ export default function PendingPayments({ expenses, onRefresh }: Props) {
   return (
     <>
       <div className="stats">
-        <div className="stat"><div className="label">Pendientes</div><div className="value negative">{pending.length}</div></div>
-        <div className="stat"><div className="label">Importe Pend.</div><div className="value negative">{fmt(sum(pending))}</div></div>
-        <div className="stat"><div className="label">Pagados</div><div className="value positive">{repaid.length}</div></div>
-        <div className="stat"><div className="label">Total Devuelto</div><div className="value positive">{fmt(sum(repaid))}</div></div>
+        <div className="stat"><div className="label">{t('debt.pending')}</div><div className="value negative">{pending.length}</div></div>
+        <div className="stat"><div className="label">{t('debt.pendingAmount')}</div><div className="value negative">{fmt(sum(pending))}</div></div>
+        <div className="stat"><div className="label">{t('debt.paidTab')}</div><div className="value positive">{repaid.length}</div></div>
+        <div className="stat"><div className="label">{t('debt.totalRepaid')}</div><div className="value positive">{fmt(sum(repaid))}</div></div>
       </div>
 
       <div className="pp-tabs">
-        <button type="button" className={tab === 'pending' ? 'on' : ''} onClick={() => setTab('pending')}>Pendientes ({pending.length})</button>
-        <button type="button" className={tab === 'repaid' ? 'on' : ''} onClick={() => setTab('repaid')}>Pagados ({repaid.length})</button>
+        <button type="button" className={tab === 'pending' ? 'on' : ''} onClick={() => setTab('pending')}>{t('debt.pending')} ({pending.length})</button>
+        <button type="button" className={tab === 'repaid' ? 'on' : ''} onClick={() => setTab('repaid')}>{t('debt.paidTab')} ({repaid.length})</button>
       </div>
 
       {groups.length === 0 && (
-        <div className="card"><div className="empty">{tab === 'pending' ? 'Nadie te debe nada 🎉' : 'Aún no hay devoluciones'}</div></div>
+        <div className="card"><div className="empty">{tab === 'pending' ? t('debt.nobody') : t('debt.noRefunds')}</div></div>
       )}
       {groups.map(g => (
         <div key={g.name} className="card">
@@ -79,19 +82,19 @@ export default function PendingPayments({ expenses, onRefresh }: Props) {
           </div>
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Fecha</th><th>Gasto</th><th>Importe</th>{tab === 'repaid' && <th>Cómo</th>}<th></th></tr></thead>
+              <thead><tr><th>{t('common.date')}</th><th>{t('debt.expense')}</th><th>{t('common.amount')}</th>{tab === 'repaid' && <th>{t('debt.how')}</th>}<th></th></tr></thead>
               <tbody>
                 {g.items.map(it => (
                   <tr key={it.e.id + ':' + it.idx}>
                     <td className="td-muted">{it.e.date}</td>
                     <td>{it.e.desc}</td>
                     <td className="td-amount">{fmt(Number(it.p.m) || 0)}</td>
-                    {tab === 'repaid' && <td className="td-muted">{it.p.method || '—'}</td>}
+                    {tab === 'repaid' && <td className="td-muted">{it.p.method ? methodName(it.p.method) : '—'}</td>}
                     <td style={{ textAlign: 'right' }}>
                       {tab === 'pending' ? (
-                        <button className="btn sm primary" onClick={() => setPay([it])}><IconCheckCircle size={14} /> Pagado</button>
+                        <button className="btn sm primary" onClick={() => setPay([it])}><IconCheckCircle size={14} /> {t('debt.markPaid')}</button>
                       ) : (
-                        <button className="btn sm outline" onClick={() => apply([it], { repaid: false })}><IconXCircle size={14} /> Desmarcar</button>
+                        <button className="btn sm outline" onClick={() => apply([it], { repaid: false })}><IconXCircle size={14} /> {t('debt.unmark')}</button>
                       )}
                     </td>
                   </tr>
@@ -101,7 +104,7 @@ export default function PendingPayments({ expenses, onRefresh }: Props) {
           </div>
           {tab === 'pending' && g.items.length > 1 && (
             <div style={{ marginTop: 10, textAlign: 'right' }}>
-              <button className="btn sm outline" onClick={() => setPay(g.items)}>Todo pagado ({fmt(g.total)})</button>
+              <button className="btn sm outline" onClick={() => setPay(g.items)}>{t('debt.allPaid')} ({fmt(g.total)})</button>
             </div>
           )}
         </div>
@@ -111,16 +114,16 @@ export default function PendingPayments({ expenses, onRefresh }: Props) {
         <div className="modal-overlay" onClick={() => setPay(null)}>
           <div className="modal modal-sm" onClick={ev => ev.stopPropagation()}>
             <div className="modal-header">
-              <h2>¿Cómo te lo ha devuelto?</h2>
-              <button className="modal-close" type="button" title="Cerrar" onClick={() => setPay(null)}>✕</button>
+              <h2>{t('debt.howTitle')}</h2>
+              <button className="modal-close" type="button" title={t('common.close')} onClick={() => setPay(null)}>✕</button>
             </div>
             <div className="modal-body">
               <p className="td-muted" style={{ marginTop: 0 }}>
-                {pay[0].p.n.trim()} · {pay.length === 1 ? pay[0].e.desc : `${pay.length} gastos`} · {fmt(sum(pay))}
+                {pay[0].p.n.trim()} · {pay.length === 1 ? pay[0].e.desc : fill(t('debt.nExpenses'), { n: pay.length })} · {fmt(sum(pay))}
               </p>
               <div className="pp-methods">
                 {REF.refundMethods.map(m => (
-                  <button key={m} type="button" className="btn outline" onClick={() => apply(pay, { repaid: true, method: m })}>{m}</button>
+                  <button key={m} type="button" className="btn outline" onClick={() => apply(pay, { repaid: true, method: m })}>{methodName(m)}</button>
                 ))}
               </div>
             </div>

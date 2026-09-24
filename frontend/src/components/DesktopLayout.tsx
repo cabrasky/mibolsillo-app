@@ -1,12 +1,11 @@
 import { useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { expenseCost, getMonth } from '../types';
 import type { Expense } from '../types';
-import { useLocale } from '../i18n';
+import { useLocale, nextLocale } from '../i18n';
 import { useAuth } from '../AuthContext';
 import {
   IconPlus, IconList, IconTarget,
-  IconTrendingUp, IconEuro, IconCalendar, IconRefresh, IconHome, IconGrid, IconUsers,
+  IconTrendingUp, IconRefresh, IconHome, IconGrid, IconUsers,
 } from './Icons';
 import { pendingDebtCount } from '../personas';
 
@@ -39,8 +38,6 @@ const NAV_ITEMS: { key: Tab; icon: React.ReactNode; i18nKey: string; path: strin
   { key: 'more', icon: <IconGrid size={19} />, i18nKey: 'nav.more', path: '/more' },
 ];
 
-const fmtEuro = (n: number) => n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
 interface Props {
   children: React.ReactNode;
   expenses: Expense[];
@@ -63,92 +60,72 @@ export default function DesktopLayout({
   const { user } = useAuth();
   const currentTab = pathToTab(location.pathname);
 
-  const stats = useMemo(() => {
-    const now = new Date();
-    const thisMonth = now.getMonth() + 1;
-    const thisYear = now.getFullYear();
-    const totalYear = expenses.filter(e => e.date?.startsWith(String(thisYear))).reduce((s, e) => s + expenseCost(e), 0);
-    const thisMonthExps = expenses.filter(e => getMonth(e.date) === thisMonth && e.date?.startsWith(String(thisYear)));
-    const totalMonth = thisMonthExps.reduce((s, e) => s + expenseCost(e), 0);
-    const monthCount = thisMonthExps.length;
-    const avgMonth = monthCount > 0 ? totalMonth / monthCount : 0;
-    const weekAgo = new Date(now.getTime() - 7 * 86400000);
-    const weekSpent = expenses.filter(e => {
-      const d = new Date(e.date + 'T12:00:00');
-      return d >= weekAgo && d <= now;
-    }).reduce((s, e) => s + expenseCost(e), 0);
-    return { totalYear, totalMonth, monthCount, avgMonth, weekSpent };
-  }, [expenses]);
   const pendingCount = useMemo(() => pendingDebtCount(expenses), [expenses]);
   const { t, locale, setLocale } = useLocale();
 
   return (
     <div className="layout-desktop">
-      <header className="desktop-header">
+      <nav className="desktop-sidebar" aria-label={t('nav.main')}>
         <div className="header-brand">
-          <img src="/logo.png" alt="miBolsillo" className="brand-logo" />
+          <span className="brand-mark" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4fd1ae" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h13a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H6a2 2 0 0 1-2-2V7z" /><path d="M4 7l11-3v3" /><circle cx="16" cy="13.5" r="1.2" /></svg>
+          </span>
           <span className="header-title">miBolsillo</span>
         </div>
-        <div className="header-stats">
-          <div className="hs-item"><IconEuro size={13} /><span className="hs-label">{t('dashboard.thisMonth')}</span><span className="hs-value">{fmtEuro(stats.totalMonth)}</span></div>
-          <div className="hs-item"><IconTrendingUp size={13} /><span className="hs-label">{t('monthly.totalYear')}</span><span className="hs-value">{fmtEuro(stats.totalYear)}</span></div>
-          <div className="hs-item"><IconCalendar size={13} /><span className="hs-label">7d</span><span className="hs-value">{fmtEuro(stats.weekSpent)}</span></div>
-        </div>
-        <div className="header-actions">
-          <button className="theme-btn" onClick={() => setLocale(locale === 'es' ? 'en' : locale === 'en' ? 'pt' : 'es')} title={t('lang.select')}>
-            <span style={{ fontWeight: 700, fontSize: '.78rem' }}>{locale.toUpperCase()}</span>
-          </button>
-          <button className="layout-toggle-btn" onClick={() => onLayoutChange(layout === 'desktop' ? 'mobile' : 'desktop')} title={layout === 'desktop' ? t('nav.mobile') : t('nav.desktop')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-          </button>
-          <button className="theme-btn" onClick={onToggleDark} title={t('theme.toggle')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              {dark ? <><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></> : <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>}
-            </svg>
-          </button>
-          <button className="theme-btn" onClick={onExportCSV} title="CSV">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          </button>
-          <button className="theme-btn" onClick={onExportJSON} title="JSON">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          </button>
-        </div>
-      </header>
-      <div className="desktop-body">
-        <nav className="desktop-sidebar">
-          <div className="sidebar-section">
-            <button className="btn primary sidebar-addbtn" onClick={onAddClick}>
-              <IconPlus size={16} /> Nuevo gasto
+        <button className="btn primary sidebar-addbtn" onClick={onAddClick}>
+          <IconPlus size={18} /> {t('nav.newExpense')}
+        </button>
+        <div className="sidebar-section">
+          {NAV_ITEMS.map(item => (
+            <button
+              key={item.key}
+              className={`sidebar-item ${currentTab === item.key ? 'active' : ''}`}
+              aria-current={currentTab === item.key ? 'page' : undefined}
+              onClick={() => navigate(item.path)}
+            >
+              {item.icon}<span>{t(item.i18nKey)}</span>
+              {item.key === 'pending' && pendingCount > 0 && <span className="sidebar-badge">{pendingCount}</span>}
             </button>
-            <div className="sidebar-label">{t('nav.more')}</div>
-            {NAV_ITEMS.map(item => (
-              <button
-                key={item.key}
-                className={`sidebar-item ${currentTab === item.key ? 'active' : ''}`}
-                onClick={() => navigate(item.path)}
-              >
-                {item.icon}<span>{t(item.i18nKey)}</span>
-                {item.key === 'pending' && pendingCount > 0 && <span className="sidebar-badge">{pendingCount}</span>}
-              </button>
-            ))}
+          ))}
+        </div>
+        <div className="sidebar-footer">
+          {user && (
+            <button className="user-card" onClick={() => navigate('/profile')} title={t('nav.profile')}>
+              {user.avatar_url ? (
+                <img src={user.avatar_url} alt="" className="user-avatar" />
+              ) : (
+                <span className="user-avatar user-avatar-fallback">{(user.name || '?').charAt(0).toUpperCase()}</span>
+              )}
+              <span className="user-meta">
+                <span className="user-name">{user.name}</span>
+                <span className="user-email">{user.email}</span>
+              </span>
+            </button>
+          )}
+        </div>
+      </nav>
+      <div className="desktop-main">
+        <header className="desktop-header">
+          <div className="header-actions">
+            <button className="theme-btn" onClick={() => setLocale(nextLocale(locale))} title={t('lang.select')} aria-label={t('lang.select')}>
+              {locale.toUpperCase()}
+            </button>
+            <button className="layout-toggle-btn" onClick={() => onLayoutChange(layout === 'desktop' ? 'mobile' : 'desktop')} title={layout === 'desktop' ? t('nav.mobile') : t('nav.desktop')} aria-label={layout === 'desktop' ? t('nav.mobile') : t('nav.desktop')}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></svg>
+            </button>
+            <button className="theme-btn" onClick={onToggleDark} title={t('theme.toggle')} aria-label={t('theme.toggle')}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {dark ? <><circle cx="12" cy="12" r="5" /><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" /></> : <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />}
+              </svg>
+            </button>
+            <button className="theme-btn" onClick={onExportCSV} title={t('common.exportCsv')} aria-label={t('common.exportCsv')}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
+            </button>
+            <button className="theme-btn" onClick={onExportJSON} title={t('common.backupJson')} aria-label={t('common.backupJson')}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M5 4h11l3 3v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z" /><path d="M8 4v5h7V4M8 20v-6h8v6" /></svg>
+            </button>
           </div>
-          <div className="sidebar-footer">
-            {user && (
-              <button className="user-card" onClick={() => navigate('/profile')} title="Mi perfil">
-                {user.avatar_url ? (
-                  <img src={user.avatar_url} alt="" className="user-avatar" />
-                ) : (
-                  <span className="user-avatar user-avatar-fallback">{(user.name || '?').charAt(0).toUpperCase()}</span>
-                )}
-                <span className="user-meta">
-                  <span className="user-name">{user.name}</span>
-                  <span className="user-email">{user.email}</span>
-                </span>
-              </button>
-            )}
-          </div>
-        </nav>
+        </header>
         <main className="desktop-content">{children}</main>
       </div>
     </div>

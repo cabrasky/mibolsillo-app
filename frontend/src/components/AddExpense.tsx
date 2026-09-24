@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { REF } from '../types';
 import { addExpense, updateExpense, loadData, suggestExpense, type Suggestion } from '../store';
 import type { Expense } from '../types';
-import { useLocale } from '../i18n';
+import { useLocale, refLabel, fill } from '../i18n';
+import RichText from './RichText';
 import { personasOf, repaySummary, serializePersonas, type Persona } from '../personas';
 
 interface Props {
@@ -146,8 +147,8 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
     <div className="modal-overlay" onClick={onClose}>
       <div className={`modal ${isEdit ? 'modal-edit' : ''}`} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>{isEdit ? 'Editar gasto' : 'Nuevo gasto'}</h2>
-          <button className="modal-close" onClick={onClose} type="button" title="Cerrar">
+          <h2>{isEdit ? t('expense.editLabel') : t('nav.newExpense')}</h2>
+          <button className="modal-close" onClick={onClose} type="button" title={t('common.close')} aria-label={t('common.close')}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
@@ -156,14 +157,14 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
 
         <form onSubmit={handleSubmit} className="modal-body">
           <div className="form-section">
-            <div className="form-section-title">General</div>
+            <div className="form-section-title">{t('expense.general')}</div>
             <div className="form-row three">
               <div className="form-group required">
-                <label>Fecha</label>
+                <label>{t('common.date')}</label>
                 <input type="date" value={date} onChange={e => setDate(e.target.value)} />
               </div>
               <div className="form-group required">
-                <label>Importe (EUR)</label>
+                <label>{t('common.amountEur')}</label>
                 <div className="amount-input-wrap">
                   <span className="cur">€</span>
                   <input
@@ -176,65 +177,65 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
                 {errors.amount && <span className="field-error">{errors.amount}</span>}
               </div>
               <div className="form-group">
-                <label>Tipo</label>
+                <label>{t('expense.type')}</label>
                 <select value={tipo} onChange={e => setTipo(e.target.value)}>
-                  {REF.tipos.map(t => <option key={t} value={t}>{t}</option>)}
+                  {REF.tipos.map(x => <option key={x} value={x}>{refLabel('types', x, t)}</option>)}
                 </select>
               </div>
             </div>
 
             <div className="form-group required" style={{ marginBottom: 12 }}>
-              <label>Descripción</label>
+              <label>{t('common.description')}</label>
               <input
                 type="text" value={desc} onChange={e => setDesc(e.target.value)}
-                placeholder="¿En qué te gastaste el dinero?" className={errors.desc ? 'input-error' : ''}
+                placeholder={t('expense.placeholder')} className={errors.desc ? 'input-error' : ''}
               />
               {errors.desc && <span className="field-error">{errors.desc}</span>}
               {sug && !errors.desc && (
                 <div className="sug-bar">
                   <span className="sug-icon">✦</span>
                   <span className="sug-text">
-                    Según «{sug.match}»: <b>{sug.proposito || '—'}</b> · {sug.tipo} · {sug.motivo || 'sin motivo'} · {sug.metodo}
+                    {fill(t('expense.suggestion'), { m: sug.match })} <b>{sug.proposito ? refLabel('categories', sug.proposito, t) : '—'}</b> · {refLabel('types', sug.tipo, t)} · {sug.motivo ? refLabel('motives', sug.motivo, t) : t('expense.noMotive')} · {refLabel('methods', sug.metodo, t)}
                   </span>
-                  <button type="button" className="btn sm" onClick={applySug}>Usar</button>
+                  <button type="button" className="btn sm" onClick={applySug}>{t('common.use')}</button>
                 </div>
               )}
             </div>
 
             <div className="form-row three">
               <div className="form-group">
-                <label>Categoría (Propósito)</label>
+                <label>{t('expense.categoryPurpose')}</label>
                 <select value={proposito} onChange={e => setProposito(e.target.value)}>
-                  <option value="">— Elige categoría —</option>
-                  {REF.propositos.map(p => <option key={p} value={p}>{p}</option>)}
+                  <option value="">{t('expense.chooseCategory')}</option>
+                  {REF.propositos.map(p => <option key={p} value={p}>{refLabel('categories', p, t)}</option>)}
                 </select>
               </div>
               <div className="form-group">
-                <label>Motivo / Evento</label>
+                <label>{t('expense.motiveEvent')}</label>
                 <select value={motivo} onChange={e => setMotivo(e.target.value)}>
-                  <option value="">— Ninguno —</option>
-                  {REF.motivos.map(m => <option key={m} value={m}>{m}</option>)}
+                  <option value="">{t('common.none')}</option>
+                  {REF.motivos.map(m => <option key={m} value={m}>{refLabel('motives', m, t)}</option>)}
                 </select>
               </div>
               <div className="form-group">
-                <label>Método de pago</label>
+                <label>{t('expense.payMethod')}</label>
                 <select value={metodo} onChange={e => setMetodo(e.target.value)}>
                   <option value="">—</option>
-                  {REF.metodos.map(m => <option key={m} value={m}>{m}</option>)}
+                  {REF.metodos.map(m => <option key={m} value={m}>{refLabel('methods', m, t)}</option>)}
                 </select>
               </div>
               <div className="form-group">
                 <label className="invit-check" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600 }}>
                   <input type="checkbox" checked={!!invitacion} onChange={e => setInvitacion(e.target.checked ? 1 : 0)} />
-                  Invitación (invito yo, sin devolución)
+                  {t('expense.invitationFull')}
                 </label>
               </div>
             </div>
 
             <div className="form-group">
-              <label>Proyecto (opcional)</label>
+              <label>{t('expense.projectOptional')}</label>
               <select value={proyectoId} onChange={e => setProyectoId(e.target.value)}>
-                <option value="">— Ninguno (uso general) —</option>
+                <option value="">{t('expense.noProjectGeneral')}</option>
                 {projects.map(p => <option key={p.id} value={p.id}>📁 {p.name}</option>)}
               </select>
             </div>
@@ -246,64 +247,64 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
                 type="checkbox" checked={showShared}
                 onChange={e => setShowShared(e.target.checked)}
               />
-              Gasto compartido / deuda
+              {t('expense.shared')}
             </label>
 
             {showShared && (
               <>
                 {personas.length === 0 && (
                   <div className="hint" style={{ margin: '4px 0 10px' }}>
-                    Compartido: añade a cada persona, su importe y si <b>te lo debe</b> o <b>le invitas</b> (pagas tú).
+                    <RichText text={t('expense.sharedHint')} />
                   </div>
                 )}
                 {personas.map((p, i) => (
                   <div key={i} className="persona-row">
                     <div className="persona-line">
-                      <input type="text" value={p.n} placeholder="Nombre" onChange={e => upP(i, { n: e.target.value })} />
+                      <input type="text" value={p.n} placeholder={t('common.name')} onChange={e => upP(i, { n: e.target.value })} />
                       <input type="number" step="0.01" min="0" value={p.m || ''} placeholder="0,00"
                         onChange={e => upP(i, { m: Math.max(0, Number(e.target.value)) })} />
                       <div className="role-toggle">
-                        <button type="button" className={p.r === 'deb' ? 'on deb' : ''} onClick={() => upP(i, { r: 'deb' })}>Debe</button>
-                        <button type="button" className={p.r === 'inv' ? 'on inv' : ''} onClick={() => upP(i, { r: 'inv' })}>Invitado</button>
+                        <button type="button" className={p.r === 'deb' ? 'on deb' : ''} onClick={() => upP(i, { r: 'deb' })}>{t('expense.owes')}</button>
+                        <button type="button" className={p.r === 'inv' ? 'on inv' : ''} onClick={() => upP(i, { r: 'inv' })}>{t('expense.invited')}</button>
                       </div>
-                      <button type="button" className="btn ghost x" onClick={() => delP(i)} title="Quitar">✕</button>
+                      <button type="button" className="btn ghost x" onClick={() => delP(i)} title={t('common.remove')} aria-label={t('common.remove')}>✕</button>
                     </div>
                     {p.r === 'deb' && (
                       <div className="persona-repay">
-                        <label>Devuelto</label>
+                        <label>{t('expense.repaid')}</label>
                         <select value={p.repaid ? 'yes' : 'no'} onChange={e => upP(i, { repaid: e.target.value === 'yes', method: p.method || 'Bizum' })}>
-                          <option value="no">No</option>
-                          <option value="yes">Sí</option>
+                          <option value="no">{t('common.no')}</option>
+                          <option value="yes">{t('common.yes')}</option>
                         </select>
-                        <label>Cómo</label>
+                        <label>{t('expense.how')}</label>
                         <select value={p.method || 'Bizum'} onChange={e => upP(i, { method: e.target.value })}>
-                          {REF.refundMethods.map(m => <option key={m} value={m}>{m}</option>)}
+                          {REF.refundMethods.map(m => <option key={m} value={m}>{refLabel('methods', m, t)}</option>)}
                         </select>
                       </div>
                     )}
                   </div>
                 ))}
                 <div className="form-row" style={{ gap: 8, marginTop: 4 }}>
-                  <button type="button" className="btn outline small" onClick={addP}>+ Añadir persona</button>
+                  <button type="button" className="btn outline small" onClick={addP}>{t('expense.addPerson')}</button>
                   {personas.length > 0 && (
                     <>
-                      <button type="button" className="btn outline small" onClick={allInvited}>Invitar a todos</button>
-                      <button type="button" className="btn outline small" onClick={() => setPersonas(ps => ps.map(x => ({ ...x, r: 'deb' as const })))}>Que todos deban</button>
+                      <button type="button" className="btn outline small" onClick={allInvited}>{t('expense.inviteAll')}</button>
+                      <button type="button" className="btn outline small" onClick={() => setPersonas(ps => ps.map(x => ({ ...x, r: 'deb' as const })))}>{t('expense.allOwe')}</button>
                     </>
                   )}
                 </div>
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Viaje</label>
-                    <input type="text" value={viaje} onChange={e => setViaje(e.target.value)} placeholder="Nombre del viaje" />
+                    <label>{t('expense.trip')}</label>
+                    <input type="text" value={viaje} onChange={e => setViaje(e.target.value)} placeholder={t('expense.tripName')} />
                   </div>
                 </div>
                 <div className="amount-preview">
-                  <span>Te corresponde</span>
+                  <span>{t('expense.yourPart')}</span>
                   <span>{meCorresponde.toFixed(2).replace('.', ',')} €</span>
                   {invSum > 0 && (
                     <>
-                      <span style={{ marginLeft: 14, color: 'var(--muted)' }}>Invitado</span>
+                      <span style={{ marginLeft: 14, color: 'var(--muted)' }}>{t('expense.invited')}</span>
                       <span style={{ color: '#10b981' }}>{invSum.toFixed(2).replace('.', ',')} €</span>
                     </>
                   )}
@@ -314,9 +315,9 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
 
           <div className="form-actions" style={{ marginTop: 6 }}>
             <button type="submit" className="btn primary">
-              {isEdit ? 'Guardar cambios' : 'Añadir gasto'}
+              {isEdit ? t('common.saveChanges') : t('expense.addBtn')}
             </button>
-            <button type="button" className="btn outline" onClick={onClose}>Cancelar</button>
+            <button type="button" className="btn outline" onClick={onClose}>{t('common.cancel')}</button>
           </div>
         </form>
       </div>

@@ -15,6 +15,7 @@ import type {
   ServerSubscription, SubscriptionCreateBody,
   ServerProject, ProjectCreateBody,
 } from './api';
+import { tNow } from './i18n';
 
 const STORAGE_KEY = 'gastos_app_data';
 
@@ -80,10 +81,11 @@ function isServerId(id: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 }
 
-function syncError(accion: string) {
-  console.warn(`[sync] no se pudo ${accion} en el servidor`);
+// actionKey: clave i18n de la acción (sync.addExpense…)
+function syncError(actionKey: string) {
+  console.warn(`[sync] ${actionKey} falló en el servidor`);
   try {
-    alert(`Aviso: no se pudo ${accion} en el servidor. Comprueba tu conexión; se resincronizará al recargar.`);
+    alert(tNow('sync.error', { a: tNow(actionKey) }));
   } catch { /* noop */ }
 }
 
@@ -215,7 +217,7 @@ function syncNewExpense(expense: Expense) {
     .then(srv => {
       if (srv && srv.id && srv.id !== expense.id) adoptServerId('expenses', expense.id, srv.id);
     })
-    .catch(() => syncError('guardar el gasto nuevo'));
+    .catch(() => syncError('sync.addExpense'));
 }
 
 function syncUpdatedExpense(id: string) {
@@ -224,7 +226,7 @@ function syncUpdatedExpense(id: string) {
   if (!e) return;
   if (isServerId(id)) {
     apiUpdateExpense(id, toServerExpense(e)).catch(err => {
-      if (!String(err?.message || '').includes('not found')) syncError('actualizar el gasto');
+      if (!String(err?.message || '').includes('not found')) syncError('sync.updExpense');
     });
   } else {
     syncNewExpense(e); // id temporal: la creación previa no llegó → crear ahora
@@ -234,7 +236,7 @@ function syncUpdatedExpense(id: string) {
 function syncDeletedExpense(id: string) {
   if (!isServerId(id)) return;
   apiDeleteExpense(id).catch(err => {
-    if (!String(err?.message || '').includes('not found')) syncError('borrar el gasto');
+    if (!String(err?.message || '').includes('not found')) syncError('sync.delExpense');
   });
 }
 
@@ -291,7 +293,7 @@ function syncNewIncome(income: Income) {
     .then(srv => {
       if (srv && srv.id && srv.id !== income.id) adoptServerId('incomes', income.id, srv.id);
     })
-    .catch(() => syncError('guardar el ingreso nuevo'));
+    .catch(() => syncError('sync.addIncome'));
 }
 
 function syncUpdatedIncome(id: string) {
@@ -300,7 +302,7 @@ function syncUpdatedIncome(id: string) {
   if (!i) return;
   if (isServerId(id)) {
     apiUpdateIncome(id, toServerIncome(i)).catch(err => {
-      if (!String(err?.message || '').includes('not found')) syncError('actualizar el ingreso');
+      if (!String(err?.message || '').includes('not found')) syncError('sync.updIncome');
     });
   } else {
     syncNewIncome(i);
@@ -310,7 +312,7 @@ function syncUpdatedIncome(id: string) {
 function syncDeletedIncome(id: string) {
   if (!isServerId(id)) return;
   apiDeleteIncome(id).catch(err => {
-    if (!String(err?.message || '').includes('not found')) syncError('borrar el ingreso');
+    if (!String(err?.message || '').includes('not found')) syncError('sync.delIncome');
   });
 }
 
@@ -372,7 +374,7 @@ function syncNewGoal(goal: Goal) {
     .then(srv => {
       if (srv && srv.id && srv.id !== goal.id) adoptServerId('goals', goal.id, srv.id);
     })
-    .catch(() => syncError('guardar la meta nueva'));
+    .catch(() => syncError('sync.addGoal'));
 }
 
 function syncUpdatedGoal(id: string) {
@@ -381,7 +383,7 @@ function syncUpdatedGoal(id: string) {
   if (!g) return;
   if (isServerId(id)) {
     apiUpdateGoal(id, toServerGoal(g)).catch(err => {
-      if (!String(err?.message || '').includes('not found')) syncError('actualizar la meta');
+      if (!String(err?.message || '').includes('not found')) syncError('sync.updGoal');
     });
   } else {
     syncNewGoal(g);
@@ -391,7 +393,7 @@ function syncUpdatedGoal(id: string) {
 function syncDeletedGoal(id: string) {
   if (!isServerId(id)) return;
   apiDeleteGoal(id).catch(err => {
-    if (!String(err?.message || '').includes('not found')) syncError('borrar la meta');
+    if (!String(err?.message || '').includes('not found')) syncError('sync.delGoal');
   });
 }
 
@@ -472,7 +474,7 @@ function syncNewSubscription(sub: Subscription) {
     .then(srv => {
       if (srv && srv.id && srv.id !== sub.id) adoptServerId('subscriptions', sub.id, srv.id);
     })
-    .catch(() => syncError('guardar la suscripción nueva'));
+    .catch(() => syncError('sync.addSub'));
 }
 
 function syncUpdatedSubscription(id: string) {
@@ -481,7 +483,7 @@ function syncUpdatedSubscription(id: string) {
   if (!s) return;
   if (isServerId(id)) {
     apiUpdateSubscription(id, toServerSubscription(s)).catch(err => {
-      if (!String(err?.message || '').includes('not found')) syncError('actualizar la suscripción');
+      if (!String(err?.message || '').includes('not found')) syncError('sync.updSub');
     });
   } else {
     syncNewSubscription(s);
@@ -491,7 +493,7 @@ function syncUpdatedSubscription(id: string) {
 function syncDeletedSubscription(id: string) {
   if (!isServerId(id)) return;
   apiDeleteSubscription(id).catch(err => {
-    if (!String(err?.message || '').includes('not found')) syncError('borrar la suscripción');
+    if (!String(err?.message || '').includes('not found')) syncError('sync.delSub');
   });
 }
 
@@ -514,7 +516,7 @@ export function addProject(name: string): Project {
     .then(srv => {
       if (srv && srv.id && srv.id !== project.id) adoptServerId('projects', project.id, srv.id);
     })
-    .catch(() => syncError('guardar el proyecto nuevo'));
+    .catch(() => syncError('sync.addProject'));
   return project;
 }
 
@@ -526,7 +528,7 @@ export function updateProject(id: string, name: string) {
   saveData(data);
   if (isServerId(id)) {
     apiUpdateProject(id, { name }).catch(err => {
-      if (!String(err?.message || '').includes('not found')) syncError('actualizar el proyecto');
+      if (!String(err?.message || '').includes('not found')) syncError('sync.updProject');
     });
   } else {
     addProject(name); // id temporal: reintentar como alta
@@ -548,7 +550,7 @@ export function deleteProject(id: string) {
   saveData(data);
   if (isServerId(id)) {
     apiDeleteProject(id).catch(err => {
-      if (!String(err?.message || '').includes('not found')) syncError('borrar el proyecto');
+      if (!String(err?.message || '').includes('not found')) syncError('sync.delProject');
     });
   }
 }

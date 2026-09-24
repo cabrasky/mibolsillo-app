@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { REF, expenseCost, getMonth, bucketOf } from '../types';
+import { expenseCost, getMonth, bucketOf } from '../types';
+import { useLocale } from '../i18n';
 import type { Expense } from '../types';
 
 interface Props {
@@ -7,9 +8,11 @@ interface Props {
 }
 
 export default function MonthlySummary({ expenses }: Props) {
+  const { t } = useLocale();
   const months = useMemo(() => {
-    return REF.meses.map((name, i) => {
+    return Array.from({ length: 12 }, (_, i) => {
       const m = i + 1;
+      const name = t(`ref.months.${m}`);
       const exps = expenses.filter(e => getMonth(e.date) === m);
       const total = exps.reduce((s, e) => s + expenseCost(e), 0);
       const fijo = exps.filter(e => bucketOf(e) === 'fijo').reduce((s, e) => s + expenseCost(e), 0);
@@ -19,7 +22,7 @@ export default function MonthlySummary({ expenses }: Props) {
       const vida = fijo + puntual + viajes;
       return { name, total, fijo, puntual, viajes, vida, inversion, count: exps.length };
     });
-  }, [expenses]);
+  }, [expenses, t]);
 
   const grandTotal = months.reduce((s, m) => s + m.total, 0);
   const avg = grandTotal / 12;
@@ -35,18 +38,18 @@ export default function MonthlySummary({ expenses }: Props) {
   return (
     <>
       <div className="stats">
-        <div className="stat"><div className="label">Total Año</div><div className="value primary">{grandTotal.toFixed(2)} EUR</div></div>
-        <div className="stat"><div className="label">Media Mensual</div><div className="value">{avg.toFixed(2)} EUR</div></div>
-        <div className="stat"><div className="label">Gastos</div><div className="value">{expenses.length}</div></div>
-        <div className="stat"><div className="label">Gasto Promedio</div><div className="value">{expenses.length ? (grandTotal / expenses.length).toFixed(2) : '0.00'} EUR</div></div>
+        <div className="stat"><div className="label">{t('monthly.yearTotal')}</div><div className="value primary">{grandTotal.toFixed(2)} EUR</div></div>
+        <div className="stat"><div className="label">{t('monthly.avgMonth')}</div><div className="value">{avg.toFixed(2)} EUR</div></div>
+        <div className="stat"><div className="label">{t('monthly.count')}</div><div className="value">{expenses.length}</div></div>
+        <div className="stat"><div className="label">{t('monthly.avgSpend')}</div><div className="value">{expenses.length ? (grandTotal / expenses.length).toFixed(2) : '0.00'} EUR</div></div>
       </div>
 
       <div className="card">
-        <h3>Resumen Mensual</h3>
+        <h3>{t('monthly.summary')}</h3>
         <div className="table-wrap">
           <table className="table-compact">
             <thead>
-              <tr><th>Mes</th><th>Fijo</th><th>Puntual</th><th>Viajes</th><th>N.Vida</th><th>Inversion</th><th>Total</th><th>#</th></tr>
+              <tr><th>{t('common.month')}</th><th>{t('ref.purposes.fijo')}</th><th>{t('ref.purposes.puntual')}</th><th>{t('ref.purposes.viajes')}</th><th>{t('monthly.lifeShort')}</th><th>{t('ref.purposes.inversion')}</th><th>{t('common.total')}</th><th>#</th></tr>
             </thead>
             <tbody>
               {months.map((m, i) => (
@@ -62,7 +65,7 @@ export default function MonthlySummary({ expenses }: Props) {
                 </tr>
               ))}
               <tr className="total-row">
-                <td>Total</td>
+                <td>{t('common.total')}</td>
                 <td>{totals.fijo.toFixed(2)}</td>
                 <td>{totals.puntual.toFixed(2)}</td>
                 <td>{totals.viajes.toFixed(2)}</td>
@@ -77,14 +80,14 @@ export default function MonthlySummary({ expenses }: Props) {
       </div>
 
       <div className="card">
-        <h3>Distribucion</h3>
+        <h3>{t('monthly.distribution')}</h3>
         <div className="bar-list">
           {[
-            { label: 'Fijo', val: totals.fijo, color: '#dfe6e9' },
-            { label: 'Puntual', val: totals.puntual, color: '#ffeaa7' },
-            { label: 'Viajes', val: totals.viajes, color: '#74b9ff' },
-            { label: 'Nivel de Vida', val: totals.vida, color: '#55efc4' },
-            { label: 'Inversion', val: totals.inversion, color: '#a29bfe' },
+            { label: t('ref.purposes.fijo'), val: totals.fijo, color: '#dfe6e9' },
+            { label: t('ref.purposes.puntual'), val: totals.puntual, color: '#ffeaa7' },
+            { label: t('ref.purposes.viajes'), val: totals.viajes, color: '#74b9ff' },
+            { label: t('ref.purposes.nivel'), val: totals.vida, color: '#55efc4' },
+            { label: t('ref.purposes.inversion'), val: totals.inversion, color: '#a29bfe' },
           ].map(({ label, val, color }) => {
             const pct = grandTotal > 0 ? ((val / grandTotal) * 100).toFixed(1) : 0;
             return (

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { expenseCost } from '../types';
 import type { Expense } from '../types';
 import { WeeklyProgressChart } from './Charts';
+import { useLocale, fill } from '../i18n';
 
 function weekOfYear(dateStr: string): number {
   const d = new Date(dateStr);
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export default function WeeklyBudget({ expenses, weeklyGoal, onGoalChange }: Props) {
+  const { t } = useLocale();
   const { weeks, totalSpent, totalGoal, onTrack } = useMemo(() => {
     const weekMap: Record<number, number> = {};
     expenses.forEach(e => {
@@ -44,17 +46,17 @@ export default function WeeklyBudget({ expenses, weeklyGoal, onGoalChange }: Pro
   return (
     <>
       <div className="stats">
-        <div className="stat"><div className="label">Meta Semanal</div><div className="value primary">{weeklyGoal} €</div></div>
-        <div className="stat"><div className="label">Meta Anual</div><div className="value">{totalGoal.toFixed(2)} €</div></div>
-        <div className="stat"><div className="label">Gastado</div><div className={`value ${onTrack ? 'positive' : 'negative'}`}>{totalSpent.toFixed(2)} €</div></div>
-        <div className="stat"><div className="label">Diferencia</div><div className={`value ${onTrack ? 'positive' : 'negative'}`}>{onTrack ? '✅' : '⚠️'} {(totalGoal - totalSpent).toFixed(2)} €</div></div>
+        <div className="stat"><div className="label">{t('weekly.goal')}</div><div className="value primary">{weeklyGoal} €</div></div>
+        <div className="stat"><div className="label">{t('weekly.annualGoal')}</div><div className="value">{totalGoal.toFixed(2)} €</div></div>
+        <div className="stat"><div className="label">{t('weekly.spent')}</div><div className={`value ${onTrack ? 'positive' : 'negative'}`}>{totalSpent.toFixed(2)} €</div></div>
+        <div className="stat"><div className="label">{t('weekly.diff')}</div><div className={`value ${onTrack ? 'positive' : 'negative'}`}>{onTrack ? '✅' : '⚠️'} {(totalGoal - totalSpent).toFixed(2)} €</div></div>
       </div>
 
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-          <h3>📅 Progreso Semanal</h3>
+          <h3>📅 {t('weekly.progress')}</h3>
           <label style={{ fontSize: '.8rem', display: 'flex', alignItems: 'center', gap: 4 }}>
-            Meta:
+            {t('weekly.goalInput')}
             <input type="number" value={weeklyGoal} onChange={e => onGoalChange(Number(e.target.value))}
               style={{ width: 70, padding: '4px 8px', border: '1px solid var(--border)', borderRadius: 4, background: 'var(--bg)', color: 'var(--text)' }} />
             €
@@ -71,7 +73,7 @@ export default function WeeklyBudget({ expenses, weeklyGoal, onGoalChange }: Pro
             const wpct = w.accGoal > 0 ? Math.min(100, (w.accSpent / w.accGoal) * 100) : 0;
             return (
               <div key={w.num} className="week-item">
-                <div className="wk-num">Sem {w.num}</div>
+                <div className="wk-num">{fill(t('weekly.weekShort'), { n: w.num })}</div>
                 <div className="wk-meta">{w.spent.toFixed(2)} €</div>
                 <div className={`wk-amount ${w.avail >= 0 ? 'positive' : 'negative'}`}>{w.avail >= 0 ? '' : ''}{w.avail.toFixed(2)}</div>
                 <div className="progress-wrap" style={{ height: 4, marginTop: 4 }}>

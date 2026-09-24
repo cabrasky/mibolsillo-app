@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { Expense } from '../types';
 import { MOCK_EXPENSES, MOCK_INCOMES, MOCK_GOALS, MOCK_SUBSCRIPTIONS } from '../mockData';
+import { useLocale } from '../i18n';
 import { IconCheckCircle, IconAlertTriangle, IconAlertCircle, IconInfo, IconRefresh } from './Icons';
 
 interface Props {
@@ -8,31 +9,32 @@ interface Props {
 }
 
 export default function SanityCheck({ expenses }: Props) {
+  const { t } = useLocale();
   const checks = useMemo(() => {
     const list: { text: string; cls: 'ok' | 'warn' | 'err' }[] = [];
     const seen: Record<string, number> = {};
 
     expenses.forEach(e => {
-      if (!e.date) list.push({ text: `"${e.desc}" sin fecha`, cls: 'err' });
-      if (!e.amount) list.push({ text: `"${e.desc}" sin importe`, cls: 'warn' });
-      if (e.ajeno && e.deudores && !e.deudaMetodo) list.push({ text: `"${e.desc}" tiene deudores pero no metodo de devolucion`, cls: 'warn' });
-      if (e.ajeno && !e.deudores) list.push({ text: `"${e.desc}" tiene gasto ajeno pero no deudores`, cls: 'warn' });
-      if (e.amount > 1000) list.push({ text: `Gasto alto: ${e.amount.toFixed(2)}EUR — "${e.desc}"`, cls: 'warn' });
-      if (e.amount < 0) list.push({ text: `Importe negativo: "${e.desc}"`, cls: 'err' });
+      if (!e.date) list.push({ text: `"${e.desc}" ${t('sanity.noDate')}`, cls: 'err' });
+      if (!e.amount) list.push({ text: `"${e.desc}" ${t('sanity.noAmount')}`, cls: 'warn' });
+      if (e.ajeno && e.deudores && !e.deudaMetodo) list.push({ text: `"${e.desc}" ${t('sanity.noMethod')}`, cls: 'warn' });
+      if (e.ajeno && !e.deudores) list.push({ text: `"${e.desc}" ${t('sanity.noDebtors')}`, cls: 'warn' });
+      if (e.amount > 1000) list.push({ text: `${t('sanity.highAmount')}: ${e.amount.toFixed(2)} EUR — "${e.desc}"`, cls: 'warn' });
+      if (e.amount < 0) list.push({ text: `${t('sanity.negative')}: "${e.desc}"`, cls: 'err' });
 
       const key = `${e.date}|${e.desc}|${e.amount}`;
-      if (seen[key]) list.push({ text: `Posible duplicado: "${e.desc}" (${e.date})`, cls: 'warn' });
+      if (seen[key]) list.push({ text: `${t('sanity.duplicate')}: "${e.desc}" (${e.date})`, cls: 'warn' });
       seen[key] = (seen[key] || 0) + 1;
     });
 
-    if (list.length === 0) list.push({ text: 'Todo correcto, sin incidencias', cls: 'ok' });
+    if (list.length === 0) list.push({ text: t('sanity.noIncidents'), cls: 'ok' });
     return list;
-  }, [expenses]);
+  }, [expenses, t]);
 
   const counts = { ok: checks.filter(c => c.cls === 'ok').length, warn: checks.filter(c => c.cls === 'warn').length, err: checks.filter(c => c.cls === 'err').length };
 
   const loadTestData = () => {
-    if (!confirm('Cargar datos de prueba?\n\nSe borraran los datos actuales y se crearan ~25 gastos,\n11 ingresos, 5 metas y 9 subscripciones de ejemplo.')) return;
+    if (!confirm(t('sanity.confirmLoad'))) return;
     const data = { expenses: MOCK_EXPENSES, incomes: MOCK_INCOMES, goals: MOCK_GOALS, subscriptions: MOCK_SUBSCRIPTIONS };
     localStorage.setItem('gastos_app_data', JSON.stringify(data));
     window.location.reload();
@@ -50,17 +52,17 @@ export default function SanityCheck({ expenses }: Props) {
   return (
     <>
       <div className="stats">
-        <div className="stat"><div className="label">Correcto</div><div className="value positive">{counts.ok}</div></div>
-        <div className="stat"><div className="label">Avisos</div><div className="value warning">{counts.warn}</div></div>
-        <div className="stat"><div className="label">Errores</div><div className="value negative">{counts.err}</div></div>
-        <div className="stat"><div className="label">Total Gastos</div><div className="value primary">{expenses.length}</div></div>
+        <div className="stat"><div className="label">{t('sanity.ok')}</div><div className="value positive">{counts.ok}</div></div>
+        <div className="stat"><div className="label">{t('sanity.warnings')}</div><div className="value warning">{counts.warn}</div></div>
+        <div className="stat"><div className="label">{t('sanity.errors')}</div><div className="value negative">{counts.err}</div></div>
+        <div className="stat"><div className="label">{t('sanity.totalExpenses')}</div><div className="value primary">{expenses.length}</div></div>
       </div>
       <div className="card">
-        <h3>Control de Calidad</h3>
+        <h3>{t('sanity.title')}</h3>
         {checks.length === 0 ? (
           <div className="empty">
             <IconCheckCircle size={24} className="icon-success" />
-            <p>Sin incidencias</p>
+            <p>{t('sanity.noIncidents')}</p>
           </div>
         ) : (
           <ul className="sanity-list">
@@ -75,15 +77,14 @@ export default function SanityCheck({ expenses }: Props) {
       </div>
       <div className="card">
         <div className="card-header">
-          <h3>Datos de Prueba</h3>
-          <button className="btn sm outline" onClick={loadTestData} title="Cargar datos mock">
-            <IconRefresh size={14} /> Cargar
+          <h3>{t('sanity.testData')}</h3>
+          <button className="btn sm outline" onClick={loadTestData} title={t('sanity.loadTitle')}>
+            <IconRefresh size={14} /> {t('common.load')}
           </button>
         </div>
         <p style={{ fontSize: '.8rem', color: 'var(--text-muted)' }}>
-          Carga ~25 gastos, 11 ingresos, 5 metas de ahorro y 9 subscripciones
-          para probar todas las funciones de la app.
-          <br /><strong style={{ color: 'var(--danger)' }}>Esto sobrescribira todos tus datos actuales.</strong>
+          {t('sanity.testText')}
+          <br /><strong style={{ color: 'var(--danger)' }}>{t('sanity.overwrite')}</strong>
         </p>
       </div>
     </>

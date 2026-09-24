@@ -17,8 +17,8 @@ export default function ForgotPassword() {
     setMessage('');
     setBusy(true);
     try {
-      const res = await forgotPassword(email);
-      setMessage(res.message);
+      await forgotPassword(email);
+      setMessage(t('auth.forgotSent'));
     } catch (err: any) {
       setError(localizeError(err, t));
     }
@@ -29,27 +29,27 @@ export default function ForgotPassword() {
     <div className="auth-page">
       <div className="auth-card">
         <div style={{ textAlign: 'left', marginBottom: 4 }}>
-          <Link to="/" className="back-link">← Volver a la portada</Link>
+          <Link to="/" className="back-link">{t('common.backHome')}</Link>
         </div>
         <h1>Gastos App</h1>
-        <h2>Recuperar contraseña</h2>
+        <h2>{t('auth.recover')}</h2>
         <form onSubmit={handleSubmit}>
-          <label>Email</label>
+          <label>{t('common.email')}</label>
           <input
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
-            placeholder="tu@email.com"
+            placeholder={t('auth.emailPh')}
           />
           {error && <p className="error">{error}</p>}
           {message && <p className="success">{message}</p>}
           <button className="btn primary" type="submit" disabled={busy}>
-            {busy ? 'Enviando...' : 'Enviar enlace'}
+            {busy ? t('auth.sending') : t('auth.sendLink')}
           </button>
         </form>
         <p className="auth-link">
-          <Link to="/login">Volver a inicio de sesión</Link>
+          <Link to="/login">{t('auth.backToLogin')}</Link>
         </p>
       </div>
     </div>

@@ -35,24 +35,24 @@ export default function Register() {
     <div className="auth-page">
       <div className="auth-card">
         <div style={{ textAlign: 'left', marginBottom: 4 }}>
-          <Link to="/" className="back-link">← Volver a la portada</Link>
+          <Link to="/" className="back-link">{t('common.backHome')}</Link>
         </div>
         <h1>Gastos App</h1>
-        <h2>Crear cuenta</h2>
+        <h2>{t('auth.createAccount')}</h2>
         <form onSubmit={handleSubmit}>
-          <label>Nombre</label>
+          <label>{t('common.name')}</label>
           <input type="text" value={name} onChange={e => setName(e.target.value)} required />
-          <label>Email</label>
+          <label>{t('common.email')}</label>
           <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-          <label>Contraseña</label>
+          <label>{t('auth.password')}</label>
           <input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
           {error && <p className="error">{error}</p>}
           <button className="btn primary" type="submit" disabled={busy}>
-            {busy ? 'Registrando...' : 'Registrarse'}
+            {busy ? t('auth.registering') : t('auth.register')}
           </button>
         </form>
         <p className="auth-link">
-          ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+          {t('auth.haveAccount')} <Link to="/login">{t('auth.signIn')}</Link>
         </p>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { REF } from '../types';
-import { useLocale } from '../i18n';
+import { useLocale, fill, refLabel } from '../i18n';
 import type { Goal } from '../types';
 import { addGoal, updateGoal, deleteGoal } from '../store';
 import { IconPlus, IconX, IconEdit, IconTrash, IconTrendingUp, IconTarget } from './Icons';
@@ -80,7 +80,7 @@ export default function GoalsPage({ goals, onRefresh }: Props) {
   };
 
   const handleDelete = (id: string) => {
-    if (!confirm('Eliminar esta meta?')) return;
+    if (!confirm(t('goal.confirmDelete'))) return;
     deleteGoal(id);
     onRefresh();
   };
@@ -99,11 +99,11 @@ export default function GoalsPage({ goals, onRefresh }: Props) {
         <div className="goal-header">
           <span className="goal-name">{goal.name}</span>
           <div className="row-actions">
-            <button className="btn sm outline" onClick={() => { setContribGoal(goal); setContribution(0); }} title={done ? 'Retirar' : 'Aportar'}>
+            <button className="btn sm outline" onClick={() => { setContribGoal(goal); setContribution(0); }} title={done ? t('goal.withdraw') : t('goal.contribute')}>
               {done ? <IconTrendingUp size={14} /> : <IconPlus size={14} />}
             </button>
-            <button className="btn sm outline" onClick={() => openEdit(goal)} title="Editar"><IconEdit size={14} /></button>
-            <button className="btn sm danger" onClick={() => handleDelete(goal.id)} title="Eliminar"><IconTrash size={14} /></button>
+            <button className="btn sm outline" onClick={() => openEdit(goal)} title={t('common.edit')}><IconEdit size={14} /></button>
+            <button className="btn sm danger" onClick={() => handleDelete(goal.id)} title={t('common.delete')}><IconTrash size={14} /></button>
           </div>
         </div>
         <div className="goal-amounts">
@@ -115,15 +115,15 @@ export default function GoalsPage({ goals, onRefresh }: Props) {
           <div className={`progress-fill ${done ? 'success' : urgent ? 'warning' : ''}`} style={{ width: `${gpct}%` }} />
         </div>
         <div className="goal-meta">
-          <span>{gpct.toFixed(0)}% completado</span>
-          {remaining > 0 && <span>Faltan {remaining.toFixed(2)} EUR</span>}
+          <span>{gpct.toFixed(0)}% {t('goal.completed')}</span>
+          {remaining > 0 && <span>{t('goal.remaining')} {remaining.toFixed(2)} EUR</span>}
           {daysLeft !== null && (
             <span>
-              {daysLeft <= 0 ? 'Vencido' : `${daysLeft} dias`}
+              {daysLeft <= 0 ? t('goal.expired') : `${daysLeft} ${t('goal.days')}`}
             </span>
           )}
         </div>
-        {goal.category && <span className="goal-cat">{goal.category}</span>}
+        {goal.category && <span className="goal-cat">{refLabel('goalCats', goal.category, t)}</span>}
         {goal.notes && <div className="goal-notes">{goal.notes}</div>}
       </div>
     );
@@ -133,19 +133,19 @@ export default function GoalsPage({ goals, onRefresh }: Props) {
     <div>
       <div className="stats">
         <div className="stat">
-          <div className="label">Metas activas</div>
+          <div className="label">{t('goal.active')}</div>
           <div className="value primary">{active.length}</div>
         </div>
         <div className="stat">
-          <div className="label">Ahorrado</div>
+          <div className="label">{t('goal.saved')}</div>
           <div className="value positive">{totalSaved.toFixed(2)} EUR</div>
         </div>
         <div className="stat">
-          <div className="label">Objetivo total</div>
+          <div className="label">{t('goal.target')}</div>
           <div className="value">{totalTarget.toFixed(2)} EUR</div>
         </div>
         <div className="stat">
-          <div className="label">Progreso global</div>
+          <div className="label">{t('goal.globalProgress')}</div>
           <div className="value primary">{pct.toFixed(0)}%</div>
         </div>
       </div>
@@ -161,7 +161,7 @@ export default function GoalsPage({ goals, onRefresh }: Props) {
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
         <button className="btn primary" onClick={openNew}>
-          <IconPlus size={16} /> Nueva Meta
+          <IconPlus size={16} /> {t('goal.add')}
         </button>
       </div>
 
@@ -169,7 +169,7 @@ export default function GoalsPage({ goals, onRefresh }: Props) {
         {active.length === 0 ? (
           <div className="empty" style={{ gridColumn: '1/-1' }}>
             <IconTarget size={32} />
-            <p>Sin metas de ahorro. Crea tu primera meta!</p>
+            <p>{t('goal.noGoals')}</p>
           </div>
         ) : (
           [...inProgress, ...completed].map(g => <GoalCard key={g.id} goal={g} />)
@@ -181,24 +181,24 @@ export default function GoalsPage({ goals, onRefresh }: Props) {
         <div className="modal-overlay" onClick={() => setContribGoal(null)}>
           <div className="modal modal-sm" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>{contribGoal.currentAmount >= contribGoal.targetAmount ? 'Retirar de' : 'Aportar a'} {contribGoal.name}</h2>
+              <h2>{fill(t(contribGoal.currentAmount >= contribGoal.targetAmount ? 'goal.withdrawFrom' : 'goal.contributeTo'), { name: contribGoal.name })}</h2>
               <button className="modal-close" onClick={() => setContribGoal(null)}><IconX size={20} /></button>
             </div>
             <div className="modal-body">
               <p style={{ fontSize: '.85rem', color: 'var(--text-muted)', marginBottom: 12 }}>
-                Actual: {contribGoal.currentAmount.toFixed(2)} EUR / {contribGoal.targetAmount.toFixed(2)} EUR
+                {t('goal.current')}: {contribGoal.currentAmount.toFixed(2)} EUR / {contribGoal.targetAmount.toFixed(2)} EUR
               </p>
               <div className="form-group">
-                <label>Importe (EUR)</label>
+                <label>{t('common.amountEur')}</label>
                 <input type="number" step="0.01" value={contribution} onChange={e => setContribution(Number(e.target.value))} placeholder="0.00" autoFocus />
               </div>
               <div className="form-actions">
                 {contribGoal.currentAmount >= contribGoal.targetAmount ? (
-                  <button className="btn primary" onClick={() => handleWithdraw(contribGoal)}>Retirar</button>
+                  <button className="btn primary" onClick={() => handleWithdraw(contribGoal)}>{t('goal.withdraw')}</button>
                 ) : (
-                  <button className="btn primary" onClick={() => handleContribute(contribGoal)}>Aportar</button>
+                  <button className="btn primary" onClick={() => handleContribute(contribGoal)}>{t('goal.contribute')}</button>
                 )}
-                <button className="btn outline" onClick={() => setContribGoal(null)}>Cancelar</button>
+                <button className="btn outline" onClick={() => setContribGoal(null)}>{t('common.cancel')}</button>
               </div>
             </div>
           </div>
@@ -210,45 +210,45 @@ export default function GoalsPage({ goals, onRefresh }: Props) {
         <div className="modal-overlay" onClick={() => setShowForm(false)}>
           <div className="modal modal-sm" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>{editing ? 'Editar' : 'Nueva'} Meta</h2>
+              <h2>{editing ? t('goal.edit') : t('goal.add')}</h2>
               <button className="modal-close" onClick={() => setShowForm(false)}><IconX size={20} /></button>
             </div>
             <form onSubmit={handleSubmit} className="modal-body">
               <div className="form-group" style={{ marginBottom: 10 }}>
-                <label>Nombre</label>
-                <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Viaje a Japon, Fondo de emergencia..." autoFocus />
+                <label>{t('goal.name')}</label>
+                <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('goal.placeholder')} autoFocus />
               </div>
               <div className="form-row three">
                 <div className="form-group">
-                  <label>Objetivo (EUR)</label>
+                  <label>{t('goal.targetAmount')} (EUR)</label>
                   <input type="number" step="0.01" value={targetAmount} onChange={e => setTargetAmount(Number(e.target.value))} />
                 </div>
                 <div className="form-group">
-                  <label>Ahorrado (EUR)</label>
+                  <label>{t('goal.savedAmount')} (EUR)</label>
                   <input type="number" step="0.01" value={currentAmount} onChange={e => setCurrentAmount(Number(e.target.value))} />
                 </div>
                 <div className="form-group">
-                  <label>Fecha limite</label>
+                  <label>{t('goal.deadline')}</label>
                   <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)} />
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Categoria</label>
+                  <label>{t('goal.category')}</label>
                   <select value={category} onChange={e => setCategory(e.target.value)}>
-                    <option value="">Sin categoria</option>
-                    {REF.goalCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                    <option value="">{t('goal.empty')}</option>
+                    {REF.goalCategories.map(c => <option key={c} value={c}>{refLabel('goalCats', c, t)}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Notas</label>
-                  <input type="text" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Opcional" />
+                  <label>{t('common.notes')}</label>
+                  <input type="text" value={notes} onChange={e => setNotes(e.target.value)} placeholder={t('common.optional')} />
                 </div>
               </div>
               {formError && <p className="field-error">{formError}</p>}
               <div className="form-actions">
-                <button type="submit" className="btn primary">{editing ? 'Guardar' : 'Crear Meta'}</button>
-                <button type="button" className="btn outline" onClick={() => setShowForm(false)}>Cancelar</button>
+                <button type="submit" className="btn primary">{editing ? t('common.save') : t('goal.create')}</button>
+                <button type="button" className="btn outline" onClick={() => setShowForm(false)}>{t('common.cancel')}</button>
               </div>
             </form>
           </div>

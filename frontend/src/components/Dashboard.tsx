@@ -161,7 +161,7 @@ export default function Dashboard({ expenses, incomes, goals, subscriptions }: P
       {/* Cash flow summary */}
       <div className="card clickable" onClick={() => navigate('/more/monthly')}>
         <div className="card-header">
-          <h3>{t('dashboard.recentExpenses')}</h3>
+          <h3>{t('dashboard.cashFlow')}</h3>
           <IconArrowUpRight size={16} />
         </div>
         <div className="month-snapshot">

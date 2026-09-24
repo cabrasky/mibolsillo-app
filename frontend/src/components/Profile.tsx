@@ -25,7 +25,7 @@ export default function Profile() {
         setAvatarUrl(updated.avatar_url);
         await refreshUser();
       }
-      setMsg({ ok: true, text: 'Perfil guardado ✅' });
+      setMsg({ ok: true, text: t('profile.saved') });
     } catch (e: any) {
       setMsg({ ok: false, text: localizeError(e, t) });
     }
@@ -44,8 +44,8 @@ export default function Profile() {
         return;
       }
       setSaving(true);
-      const res = await changePassword(currentPassword, newPassword);
-      setMsg({ ok: true, text: res.message + ' ✅' });
+      await changePassword(currentPassword, newPassword);
+      setMsg({ ok: true, text: t('profile.passwordChanged') });
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -60,14 +60,14 @@ export default function Profile() {
   return (
     <div className="admin-panel">
       <div className="admin-header">
-        <h2>Mi perfil</h2>
+        <h2>{t('nav.profile')}</h2>
       </div>
 
       <div className="admin-section">
-        <h3>👤 Datos personales</h3>
+        <h3>{t('profile.personal')}</h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
           {user.avatar_url ? (
-            <img src={user.avatar_url} alt="avatar" width={56} height={56} style={{ borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border, rgba(0,0,0,.1))' }} />
+            <img src={user.avatar_url} alt={user.name || ''} width={56} height={56} style={{ borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border, rgba(0,0,0,.1))' }} />
           ) : (
             <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--primary, #6366f1)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 700 }}>
               {(user.name || '?').charAt(0).toUpperCase()}
@@ -79,30 +79,30 @@ export default function Profile() {
           </div>
         </div>
         <div className="auth-form">
-          <label>Nombre</label>
-          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Tu nombre" />
-          <label>Avatar (URL)</label>
-          <input type="url" value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)} placeholder="https://... (opcional)" />
+          <label>{t('common.name')}</label>
+          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('profile.namePh')} />
+          <label>{t('profile.avatar')}</label>
+          <input type="url" value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)} placeholder={t('profile.avatarPh')} />
           <button className="btn primary" onClick={handleSaveProfile} disabled={saving}>
-            {saving ? 'Guardando...' : 'Guardar perfil'}
+            {saving ? t('common.saving') : t('profile.save')}
           </button>
         </div>
       </div>
 
       <div className="admin-section">
-        <h3>🔑 Cambiar contraseña</h3>
+        <h3>{t('profile.changePassword')}</h3>
         <div className="auth-form">
-          <label>Contraseña actual</label>
-          <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} placeholder="Deja en blanco si solo entras con Google" autoComplete="current-password" />
-          <label>Nueva contraseña</label>
-          <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" autoComplete="new-password" />
-          <label>Repetir nueva contraseña</label>
-          <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Repite la nueva contraseña" autoComplete="new-password" />
+          <label>{t('profile.currentPassword')}</label>
+          <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} placeholder={t('profile.currentPh')} autoComplete="current-password" />
+          <label>{t('auth.newPassword')}</label>
+          <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder={t('auth.minChars')} autoComplete="new-password" />
+          <label>{t('profile.repeatNew')}</label>
+          <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder={t('profile.repeatNewPh')} autoComplete="new-password" />
           <button className="btn primary" onClick={handleChangePassword} disabled={saving}>
-            {saving ? 'Guardando...' : 'Cambiar contraseña'}
+            {saving ? t('common.saving') : t('profile.changeBtn')}
           </button>
           <p className="hint" style={{ marginTop: 8 }}>
-            Si entras con Google y no tienes contraseña, puedes crear una aquí (déjala en blanco la actual). El email no se puede cambiar.
+            {t('profile.hint')}
           </p>
         </div>
       </div>

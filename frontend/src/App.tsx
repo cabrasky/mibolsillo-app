@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
 import { loadData, deleteExpense, loadAllFromServer } from './store';
+import { tNow } from './i18n';
 import AddExpense from './components/AddExpense';
 import Profile from './components/Profile';
 import Dashboard from './components/Dashboard';
@@ -102,7 +103,7 @@ function AppContent() {
   const refresh = useCallback(() => { setData(loadData()); setEditId(null); }, []);
 
   const handleDelete = (id: string) => {
-    if (!confirm('Eliminar este gasto?')) return;
+    if (!confirm(tNow('common.confirmDeleteExpense'))) return;
     deleteExpense(id);
     refresh();
   };
@@ -187,7 +188,7 @@ function AppContent() {
         <Dashboard expenses={data.expenses} incomes={data.incomes} goals={data.goals} subscriptions={data.subscriptions} />
       } />
       <Route path="/expenses" element={
-        <ExpenseList expenses={data.expenses} onEdit={handleEdit} onDelete={handleDelete} />
+        <ExpenseList expenses={data.expenses} onEdit={handleEdit} onDelete={handleDelete} compact={layout === 'mobile'} />
       } />
       <Route path="/incomes" element={
         <IncomesPage incomes={data.incomes} onRefresh={refresh} />
