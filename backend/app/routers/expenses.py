@@ -1,8 +1,10 @@
 """Expenses CRUD router."""
 import json
-from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile, status
+import logging
+from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.database import get_db
 from app.models.models import Expense
@@ -13,6 +15,7 @@ from app.services.photos import store_photo, get_photo_response, delete_photo
 from app.services.recurring import ensure_recurring_expense
 
 router = APIRouter(prefix="/expenses", tags=["expenses"])
+logger = logging.getLogger(__name__)
 
 def _to_api(expense: Expense) -> dict:
     return {
@@ -66,6 +69,7 @@ def _calculated_my_share(data: dict) -> float:
 
 @router.get("", response_model=list[ExpenseOut])
 async def list_expenses(
+    request: Request,
     skip: int = 0,
     limit: int = 100,
     month: int | None = None,
@@ -75,7 +79,16 @@ async def list_expenses(
 ):
     # Lógica de gastos recurrentes: si toca (p. ej. día 2 del mes) y falta la
     # fila, se crea antes de devolver la lista para que la web esté al día.
-    await ensure_recurring_expense(db, user.id, bool(getattr(user, "is_admin", False)))
+    request_id = getattr(request.state, "request_id", "unknown")
+    try:
+        await ensure_recurring_expense(db, user.id, bool(getattr(user, "is_admin", False)))
+    except SQLAlchemyError:
+        logger.exception("Expense recurring check failed request_id=%s", request_id)
+        raise HTTPException(
+            status_code=503,
+            detail="Database error while checking recurring expenses",
+            headers={"X-Error-Code": "recurring_expenses_database_error"},
+        )
     stmt = select(Expense).where(Expense.user_id == user.id).order_by(Expense.date.desc())
     if month and year:
         stmt = stmt.where(
@@ -85,8 +98,16 @@ async def list_expenses(
     elif year:
         stmt = stmt.where(func.extract("year", Expense.date) == year)
     stmt = stmt.offset(skip).limit(limit)
-    result = await db.execute(stmt)
-    return [_to_api(expense) for expense in result.scalars().all()]
+    try:
+        result = await db.execute(stmt)
+        return [_to_api(expense) for expense in result.scalars().all()]
+    except SQLAlchemyError:
+        logger.exception("Expense list query failed request_id=%s", request_id)
+        raise HTTPException(
+            status_code=503,
+            detail="Database error while loading expenses",
+            headers={"X-Error-Code": "expense_list_database_error"},
+        )
 
 
 @router.get("/{expense_id}", response_model=ExpenseOut)
