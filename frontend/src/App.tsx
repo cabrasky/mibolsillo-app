@@ -13,7 +13,7 @@ import MonthlySummary from './components/MonthlySummary';
 import ProjectsPage from './components/Projects';
 import ProjectDetail from './components/ProjectDetail';
 import WeeklyBudget from './components/WeeklyBudget';
-import DebtTracker from './components/DebtTracker';
+import PendingPayments from './components/PendingPayments';
 import SanityCheck from './components/SanityCheck';
 import SubscriptionsPage from './components/Subscriptions';
 import DesktopLayout from './components/DesktopLayout';
@@ -205,9 +205,10 @@ function AppContent() {
       <Route path="/more/weekly" element={
         <WeeklyBudget expenses={data.expenses} weeklyGoal={weeklyGoal} onGoalChange={setWeeklyGoal} />
       } />
-      <Route path="/more/debts" element={
-        <DebtTracker expenses={data.expenses} />
+      <Route path="/pending" element={
+        <PendingPayments expenses={data.expenses} onRefresh={refresh} />
       } />
+      <Route path="/more/debts" element={<Navigate to="/pending" replace />} />
       <Route path="/more/subs" element={
         <SubscriptionsPage subscriptions={data.subscriptions} onRefresh={refresh} />
       } />

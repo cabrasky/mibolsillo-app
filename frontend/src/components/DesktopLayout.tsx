@@ -6,10 +6,11 @@ import { useLocale } from '../i18n';
 import { useAuth } from '../AuthContext';
 import {
   IconPlus, IconList, IconTarget,
-  IconTrendingUp, IconEuro, IconCalendar, IconRefresh, IconHome, IconGrid,
+  IconTrendingUp, IconEuro, IconCalendar, IconRefresh, IconHome, IconGrid, IconUsers,
 } from './Icons';
+import { pendingDebtCount } from '../personas';
 
-export type Tab = 'dashboard' | 'expenses' | 'incomes' | 'goals' | 'subs' | 'projects' | 'more';
+export type Tab = 'dashboard' | 'expenses' | 'incomes' | 'goals' | 'subs' | 'projects' | 'pending' | 'more';
 
 function pathToTab(pathname: string): Tab | null {
   if (pathname === '/dashboard') return 'dashboard';
@@ -18,7 +19,8 @@ function pathToTab(pathname: string): Tab | null {
   if (pathname === '/goals') return 'goals';
   if (pathname === '/subs') return 'subs';
   if (pathname === '/projects' || pathname.startsWith('/projects/')) return 'projects';
-  if (pathname === '/more' || pathname.startsWith('/more/')) return 'more';
+  if (pathname === '/pending') return 'pending';
+  if (pathname === '/more' ||pathname.startsWith('/more/')) return 'more';
   return null;
 }
 
@@ -33,6 +35,7 @@ const NAV_ITEMS: { key: Tab; icon: React.ReactNode; i18nKey: string; path: strin
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
     ), i18nKey: 'nav.projects', path: '/projects',
   },
+  { key: 'pending', icon: <IconUsers size={19} />, i18nKey: 'nav.debts', path: '/pending' },
   { key: 'more', icon: <IconGrid size={19} />, i18nKey: 'nav.more', path: '/more' },
 ];
 
@@ -76,6 +79,7 @@ export default function DesktopLayout({
     }).reduce((s, e) => s + expenseCost(e), 0);
     return { totalYear, totalMonth, monthCount, avgMonth, weekSpent };
   }, [expenses]);
+  const pendingCount = useMemo(() => pendingDebtCount(expenses), [expenses]);
   const { t, locale, setLocale } = useLocale();
 
   return (
@@ -125,6 +129,7 @@ export default function DesktopLayout({
                 onClick={() => navigate(item.path)}
               >
                 {item.icon}<span>{t(item.i18nKey)}</span>
+                {item.key === 'pending' && pendingCount > 0 && <span className="sidebar-badge">{pendingCount}</span>}
               </button>
             ))}
           </div>

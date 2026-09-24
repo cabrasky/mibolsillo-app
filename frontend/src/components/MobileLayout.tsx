@@ -28,12 +28,12 @@ const PATH_INFO: Record<string, { i18nKey: string; parentTab?: BottomTab; title?
   '/help': { i18nKey: 'nav.more', title: 'Cómo se usa', parentTab: 'more' },
   '/more/monthly': { i18nKey: 'nav.monthly', parentTab: 'more' },
   '/more/weekly': { i18nKey: 'nav.weekly', parentTab: 'more' },
-  '/more/debts': { i18nKey: 'nav.debts', parentTab: 'more' },
+  '/pending': { i18nKey: 'nav.debts', parentTab: 'more' },
   '/more/subs': { i18nKey: 'nav.subs', parentTab: 'more' },
   '/more/sanity': { i18nKey: 'nav.check', parentTab: 'more' },
 };
 
-const MORE_SUBPATHS = ['/more/monthly', '/more/weekly', '/more/debts', '/more/subs', '/more/sanity'];
+const MORE_SUBPATHS = ['/more/monthly', '/more/weekly', '/pending','/more/subs', '/more/sanity'];
 
 function getPathInfo(pathname: string) {
   // Exact match first, then try prefix

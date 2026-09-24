@@ -3,6 +3,7 @@ import { REF } from '../types';
 import { addExpense, updateExpense, loadData, suggestExpense, type Suggestion } from '../store';
 import type { Expense } from '../types';
 import { useLocale } from '../i18n';
+import { personasOf, repaySummary, serializePersonas, type Persona } from '../personas';
 
 interface Props {
   isOpen: boolean;
@@ -13,22 +14,6 @@ interface Props {
 }
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
-
-type Persona = { n: string; m: number; r: 'deb' | 'inv'; repaid: boolean; method: string };
-
-function parsePersonas(raw?: string): Persona[] {
-  if (!raw) return [];
-  try {
-    const a = JSON.parse(raw);
-    if (!Array.isArray(a)) return [];
-    return a.filter((x: any) => x && typeof x.n === 'string').map((x: any) => ({
-      n: x.n, m: Number(x.m) || 0,
-      r: x.r === 'inv' ? 'inv' as const : 'deb' as const,
-      repaid: !!x.repaid,
-      method: typeof x.method === 'string' ? x.method : '',
-    }));
-  } catch { return []; }
-}
 
 export default function AddExpense({ isOpen, editExpense, onClose, onSaved, presetProjectId = '' }: Props) {
   const { t } = useLocale();
@@ -86,25 +71,8 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
       setAjeno(editExpense.ajeno || 0);
       setInvitacion(editExpense.invitacion ? 1 : 0);
       setDeudores(editExpense.deudores || '');
-      setPersonas((() => {
-        let parsed = editExpense.personas ? parsePersonas(editExpense.personas) : (() => {
-          const raw = (editExpense.deudores || '').trim();
-          if (!raw) return [];
-          const names = raw.split(/\s*(?:,|;|\s+y\s+|\s+e\s+)\s*/).map(x => x.trim()).filter(Boolean);
-          if (!names.length) return [];
-          const tot = Number(editExpense.ajeno) || 0;
-          const per = Math.round((tot / names.length) * 100) / 100;
-          return names.map((n, i) => ({ n, m: i === names.length - 1 ? Math.round((tot - per * (names.length - 1)) * 100) / 100 : per, r: 'deb' as const, repaid: false, method: '' }));
-        })();
-        // Migración lazy: si el gasto conserva el flag global "devuelto", se
-        // propaga a cada deudor (dato legacy previo a las devoluciones por persona).
-        if (parsed.length && editExpense.devuelto === 'yes') {
-          parsed = parsed.map(p => p.r === 'deb'
-            ? { ...p, repaid: true, method: p.method || editExpense.deudaMetodo || 'Bizum' }
-            : p);
-        }
-        return parsed;
-      })());
+      // Incluye la migración lazy del flag global "devuelto" a cada deudor
+      setPersonas(personasOf(editExpense));
       setViaje(editExpense.viaje || '');
       setShowShared(!!(editExpense.ajeno || editExpense.deudores || editExpense.devuelto === 'yes' || editExpense.viaje));
     } else {
@@ -146,17 +114,16 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
     const per = personas.filter(x => x.n.trim());
     const debtors = per.filter(x => x.r === 'deb');
     const allInv = per.length > 0 && per.every(x => x.r === 'inv');
-    const allRepaid = debtors.length > 0 && debtors.every(x => x.repaid);
-    const firstRepaidMethod = debtors.find(x => x.repaid)?.method || '';
+    const repay = repaySummary(per);
     const data: any = {
       date, desc: desc.trim(), amount: round2(amt), proposito, metodo,
       motivo: motivo.trim(), tipo: tipo.trim(),
       ajeno: showShared ? Math.min(ajenoEf, round2(amt)) : 0,
       invitacion: allInv ? 1 : (invitacion ? 1 : 0),
       deudores: showShared ? (per.length ? debtors.map(x => x.n.trim()).join(', ') : deudores.trim()) : '',
-      personas: per.length ? JSON.stringify(per.map(x => ({ n: x.n.trim(), m: round2(Number(x.m) || 0), r: x.r, repaid: !!x.repaid, method: x.method || '' }))) : (editExpense?.personas || ''),
-      deudaMetodo: showShared ? (firstRepaidMethod || 'Bizum') : 'Bizum',
-      devuelto: showShared ? (allRepaid ? 'yes' : 'no') : 'no',
+      personas: per.length ? serializePersonas(per) : (editExpense?.personas || ''),
+      deudaMetodo: showShared ? repay.deudaMetodo : 'Bizum',
+      devuelto: showShared ? repay.devuelto : 'no',
       meCorresponde: showShared ? round2(Math.max(0, amt - (per.length ? debtSum : ajeno))) : round2(amt),
       viaje: showShared ? viaje.trim() : '',
       proyectoId,
@@ -304,7 +271,7 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
                     {p.r === 'deb' && (
                       <div className="persona-repay">
                         <label>Devuelto</label>
-                        <select value={p.repaid ? 'yes' : 'no'} onChange={e => upP(i, { repaid: e.target.value === 'yes' })}>
+                        <select value={p.repaid ? 'yes' : 'no'} onChange={e => upP(i, { repaid: e.target.value === 'yes', method: p.method || 'Bizum' })}>
                           <option value="no">No</option>
                           <option value="yes">Sí</option>
                         </select>

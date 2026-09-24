@@ -23,7 +23,7 @@ const ES: Record<string, string> = {
   'nav.projects': 'Proyectos',
   'nav.monthly': 'Mensual',
   'nav.weekly': 'Semanal',
-  'nav.debts': 'Deudas',
+  'nav.debts': 'Pagos pendientes',
   'nav.subs': 'Suscripciones',
   'nav.check': 'Check',
   'nav.add': 'A\u00F1adir',
@@ -250,7 +250,7 @@ const ES: Record<string, string> = {
   'monthly.pieChart': 'Distribuci\u00F3n por Prop\u00F3sito',
 
   // Debts
-  'debt.title': 'Deudas',
+  'debt.title': 'Pagos pendientes',
   'debt.pending': 'Pendientes',
   'debt.pendingAmount': 'Importe Pend.',
   'debt.repaid': 'Pagadas',
@@ -327,7 +327,7 @@ const EN: Record<string, string> = {
   'nav.projects': 'Projects',
   'nav.monthly': 'Monthly',
   'nav.weekly': 'Weekly',
-  'nav.debts': 'Debts',
+  'nav.debts': 'Pending payments',
   'nav.subs': 'Subscriptions',
   'nav.check': 'Check',
   'nav.add': 'Add',
@@ -545,7 +545,7 @@ const EN: Record<string, string> = {
   'monthly.chart': 'Monthly Expenses',
   'monthly.pieChart': 'Distribution by Purpose',
 
-  'debt.title': 'Debts',
+  'debt.title': 'Pending payments',
   'debt.pending': 'Pending',
   'debt.pendingAmount': 'Pending Amt.',
   'debt.repaid': 'Repaid',
@@ -617,7 +617,7 @@ const PT: Record<string, string> = {
   'nav.projects': 'Projetos',
   'nav.monthly': 'Mensal',
   'nav.weekly': 'Semanal',
-  'nav.debts': 'D\u00EDvidas',
+  'nav.debts': 'Pagamentos pendentes',
   'nav.subs': 'Assinaturas',
   'nav.check': 'Check',
   'nav.add': 'Adicionar',
@@ -834,7 +834,7 @@ const PT: Record<string, string> = {
   'monthly.chart': 'Despesas Mensais',
   'monthly.pieChart': 'Distribui\u00E7\u00E3o por Prop\u00F3sito',
 
-  'debt.title': 'D\u00EDvidas',
+  'debt.title': 'Pagamentos pendentes',
   'debt.pending': 'Pendentes',
   'debt.pendingAmount': 'Valor Pend.',
   'debt.repaid': 'Pagas',

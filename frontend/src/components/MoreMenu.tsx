@@ -5,7 +5,7 @@ import { useAuth } from '../AuthContext';
 const ITEMS = [
   { key: 'monthly', icon: <IconChart size={28} />, label: 'Resumen mensual', desc: 'Buckets + gráficas del mes', path: '/more/monthly' },
   { key: 'weekly', icon: <IconTarget size={28} />, label: 'Resumen semanal', desc: 'Presupuesto 50 €/semana', path: '/more/weekly' },
-  { key: 'debts', icon: <IconWallet size={28} />, label: 'Deudas', desc: 'Gastos compartidos pendientes', path: '/more/debts' },
+  { key: 'debts', icon: <IconWallet size={28} />, label: 'Pagos pendientes', desc: 'Quién te debe y cómo te lo devolvió', path: '/pending' },
   { key: 'subs', icon: <IconRefresh size={28} />, label: 'Suscripciones', desc: 'Gestiona tus suscripciones', path: '/subs' },
   { key: 'sanity', icon: <IconCheck size={28} />, label: 'Sanidad financiera', desc: 'Ratios y alertas', path: '/more/sanity' },
 ];
