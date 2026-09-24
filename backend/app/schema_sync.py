@@ -41,6 +41,19 @@ from sqlalchemy.sql.type_api import TypeEngine
 
 logger = logging.getLogger(__name__)
 
+LEGACY_EXPENSE_COLUMNS = {
+    "tipo": "type",
+    "ajeno": "is_shared",
+    "invitacion": "is_invitation",
+    "deudores": "debtors",
+    "personas": "participants",
+    "ref_cc": "cc_reference",
+    "deuda_metodo": "repayment_method",
+    "devuelto": "repaid",
+    "me_corresponde": "personal_share",
+    "viaje": "trip",
+}
+
 
 def _default_literal(t: TypeEngine) -> Optional[str]:
     """Reasonable literal to backfill a NOT NULL column when adding it via DDL.
@@ -123,6 +136,31 @@ async def sync_missing_columns(engine, base: type[DeclarativeBase]) -> int:
 
     Returns the number of columns added.
     """
+    def _columns(sync_engine):
+        from sqlalchemy import inspect as _sa_inspect
+        return {c["name"] for c in _sa_inspect(sync_engine).get_columns("expenses")}
+
+    async with engine.connect() as conn:
+        live_expense_columns = await conn.run_sync(_columns)
+
+    renamed = 0
+    for old_name, new_name in LEGACY_EXPENSE_COLUMNS.items():
+        if old_name not in live_expense_columns or new_name in live_expense_columns:
+            continue
+        try:
+            async with engine.begin() as conn:
+                await conn.execute(_text(
+                    f'ALTER TABLE "expenses" RENAME COLUMN "{old_name}" TO "{new_name}"'
+                ))
+            live_expense_columns.remove(old_name)
+            live_expense_columns.add(new_name)
+            renamed += 1
+        except Exception:
+            logger.exception("schema-sync: cannot rename expenses.%s to %s", old_name, new_name)
+
+    if renamed:
+        logger.info("schema-sync: renamed %d legacy expense column(s)", renamed)
+
     def _introspect(sync_engine):
         """Single sync pass: return {table_name: [missing_col_objects]}."""
         from sqlalchemy import inspect as _sa_inspect

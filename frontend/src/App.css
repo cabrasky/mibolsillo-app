@@ -303,6 +303,7 @@ tr.total-row { font-weight: 700; }
 tr.total-row td { border-top: 2px solid var(--text); padding-top: 12px; }
 .td-amount { font-weight: 800; font-variant-numeric: tabular-nums; }
 .td-meta { font-size: .7rem; color: var(--text-muted); display: block; margin-top: 1px; }
+.cc-action { display: inline-flex; margin: 3px 0 0 6px; text-decoration: none; }
 .td-muted { font-size: .78rem; color: var(--text-muted); }
 .td-icon { width: 40px; text-align: center; }
 
