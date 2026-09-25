@@ -1,8 +1,12 @@
-"""SMTP email sender for password recovery and notifications.
-Reads SMTP config from the database (smtp_config table), falls back to env vars.
+"""Envío de correos (recuperar contraseña, soporte, prueba).
+
+La configuración SMTP sale de la BD (tabla smtp_config) y, si no hay, del entorno.
+Todos los correos usan la plantilla de app/email_layout.py.
 """
 
+from datetime import datetime
 from email.message import EmailMessage
+from email.utils import make_msgid
 from html import escape
 
 import aiosmtplib
@@ -10,6 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
+from app.email_layout import LOGO_CID, LOGO_PATH, Email, render
 from app.models.models import SmtpConfig
 
 
@@ -44,6 +49,22 @@ async def _get_smtp_config(db: AsyncSession | None = None) -> dict:
     }
 
 
+def build_message(cfg: dict, to: str, subject: str, html: str, text: str) -> EmailMessage:
+    """Mensaje multipart: texto + HTML, con el logo incrustado si la plantilla lo usa."""
+    msg = EmailMessage()
+    msg["From"] = f"{cfg['from_name']} <{cfg['from_email']}>"
+    msg["To"] = to
+    msg["Subject"] = " ".join(subject.split())  # sin saltos de línea (texto del usuario en el asunto)
+    msg["Message-ID"] = make_msgid(domain=(cfg.get("from_email") or "mibolsillo").split("@")[-1])
+    msg.set_content(text)
+    msg.add_alternative(html, subtype="html")
+    if f"cid:{LOGO_CID}" in html and LOGO_PATH.exists():
+        html_part = msg.get_payload()[1]
+        html_part.add_related(LOGO_PATH.read_bytes(), maintype="image", subtype="png",
+                              cid=f"<{LOGO_CID}>", filename="mibolsillo.png")
+    return msg
+
+
 async def send_email(
     to: str,
     subject: str,
@@ -53,12 +74,7 @@ async def send_email(
 ) -> bool:
     """Send an HTML email via SMTP."""
     cfg = await _get_smtp_config(db)
-    msg = EmailMessage()
-    msg["From"] = f"{cfg['from_name']} <{cfg['from_email']}>"
-    msg["To"] = to
-    msg["Subject"] = subject
-    msg.set_content(text or _strip_html(html))
-    msg.add_alternative(html, subtype="html")
+    msg = build_message(cfg, to, subject, html, text or _strip_html(html))
 
     try:
         # Relay interno (25) sin auth ni TLS; 587 con STARTTLS; 465 TLS implícito.
@@ -77,53 +93,9 @@ async def send_email(
         return False
 
 
-async def send_password_reset_email(
-    to: str,
-    name: str,
-    token: str,
-    db: AsyncSession | None = None,
-) -> bool:
-    """Send a password reset email with a one-time link."""
-    reset_url = f"{settings.frontend_url}/reset-password?token={token}"
-    subject = "Recuperación de contraseña - Gastos App"
-
-    html = f"""<!DOCTYPE html>
-<html lang="es">
-<head><meta charset="utf-8"></head>
-<body style="font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 24px;">
-  <div style="max-width: 480px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 32px;">
-    <h2 style="margin-top: 0; color: #1a1a2e;">Recuperar contraseña</h2>
-    <p style="color: #555; line-height: 1.6;">Hola <strong>{name}</strong>,</p>
-    <p style="color: #555; line-height: 1.6;">
-      Has solicitado restablecer tu contraseña de <strong>Gastos App</strong>.
-      Haz clic en el botón de abajo para crear una nueva:
-    </p>
-    <div style="text-align: center; margin: 28px 0;">
-      <a href="{reset_url}" style="display: inline-block; background: #1a1a2e; color: #fff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: bold;">
-        Restablecer contraseña
-      </a>
-    </div>
-    <p style="color: #888; font-size: 13px;">
-      Este enlace expirará en <strong>1 hora</strong>.
-      Si no has solicitado este cambio, ignora este mensaje.
-    </p>
-    <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;">
-    <p style="color: #aaa; font-size: 12px; text-align: center;">Gastos App &mdash; cabrasky.net</p>
-  </div>
-</body>
-</html>"""
-
-    text = (
-        f"Hola {name},\n\n"
-        f"Has solicitado restablecer tu contraseña de Gastos App.\n\n"
-        f"Abre el siguiente enlace para crear una nueva contraseña:\n"
-        f"{reset_url}\n\n"
-        f"Este enlace expirará en 1 hora.\n"
-        f"Si no has solicitado este cambio, ignora este mensaje.\n\n"
-        f"Gastos App — cabrasky.net"
-    )
-
-    return await send_email(to, subject, html, text, db=db)
+async def send_rendered(to: str, email: Email, db: AsyncSession | None = None) -> bool:
+    html, text = render(email)
+    return await send_email(to, email.subject, html, text, db=db)
 
 
 def _strip_html(html: str) -> str:
@@ -134,63 +106,100 @@ def _strip_html(html: str) -> str:
     return text
 
 
-# ── Soporte y pruebas (panel de admin) ───────────────────────────────────────
+def _links() -> list[tuple[str, str]]:
+    return [("Ayuda y soporte", f"{settings.frontend_url}/support"),
+            ("Privacidad", f"{settings.frontend_url}/legal/privacidad")]
 
-def _card(title: str, intro: str, quote: str = "", button_url: str = "", button_label: str = "") -> str:
-    """Plantilla simple. `intro` es HTML propio; `quote` es texto del usuario (se escapa)."""
-    quote_html = (
-        f'<blockquote style="margin: 16px 0; padding: 12px 16px; background: #F5F2EA; border-left: 3px solid #FF5A36; '
-        f'border-radius: 6px; color: #2E3F36; white-space: pre-wrap;">{escape(quote)}</blockquote>'
-    ) if quote else ""
-    button_html = (
-        f'<div style="text-align: center; margin: 24px 0 8px;"><a href="{escape(button_url)}" '
-        f'style="display: inline-block; background: #1E4D3A; color: #F6F2E8; text-decoration: none; '
-        f'padding: 12px 28px; border-radius: 10px; font-weight: bold;">{escape(button_label)}</a></div>'
-    ) if button_url else ""
-    return f"""<!DOCTYPE html>
-<html lang="es"><head><meta charset="utf-8"></head>
-<body style="font-family: Arial, sans-serif; background: #F1EEE6; margin: 0; padding: 24px;">
-  <div style="max-width: 520px; margin: 0 auto; background: #FBFAF6; border-radius: 14px; padding: 28px;">
-    <h2 style="margin-top: 0; color: #14261E;">{escape(title)}</h2>
-    <p style="color: #56645C; line-height: 1.6;">{intro}</p>
-    {quote_html}
-    {button_html}
-    <hr style="border: none; border-top: 1px solid #E2DDD0; margin: 24px 0 12px;">
-    <p style="color: #8C978F; font-size: 12px; text-align: center;">miBolsillo &mdash; mibolsillo.cabrasky.net</p>
-  </div>
-</body></html>"""
+
+# ── Correos ───────────────────────────────────────────────────────────────────
+
+def password_reset_email(to: str, name: str, token: str) -> Email:
+    url = f"{settings.frontend_url}/reset-password?token={token}"
+    return Email(
+        subject="Restablece tu contraseña de miBolsillo",
+        eyebrow="Tu cuenta",
+        title="Restablece tu contraseña",
+        preheader="El enlace caduca en 1 hora.",
+        paragraphs=[
+            f"Hola <strong>{escape(name)}</strong>,",
+            "Hemos recibido una petición para restablecer la contraseña de tu cuenta de miBolsillo. "
+            "Pulsa el botón para elegir una nueva.",
+        ],
+        button=("Crear una contraseña nueva", url),
+        note="El enlace caduca en <strong>1 hora</strong> y solo sirve una vez. Si no lo has pedido tú, "
+             "ignora este correo: tu contraseña no cambia.",
+        reason=f"Te escribimos porque se pidió restablecer la contraseña de {escape(to)}.",
+        footer_links=_links(),
+    )
+
+
+def support_new_ticket_email(user_name: str, user_email: str, subject: str, body: str,
+                             ticket_id: str = "", is_reply: bool = False) -> Email:
+    url = f"{settings.frontend_url}/admin?tab=support" + (f"&ticket={ticket_id}" if ticket_id else "")
+    who = f"<strong>{escape(user_name)}</strong> ({escape(user_email)})"
+    return Email(
+        subject=f"[miBolsillo] Soporte: {subject}",
+        eyebrow="Soporte",
+        title=f"Respuesta de {user_name}" if is_reply else "Consulta nueva",
+        preheader=body[:120],
+        paragraphs=[f"{who} ha {'contestado en' if is_reply else 'escrito una consulta sobre'} «{escape(subject)}»:"],
+        quote=body,
+        button=("Abrir en el panel", url),
+        reason="Recibes este aviso porque eres administrador de miBolsillo.",
+    )
+
+
+def support_reply_email(name: str, subject: str, body: str) -> Email:
+    return Email(
+        subject=f"Respuesta a tu consulta: {subject}",
+        eyebrow="Soporte",
+        title="Te hemos respondido",
+        preheader=body[:120],
+        paragraphs=[f"Hola <strong>{escape(name)}</strong>, tenemos respuesta a tu consulta «{escape(subject)}»:"],
+        quote=body,
+        quote_by="Soporte de miBolsillo",
+        button=("Ver la consulta", f"{settings.frontend_url}/support"),
+        note="Puedes contestar desde la web o la app, en <strong>Ayuda y soporte</strong>.",
+        reason="Te escribimos porque enviaste una consulta al soporte de miBolsillo.",
+        footer_links=_links(),
+    )
+
+
+def smtp_test_email() -> Email:
+    return Email(
+        subject="[miBolsillo] Correo de prueba",
+        eyebrow="Sistema",
+        title="Correo de prueba",
+        preheader="El envío de correo funciona.",
+        paragraphs=[
+            "Si lees esto, el envío de correo de miBolsillo funciona.",
+            f"Enviado el {datetime.utcnow():%d/%m/%Y a las %H:%M} (UTC) desde el panel de administración.",
+        ],
+        reason="Lo has enviado tú desde Administración → Sistema.",
+    )
+
+
+async def send_password_reset_email(to: str, name: str, token: str, db: AsyncSession | None = None) -> bool:
+    """Send a password reset email with a one-time link."""
+    return await send_rendered(to, password_reset_email(to, name, token), db=db)
 
 
 async def send_support_new_ticket(
     admins: list[str], user_name: str, user_email: str, subject: str, body: str,
-    db: AsyncSession | None = None,
+    db: AsyncSession | None = None, ticket_id: str = "", is_reply: bool = False,
 ) -> bool:
     """Aviso a los admins de una consulta nueva (o de una respuesta del usuario)."""
-    url = f"{settings.frontend_url}/admin?tab=support"
-    html = _card(
-        f"Consulta de soporte: {subject}",
-        f"<strong>{escape(user_name)}</strong> ({escape(user_email)}) ha escrito:",
-        body, url, "Abrir en el panel",
-    )
+    email = support_new_ticket_email(user_name, user_email, subject, body, ticket_id, is_reply)
     ok = True
     for to in admins:
-        ok = await send_email(to, f"[miBolsillo] Soporte: {subject}", html, db=db) and ok
+        ok = await send_rendered(to, email, db=db) and ok
     return ok
 
 
-async def send_support_reply(
-    to: str, name: str, subject: str, body: str, db: AsyncSession | None = None,
-) -> bool:
+async def send_support_reply(to: str, name: str, subject: str, body: str, db: AsyncSession | None = None) -> bool:
     """Respuesta del admin al usuario."""
-    url = f"{settings.frontend_url}/support"
-    html = _card(
-        "Respuesta a tu consulta",
-        f"Hola <strong>{escape(name)}</strong>, hemos respondido a tu consulta «{escape(subject)}»:",
-        body, url, "Ver la consulta",
-    )
-    return await send_email(to, f"Respuesta a tu consulta: {subject}", html, db=db)
+    return await send_rendered(to, support_reply_email(name, subject, body), db=db)
 
 
 async def send_test_email(to: str, db: AsyncSession | None = None) -> bool:
-    html = _card("Correo de prueba", "Si lees esto, el envío de correo de miBolsillo funciona.")
-    return await send_email(to, "[miBolsillo] Correo de prueba", html, db=db)
+    return await send_rendered(to, smtp_test_email(), db=db)

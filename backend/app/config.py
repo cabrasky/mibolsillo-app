@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     smtp_user: str = "gastos@cabrasky.net"
     smtp_password: str = ""
     smtp_from: str = "gastos@cabrasky.net"
-    smtp_from_name: str = "Gastos App"
+    smtp_from_name: str = "miBolsillo"
 
     # Cuenta demo compartida (POST /auth/demo)
     demo_enabled: bool = True

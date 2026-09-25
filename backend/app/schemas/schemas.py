@@ -141,7 +141,7 @@ class SmtpConfigUpdate(BaseModel):
     user: str = ""
     password: str = ""
     from_email: str = ""
-    from_name: str = "Gastos App"
+    from_name: str = "miBolsillo"
 
 
 # ── Expenses ──────────────────────────────────────────────────────────────────

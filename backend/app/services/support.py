@@ -47,7 +47,8 @@ async def admin_emails(db: AsyncSession) -> list[str]:
     return [e for e in rows if e]
 
 
-async def notify_admins(user_name: str, user_email: str, subject: str, body: str) -> None:
+async def notify_admins(user_name: str, user_email: str, subject: str, body: str,
+                        ticket_id: str = "", is_reply: bool = False) -> None:
     """Email a los admins. Va en segundo plano (BackgroundTasks) con su propia sesión:
     el usuario no espera al correo y, si falla, la consulta ya está guardada."""
     from app.mail import send_support_new_ticket
@@ -55,6 +56,7 @@ async def notify_admins(user_name: str, user_email: str, subject: str, body: str
         async with async_session_factory() as db:
             to = await admin_emails(db)
             if to:
-                await send_support_new_ticket(to, user_name, user_email, subject, body, db=db)
+                await send_support_new_ticket(to, user_name, user_email, subject, body, db=db,
+                                              ticket_id=ticket_id, is_reply=is_reply)
     except Exception:
         logger.warning("support: could not email admins")
