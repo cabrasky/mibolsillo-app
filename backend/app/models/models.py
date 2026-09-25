@@ -72,7 +72,7 @@ class SmtpConfig(Base):
     user: Mapped[str] = mapped_column(String(255), default="")
     password: Mapped[str] = mapped_column(String(255), default="")
     from_email: Mapped[str] = mapped_column(String(255), default="")
-    from_name: Mapped[str] = mapped_column(String(255), default="Gastos App")
+    from_name: Mapped[str] = mapped_column(String(255), default="miBolsillo")
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 

@@ -49,7 +49,7 @@ async def create_ticket(body: SupportCreate, background: BackgroundTasks,
     msg = SupportMessage(ticket_id=ticket.id, author="user", body=body.body.strip(), created_at=now)
     db.add(msg)
     await db.flush()
-    background.add_task(notify_admins, user.name, user.email, ticket.subject, msg.body)
+    background.add_task(notify_admins, user.name, user.email, ticket.subject, msg.body, ticket.id)
     return ticket_out(ticket, [msg])
 
 
@@ -65,6 +65,6 @@ async def reply(ticket_id: str, body: SupportReply, background: BackgroundTasks,
     ticket.status = "open"
     ticket.updated_at = now
     await db.flush()
-    background.add_task(notify_admins, user.name, user.email, ticket.subject, body.body.strip())
+    background.add_task(notify_admins, user.name, user.email, ticket.subject, body.body.strip(), ticket.id, True)
     msgs = await messages_by_ticket(db, [ticket.id])
     return ticket_out(ticket, msgs[ticket.id])

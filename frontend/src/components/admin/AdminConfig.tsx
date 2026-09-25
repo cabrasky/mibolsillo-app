@@ -22,7 +22,7 @@ export default function AdminConfig() {
   const [smtpUser, setSmtpUser] = useState('');
   const [smtpPassword, setSmtpPassword] = useState('');
   const [smtpFromEmail, setSmtpFromEmail] = useState('');
-  const [smtpFromName, setSmtpFromName] = useState('Gastos App');
+  const [smtpFromName, setSmtpFromName] = useState('miBolsillo');
   const [smtpPasswordSet, setSmtpPasswordSet] = useState(false);
 
   useEffect(() => { loadConfig(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -136,7 +136,7 @@ export default function AdminConfig() {
           <label>{t('admin.fromEmail')}</label>
           <input type="email" value={smtpFromEmail} onChange={e => setSmtpFromEmail(e.target.value)} placeholder="gastos@cabrasky.net" />
           <label>{t('admin.fromName')}</label>
-          <input type="text" value={smtpFromName} onChange={e => setSmtpFromName(e.target.value)} placeholder="Gastos App" />
+          <input type="text" value={smtpFromName} onChange={e => setSmtpFromName(e.target.value)} placeholder="miBolsillo" />
           <button className="btn primary" onClick={handleSaveSmtp} disabled={saving === 'smtp'}>
             {saving === 'smtp' ? t('common.saving') : t('admin.saveSmtp')}
           </button>
