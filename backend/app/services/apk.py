@@ -85,7 +85,10 @@ async def sync_builds(db: AsyncSession) -> None:
         rel = path.relative_to(root).as_posix()
         if rel in known:
             continue
-        stat = path.stat()
+        try:
+            stat = path.stat()
+        except FileNotFoundError:  # otra réplica acaba de borrarlo
+            continue
         mtime = datetime.utcfromtimestamp(stat.st_mtime)
         meta = _read_json(path.with_name(path.name + ".json"))
         legacy = path.parent == root
@@ -161,6 +164,13 @@ async def serve(db: AsyncSession, build: ApkBuild) -> None:
         setting.updated_at = datetime.utcnow()
     await db.flush()
     write_manifest(build)
+
+
+def delete_files(build: ApkBuild) -> None:
+    """Borra el APK y su .json: si quedaran en la carpeta, sync_builds volvería a registrarlo."""
+    path = apk_dir() / build.file
+    for p in (path, path.with_name(path.name + ".json")):
+        p.unlink(missing_ok=True)
 
 
 # ── Subidas por trozos (desde el panel) ──────────────────────────────────────

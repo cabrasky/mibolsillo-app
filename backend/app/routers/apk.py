@@ -8,6 +8,7 @@ Admin:
     GET  /admin/apk                  repositorio (registra antes los APK nuevos de la carpeta)
     POST /admin/apk/{id}/serve       servir esa build (reescribe manifest.json)
     PUT  /admin/apk/{id}             notas / código de versión
+    DELETE /admin/apk/{id}           borrar la build y su fichero (no la servida)
     POST /admin/apk/uploads          empezar una subida → id y tamaño de trozo
     PUT  /admin/apk/uploads/{id}     un trozo (cuerpo binario, ?offset=bytes ya subidos)
     POST /admin/apk/uploads/{id}/complete   comprobar, guardar en builds/ y registrar
@@ -132,6 +133,17 @@ async def update_build(build_id: str, body: ApkBuildUpdate, admin: User = Depend
     if served is not None and served.id == build.id:
         repo.write_manifest(build)  # la app ve las notas nuevas
     return _build_out(build, served.id if served else None)
+
+
+@admin_router.delete("/{build_id}", status_code=204)
+async def delete_build(build_id: str, admin: User = Depends(require_admin), db: AsyncSession = Depends(get_db)):
+    build = await _get_build(db, build_id)
+    served = await repo.served_build(db)
+    if served is not None and served.id == build.id:
+        raise HTTPException(status_code=409, detail="Cannot delete the served build")
+    await db.delete(build)
+    await db.flush()
+    repo.delete_files(build)
 
 
 # ── Admin: subida por trozos ─────────────────────────────────────────────────
