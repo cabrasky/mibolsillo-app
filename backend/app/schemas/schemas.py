@@ -51,6 +51,11 @@ class PreferencesUpdate(BaseModel):
     mobile_tour_done: Optional[bool] = None
 
 
+class AccountDeleteRequest(BaseModel):
+    """Baja de la cuenta: hay que escribir el propio email para confirmar."""
+    confirm_email: str
+
+
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     avatar_url: Optional[str] = None

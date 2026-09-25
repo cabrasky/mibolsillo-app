@@ -743,6 +743,27 @@ const en: Record<TKey, string> = {
   'demo.create': 'Create my account',
   'demo.readOnly': 'The demo is read-only: changes are not saved.',
   'demo.profile': 'The demo account is public: its name and password can’t be changed.',
+
+  // Textos legales y baja de la cuenta
+  'legal.title': 'Legal',
+  'legal.docs': 'Legal documents',
+  'legal.updated': 'Last updated',
+  'legal.privacy': 'Privacy',
+  'legal.cookies': 'Cookies',
+  'legal.notice': 'Legal notice',
+  'legal.terms': 'Terms of use',
+  'legal.registerNote': 'By creating an account you accept the [Terms of use](/legal/terminos) and the [Privacy policy](/legal/privacidad).',
+  'settings.legalHint': 'How your data is handled, what is stored in your browser and the terms of use.',
+  'account.deleteTitle': 'Delete account',
+  'account.deleteText': 'Your account and all your data will be deleted immediately: expenses, receipt photos, incomes, goals, subscriptions, projects, categories and API keys. This cannot be undone; if you want to keep them, export a CSV or Excel file first.',
+  'account.deleteCc': 'Splits you sent to Cuentas Claras are managed in that app.',
+  'account.deleteBtn': 'Delete my account',
+  'account.deleteConfirmTitle': 'Delete your account?',
+  'account.deleteConfirmLabel': 'Type your email ({email}) to confirm',
+  'account.deleteConfirmBtn': 'Delete my account and my data',
+  'account.deleting': 'Deleting…',
+  'account.deleted': 'Your account and all your data have been deleted.',
+  'account.emailMismatch': 'The email doesn’t match your account.',
 };
 
 export default en;

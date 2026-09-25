@@ -29,6 +29,7 @@ import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import AdminPanel from './components/AdminPanel';
 import Landing from './components/Landing';
+import LegalPage from './components/LegalPage';
 import CategoriesPage from './components/CategoriesPage';
 import ExcelPage from './components/ExcelPage';
 import HelpPage from './components/HelpPage';
@@ -134,6 +135,8 @@ function AppContent() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/legal" element={<Navigate to="/legal/privacidad" replace />} />
+        <Route path="/legal/:doc" element={<LegalPage />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
@@ -185,6 +188,8 @@ function AppContent() {
       } />
       <Route path="/excel" element={<ExcelPage onImported={refresh} />} />
       <Route path="/help" element={<HelpPage />} />
+      <Route path="/legal" element={<Navigate to="/legal/privacidad" replace />} />
+      <Route path="/legal/:doc" element={<LegalPage />} />
       <Route path="/developer" element={<DeveloperPage />} />
       <Route path="/projects" element={
         <ProjectsPage onRefresh={refresh} onAddToProject={openAddFor} />
