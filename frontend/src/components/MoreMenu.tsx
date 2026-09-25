@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { IconChart, IconTarget, IconWallet, IconRefresh, IconCheck, IconSettings, IconLock } from './Icons';
+import { IconChart, IconTarget, IconWallet, IconRefresh, IconCheck, IconSettings, IconLock, IconLifeBuoy } from './Icons';
 import { useAuth } from '../AuthContext';
 import { useLocale } from '../i18n';
 
@@ -62,6 +62,11 @@ export default function MoreMenu() {
         </div>
         <div className="more-label">{t('more.categories')}</div>
         <div className="more-desc">{t('more.categoriesDesc')}</div>
+      </Link>
+      <Link to="/support" className="more-card" style={{ textDecoration: 'none', color: 'inherit' }}>
+        <div className="more-icon"><IconLifeBuoy size={24} /></div>
+        <div className="more-label">{t('support.title')}</div>
+        <div className="more-desc">{t('support.desc')}</div>
       </Link>
       {user?.is_admin && (
         <Link to="/admin" className="more-card admin-card" style={{ textDecoration: 'none' }}>

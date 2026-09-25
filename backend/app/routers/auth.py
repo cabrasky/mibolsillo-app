@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.models.models import User, ApiKey, OAuthConfig, SmtpConfig
-from app.services.accounts import delete_user_data
+from app.services.accounts import delete_user_data, issue_password_reset
 from app.services.demo import DEMO_EMAIL, DEMO_ENABLED, get_demo_user, is_demo
 from app.schemas.schemas import (
     RegisterRequest,
@@ -102,8 +102,18 @@ async def get_current_user(
     user = result.scalar_one_or_none()
     if user is None:
         raise HTTPException(status_code=401, detail="User not found")
+    _ensure_active(user)
 
     return user
+
+
+SUSPENDED = "Account suspended"
+
+
+def _ensure_active(user: User) -> None:
+    """Una cuenta suspendida desde el panel de admin no puede entrar ni usar la API."""
+    if user.suspended_at is not None:
+        raise HTTPException(status_code=403, detail=SUSPENDED)
 
 
 def _hash_api_key(key: str) -> str:
@@ -127,6 +137,7 @@ async def _user_from_api_key(key: str, db: AsyncSession) -> User:
     user = result.scalar_one_or_none()
     if user is None:
         raise HTTPException(status_code=401, detail="User not found")
+    _ensure_active(user)
 
     api_key_row.last_used_at = datetime.utcnow()
     await db.flush()
@@ -213,6 +224,7 @@ async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
 
     if not bcrypt.checkpw(password.encode(), user.password_hash.encode()):
         raise HTTPException(status_code=401, detail="Incorrect email or password")
+    _ensure_active(user)
 
     user.last_login = datetime.utcnow()
     token = _make_jwt(user.id, user.email, user.is_admin)
@@ -353,7 +365,6 @@ async def google_callback(
                 db.add(user)
 
             await db.flush()
-            token = _make_jwt(user.id, user.email, user.is_admin)
             # Redirect back to the caller (web o deep link de la app) with token
             target = settings.frontend_url
             if state:
@@ -365,6 +376,9 @@ async def google_callback(
                 except Exception:
                     pass
             sep = "&" if "?" in target else "?"
+            if user.suspended_at is not None:
+                return RedirectResponse(f"{target}{sep}error=suspended")
+            token = _make_jwt(user.id, user.email, user.is_admin)
             return RedirectResponse(f"{target}{sep}token={token}")
 
     except HTTPException:
@@ -376,8 +390,17 @@ async def google_callback(
 @router.get("/me", response_model=UserOut)
 async def get_me(
     current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
-    """Get current user profile."""
+    """Get current user profile.
+
+    La web y la app lo piden al abrir: sirve también para que «último acceso»
+    (panel de admin) no dependa solo del login. Como mucho una vez por hora.
+    """
+    now = datetime.utcnow()
+    if current_user.last_login is None or now - current_user.last_login > timedelta(hours=1):
+        current_user.last_login = now
+        await db.flush()
     return UserOut.model_validate(current_user)
 
 
@@ -462,8 +485,6 @@ async def forgot_password(
     db: AsyncSession = Depends(get_db),
 ):
     """Send password reset email with one-time token."""
-    from app.mail import send_password_reset_email
-
     email = body.email.strip().lower()
 
     # Always return success to prevent email enumeration
@@ -471,13 +492,7 @@ async def forgot_password(
     user = result.scalar_one_or_none()
 
     if user and user.password_hash:
-        token = secrets.token_urlsafe(48)
-        user.reset_token = token
-        user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
-        await db.flush()
-
-        sent = await send_password_reset_email(user.email, user.name, token, db=db)
-        if not sent:
+        if not await issue_password_reset(db, user):
             raise HTTPException(status_code=500, detail="Could not send email")
 
     return MessageResponse(message="Si el email está registrado, recibirás un enlace para restablecer tu contraseña")

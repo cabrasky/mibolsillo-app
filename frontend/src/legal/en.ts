@@ -19,20 +19,26 @@ const en: LegalDocs = {
         '**What you record in the app:** expenses (amount, date, description, category, payment method…), receipt photos you upload, incomes, savings goals, subscriptions, projects and your own categories.',
         '**People you share expenses with:** the names you type and what they owe you or have paid back.',
         '**Developer-mode API keys:** only their fingerprint (hash) is stored, not the key.',
+        '**Support requests:** what you write to support and the replies you get.',
         '**Technical data:** IP address, date and path of each request, in the server logs, for security and troubleshooting.',
       ], 'We never ask for bank details and we do not connect to your bank.'] },
       { h: 'Why and on what legal basis', p: [[
         '**Providing the service:** creating your account, storing and syncing your data between the web and the app, and sending the password recovery email. This is necessary to perform the [Terms of use](/legal/terminos) you accept when you sign up (art. 6.1.b GDPR).',
-        '**Security and operation:** keeping technical logs and preventing abuse, based on our legitimate interest in keeping the service secure (art. 6.1.f GDPR).',
+        '**Handling support:** answering your requests in the app and by email (art. 6.1.b GDPR).',
+        '**Security and operation:** keeping technical logs, detecting errors and preventing abuse, based on our legitimate interest in keeping the service secure (art. 6.1.f GDPR).',
       ], 'We do not use your data for advertising or profiling. There is no analytics or tracking, and your data is never sold or shared.'] },
       { h: 'Who it is shared with', p: [
         'Only in these cases, and only if you use the related feature:',
         [
           '**Google**, if you choose “Continue with Google”: Google identifies you and sends us your name, email and picture. Google LLC may process data in the US under the EU-US Data Privacy Framework, and [Google’s privacy policy](https://policies.google.com/privacy) also applies.',
           '**Cuentas Claras** (cuentas-claras.cabrasky.net), if you send a shared expense there: the title, date, amounts, names of the people in the split and your email are sent. It is a service run by the same controller, and what you send is managed in that app.',
-          '**Email:** password recovery emails are sent from our own mail server (mail.cabrasky.net).',
+          '**Email:** password recovery emails and support replies are sent from our own mail server (mail.cabrasky.net).',
         ],
         'The website loads no third-party resources: fonts and other files are served from our own server. Data would only be handed to an authority if the law required it.',
+      ] },
+      { h: 'What the administrator sees', p: [
+        'The admin panel shows your account details (name, email, sign-up and last access dates, how you sign in and whether you use the mobile app), **how many** records you have and your support requests, to run the service and help you. It does not show the content of your expenses, incomes or any other records.',
+        'The administrator can suspend or delete an account that breaks the [Terms of use](/legal/terminos), and send you a password reset link if you ask.',
       ] },
       { h: 'Other people’s data', p: [
         'If you record other people’s names in shared expenses, do it with their knowledge and keep it to the minimum: a first name or nickname is enough. That data is only used inside your account.',
@@ -40,7 +46,8 @@ const en: LegalDocs = {
       { h: 'How long we keep it', p: [[
         'Your data is kept for as long as you have an account.',
         'If you **delete your account**, it is erased from the database immediately: the account, expenses, photos, incomes, goals, subscriptions, projects, categories and API keys. Backups are rotated automatically, and deleted data disappears from them within **30 days at most**.',
-        'Server logs are deleted as they are rotated automatically.',
+        'Support requests are kept while you have an account and deleted when you delete it.',
+        'Server logs are deleted as they are rotated automatically, and server errors (path, error type and ID, without the content of your data) after 30 days.',
       ]] },
       { h: 'Your rights', p: [
         'You have the right of **access, rectification, erasure, objection, restriction and portability**. You can exercise them:',

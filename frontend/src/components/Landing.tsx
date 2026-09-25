@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { useLocale, nextLocale, localizeError } from '../i18n';
-import { BrandMark, IconDownload, IconGrid, IconList, IconRefresh, IconSmartphone, IconTarget, IconWallet, IconArrowRight, IconSparkle, IconCheckCircle, IconX } from './Icons';
+import { BrandMark, IconDownload, IconGrid, IconList, IconRefresh, IconSmartphone, IconTarget, IconWallet, IconArrowRight, IconSparkle, IconCheckCircle, IconX, IconAlertCircle } from './Icons';
 import LegalLinks from './LegalLinks';
 
 const APK_URL = '/apk/mibolsillo-1.0.0.apk';
@@ -20,7 +20,7 @@ const FEATURES = [
 
 export default function Landing() {
   const { t, locale, setLocale } = useLocale();
-  const { loginDemo } = useAuth();
+  const { loginDemo, authError, clearAuthError } = useAuth();
   const navigate = useNavigate();
   // La demo solo se abre desde aquí (no desde el login)
   const [demo, setDemo] = useState({ busy: false, error: '' });
@@ -56,6 +56,13 @@ export default function Landing() {
         </div>
       </header>
 
+      {authError === 'suspended' && (
+        <div className="landing-notice warn" role="alert">
+          <IconAlertCircle size={18} />
+          <span>{t('error.suspended')}</span>
+          <button type="button" onClick={clearAuthError} aria-label={t('common.close')}><IconX size={16} /></button>
+        </div>
+      )}
       {deleted && (
         <div className="landing-notice" role="status">
           <IconCheckCircle size={18} />

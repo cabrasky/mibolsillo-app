@@ -30,6 +30,9 @@ interface AuthContextType {
   googleLogin: () => void;
   refreshUser: () => Promise<void>;
   updatePreferences: (body: Partial<AccountPreferences>) => Promise<void>;
+  /** Error al volver de Google (p. ej. 'suspended': cuenta suspendida por un admin) */
+  authError: string;
+  clearAuthError: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -46,6 +49,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserState(u);
   }, []);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState('');
+  const clearAuthError = useCallback(() => setAuthError(''), []);
 
   const refreshUser = useCallback(async () => {
     const token = getToken();
@@ -70,8 +75,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check URL for token (from Google OAuth redirect)
     const params = new URLSearchParams(window.location.search);
     const tokenFromUrl = params.get('token');
-    if (tokenFromUrl) {
-      setToken(tokenFromUrl);
+    const errorFromUrl = params.get('error');
+    if (tokenFromUrl) setToken(tokenFromUrl);
+    if (errorFromUrl) setAuthError(errorFromUrl);
+    if (tokenFromUrl || errorFromUrl) {
       // Clean URL
       window.history.replaceState({}, '', window.location.pathname);
     }
@@ -119,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, loginDemo, logout, googleLogin, refreshUser, updatePreferences }}>
+    <AuthContext.Provider value={{ user, loading, login, register, loginDemo, logout, googleLogin, refreshUser, updatePreferences, authError, clearAuthError }}>
       {children}
     </AuthContext.Provider>
   );

@@ -5,7 +5,7 @@ import { useLocale } from '../i18n';
 import { useAuth } from '../AuthContext';
 import {
   IconPlus, IconList, IconTarget,
-  IconTrendingUp, IconRefresh, IconHome, IconGrid, IconUsers, IconSettings, IconLogOut, BrandMark,
+  IconTrendingUp, IconRefresh, IconHome, IconGrid, IconUsers, IconSettings, IconLogOut, IconShield, BrandMark,
 } from './Icons';
 import { pendingDebtCount } from '../personas';
 
@@ -40,6 +40,8 @@ const PAGE_TITLES: Record<string, string> = {
   '/help': 'more.help',
   '/developer': 'more.developer',
   '/settings': 'settings.title',
+  '/support': 'support.title',
+  '/admin': 'admin.title',
 };
 
 const NAV_ITEMS: { key: Tab; icon: React.ReactNode; i18nKey: string; path: string }[] = [
@@ -100,6 +102,16 @@ export default function DesktopLayout({
               </button>
             );
           })}
+          {user?.is_admin && (
+            <button
+              className={`sidebar-item ${location.pathname === '/admin' ? 'active' : ''}`}
+              aria-current={location.pathname === '/admin' ? 'page' : undefined}
+              onClick={() => navigate('/admin')}
+            >
+              <IconShield size={18} /><span>{t('admin.title')}</span>
+              {location.pathname === '/admin' && <span className="nav-dot" aria-hidden="true" />}
+            </button>
+          )}
         </div>
         <div className="sidebar-footer">
           {user && (

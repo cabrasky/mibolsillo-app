@@ -15,8 +15,9 @@ from app.config import settings
 from app.database import engine, Base, async_session_factory
 from app.schema_sync import run_alembic_upgrade, sync_missing_columns
 from app.models.models import User
-from app.routers import auth, expenses, incomes, goals, subscriptions, projects, categories, excel, developer
+from app.routers import auth, expenses, incomes, goals, subscriptions, projects, categories, excel, developer, admin, support
 from app.services.demo import demo_read_only
+from app.services.errors import record_server_error
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +98,8 @@ def _request_id(request: Request) -> str:
 @app.exception_handler(HTTPException)
 async def http_error_handler(request: Request, exc: HTTPException):
     request_id = _request_id(request)
+    if exc.status_code >= 500:
+        await record_server_error(request, exc.status_code, exc)
     return JSONResponse(
         status_code=exc.status_code,
         headers=exc.headers,
@@ -126,6 +129,7 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
 async def database_error_handler(request: Request, exc: SQLAlchemyError):
     request_id = _request_id(request)
     logger.exception("Database error request_id=%s path=%s", request_id, request.url.path)
+    await record_server_error(request, 503, exc)
     return JSONResponse(
         status_code=503,
         content={
@@ -140,6 +144,7 @@ async def database_error_handler(request: Request, exc: SQLAlchemyError):
 async def unhandled_error_handler(request: Request, exc: Exception):
     request_id = _request_id(request)
     logger.exception("Unhandled API error request_id=%s path=%s", request_id, request.url.path)
+    await record_server_error(request, 500, exc)
     return JSONResponse(
         status_code=500,
         content={
@@ -168,6 +173,8 @@ app.include_router(projects.router, prefix="/api")
 app.include_router(categories.router, prefix="/api")
 app.include_router(excel.router, prefix="/api")
 app.include_router(developer.router, prefix="/api")
+app.include_router(admin.router, prefix="/api")
+app.include_router(support.router, prefix="/api")
 
 
 @app.get("/api/health")

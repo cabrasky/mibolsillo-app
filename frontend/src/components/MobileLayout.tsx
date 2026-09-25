@@ -22,7 +22,8 @@ const PATH_INFO: Record<string, { i18nKey: string; parentTab?: BottomTab; titleK
   '/more': { i18nKey: 'nav.more' },
   '/projects': { i18nKey: 'nav.more', titleKey: 'nav.projects', parentTab: 'more' },
   '/settings': { i18nKey: 'nav.more', titleKey: 'settings.title', parentTab: 'more' },
-  '/admin': { i18nKey: 'nav.more', titleKey: 'more.admin', parentTab: 'more' },
+  '/admin': { i18nKey: 'nav.more', titleKey: 'admin.title', parentTab: 'more' },
+  '/support': { i18nKey: 'nav.more', titleKey: 'support.title', parentTab: 'more' },
   '/subs': { i18nKey: 'nav.more', titleKey: 'nav.subs', parentTab: 'more' },
   '/categories': { i18nKey: 'nav.more', titleKey: 'more.categories', parentTab: 'more' },
   '/excel': { i18nKey: 'nav.more', titleKey: 'more.excel', parentTab: 'more' },
@@ -64,7 +65,7 @@ export default function MobileLayout({
   const info = getPathInfo(location.pathname);
   const activeTab = currentBottomTab(location.pathname);
   const isMoreSub = MORE_SUBPATHS.includes(location.pathname);
-  const showBack = isMoreSub || location.pathname.startsWith('/projects') || location.pathname.startsWith('/legal') || ['/settings', '/admin', '/subs', '/categories', '/excel', '/help', '/developer'].includes(location.pathname);
+  const showBack = isMoreSub || location.pathname.startsWith('/projects') || location.pathname.startsWith('/legal') || ['/settings', '/admin', '/support', '/subs', '/categories', '/excel', '/help', '/developer'].includes(location.pathname);
   const { t } = useLocale();
   const { logout } = useAuth();
 
