@@ -6,6 +6,7 @@ import { expenseCost } from '../types';
 import type { Project } from '../types';
 import { loadData, addProject, updateProject, deleteProject } from '../store';
 import { IconPlus, IconX, IconEdit, IconTrash, IconArrowRight } from './Icons';
+import { eur } from '../format';
 
 interface Props {
   onRefresh: () => void;
@@ -52,7 +53,7 @@ export default function ProjectsPage({ onRefresh, onAddToProject }: Props) {
   const handleDelete = (e: React.MouseEvent, p: Project) => {
     e.stopPropagation();
     const s = statsFor(p.id);
-    const extra = s.count > 0 ? '\n\n' + fill(t('proj.confirmDeleteExtra'), { n: s.count, v: `${s.total.toFixed(2)} EUR` }) : '';
+    const extra = s.count > 0 ? '\n\n' + fill(t('proj.confirmDeleteExtra'), { n: s.count, v: `${eur(s.total)}` }) : '';
     if (!confirm(fill(t('proj.confirmDelete'), { name: p.name }) + extra)) return;
     deleteProject(p.id);
     onRefresh();
@@ -76,11 +77,11 @@ export default function ProjectsPage({ onRefresh, onAddToProject }: Props) {
         </div>
         <div className="stat">
           <div className="label">{t('proj.invested')}</div>
-          <div className="value">{data.expenses.filter(e => e.proyectoId).reduce((s, e) => s + expenseCost(e), 0).toFixed(2)} EUR</div>
+          <div className="value">{eur(data.expenses.filter(e => e.proyectoId).reduce((s, e) => s + expenseCost(e), 0))}</div>
         </div>
         <div className="stat">
           <div className="label">{t('proj.general')}</div>
-          <div className="value">{generalTotal.toFixed(2)} EUR</div>
+          <div className="value">{eur(generalTotal)}</div>
         </div>
       </div>
 
@@ -108,11 +109,11 @@ export default function ProjectsPage({ onRefresh, onAddToProject }: Props) {
                   return (
                     <tr key={p.id} className="row-link" onClick={() => navigate(`/projects/${p.id}`)} title={t('proj.viewBreakdown')}>
                       <td>
-                        <strong>📁 {p.name}</strong>
-                        <span className="td-meta">{t('proj.viewBreakdown')} →</span>
+                        <strong>{p.name}</strong>
+                        <span className="td-meta td-link">{t('proj.viewBreakdown')}<IconArrowRight size={12} /></span>
                       </td>
                       <td>{s.count}</td>
-                      <td className="td-amount">{s.total.toFixed(2)} EUR</td>
+                      <td className="td-amount">{eur(s.total)}</td>
                       <td style={{ textAlign: 'right' }}>
                         <div className="row-actions" style={{ justifyContent: 'flex-end' }}>
                           <button className="btn sm primary" onClick={e => handleAddExpense(e, p)} title={t('proj.addExpenseTitle')}>
@@ -140,7 +141,7 @@ export default function ProjectsPage({ onRefresh, onAddToProject }: Props) {
           <div className="modal modal-sm" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{editing ? t('proj.rename') : t('proj.new')}</h2>
-              <button className="modal-close" onClick={() => setShowForm(false)} type="button" aria-label={t('common.close')}><IconX size={20} /></button>
+              <button className="modal-close" onClick={() => setShowForm(false)} type="button" aria-label={t('common.close')}><IconX size={18} /></button>
             </div>
             <form onSubmit={handleSubmit} className="modal-body">
               <div className="form-group">

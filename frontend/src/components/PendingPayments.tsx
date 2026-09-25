@@ -4,7 +4,7 @@ import { REF } from '../types';
 import { updateExpense } from '../store';
 import { useLocale, LOCALE_TAG, fill, refLabel } from '../i18n';
 import { personasOf, repaySummary, serializePersonas, type Persona } from '../personas';
-import { IconCheckCircle, IconXCircle } from './Icons';
+import { IconCheckCircle, IconXCircle, IconX } from './Icons';
 
 interface Props {
   expenses: Expense[];
@@ -72,7 +72,7 @@ export default function PendingPayments({ expenses, onRefresh }: Props) {
       </div>
 
       {groups.length === 0 && (
-        <div className="card"><div className="empty">{tab === 'pending' ? t('debt.nobody') : t('debt.noRefunds')}</div></div>
+        <div className="card"><div className="empty">{tab === 'pending' && <span className="empty-ok"><IconCheckCircle size={28} /></span>}<p>{tab === 'pending' ? t('debt.nobody') : t('debt.noRefunds')}</p></div></div>
       )}
       {groups.map(g => (
         <div key={g.name} className="card">
@@ -115,7 +115,7 @@ export default function PendingPayments({ expenses, onRefresh }: Props) {
           <div className="modal modal-sm" onClick={ev => ev.stopPropagation()}>
             <div className="modal-header">
               <h2>{t('debt.howTitle')}</h2>
-              <button className="modal-close" type="button" title={t('common.close')} onClick={() => setPay(null)}>✕</button>
+              <button className="modal-close" type="button" title={t('common.close')} aria-label={t('common.close')} onClick={() => setPay(null)}><IconX size={18} /></button>
             </div>
             <div className="modal-body">
               <p className="td-muted" style={{ marginTop: 0 }}>

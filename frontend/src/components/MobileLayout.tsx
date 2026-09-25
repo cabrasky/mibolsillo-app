@@ -1,15 +1,15 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { IconPlus, IconList, IconTrendingUp, IconEuro, IconGrid, IconHome, IconArrowLeft } from './Icons';
+import { IconPlus, IconList, IconTrendingUp, IconTarget, IconGrid, IconHome, IconArrowLeft, BrandMark } from './Icons';
 import { useLocale, nextLocale } from '../i18n';
 
 type BottomTab = 'dashboard' | 'expenses' | 'incomes' | 'goals' | 'more';
 
 const BOTTOM_NAV: { key: BottomTab; icon: React.ReactNode; i18nKey: string; path: string }[] = [
-  { key: 'dashboard', icon: <IconHome size={20} />, i18nKey: 'nav.dashboard', path: '/dashboard' },
-  { key: 'expenses', icon: <IconList size={20} />, i18nKey: 'nav.expenses', path: '/expenses' },
-  { key: 'incomes', icon: <IconTrendingUp size={20} />, i18nKey: 'nav.incomes', path: '/incomes' },
-  { key: 'goals', icon: <IconEuro size={20} />, i18nKey: 'nav.goals', path: '/goals' },
-  { key: 'more', icon: <IconGrid size={20} />, i18nKey: 'nav.more', path: '/more' },
+  { key: 'dashboard', icon: <IconHome size={22} />, i18nKey: 'nav.dashboard', path: '/dashboard' },
+  { key: 'expenses', icon: <IconList size={22} />, i18nKey: 'nav.expenses', path: '/expenses' },
+  { key: 'incomes', icon: <IconTrendingUp size={22} />, i18nKey: 'nav.incomes', path: '/incomes' },
+  { key: 'goals', icon: <IconTarget size={22} />, i18nKey: 'nav.goals', path: '/goals' },
+  { key: 'more', icon: <IconGrid size={22} />, i18nKey: 'nav.more', path: '/more' },
 ];
 
 // Map paths to header i18n keys and bottom tab
@@ -79,30 +79,31 @@ export default function MobileLayout({
               <IconArrowLeft size={18} />
             </button>
           )}
-          <img src="/logo.png" alt="miBolsillo" style={{ width: 26, height: 26, borderRadius: 8 }} />
+          {!showBack && <BrandMark size="sm" />}
           <span className="mobile-header-title">{t(info.titleKey || info.i18nKey)}</span>
         </div>
         <div className="mobile-header-right">
           <button className="theme-btn" onClick={() => setLocale(nextLocale(locale))} title={t('lang.select')} aria-label={t('lang.select')}>
-            <span style={{fontWeight:700,fontSize:'.75rem'}}>{locale.toUpperCase()}</span>
+            {locale.toUpperCase()}
           </button>
           <button className="theme-btn" onClick={() => onLayoutChange(layout === 'desktop' ? 'mobile' : 'desktop')} title={t('nav.desktop')} aria-label={t('nav.desktop')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           </button>
           <button className="theme-btn" onClick={onToggleDark} title={t('theme.toggle')} aria-label={t('theme.toggle')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              {dark ? <><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></> : <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {dark ? <><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></> : <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />}
             </svg>
           </button>
         </div>
       </header>
       <main className="mobile-content">{children}</main>
-      <nav className="mobile-bottom-nav">
+      <nav className="mobile-bottom-nav" aria-label={t('nav.main')}>
         <div className="bottom-nav-scroll">
         {BOTTOM_NAV.map(item => (
           <button
             key={item.key}
             className={`bottom-nav-item ${activeTab === item.key ? 'active' : ''}`}
+            aria-current={activeTab === item.key ? 'page' : undefined}
             onClick={() => navigate(item.path)}
           >
             {item.icon}<span>{t(item.i18nKey)}</span>
@@ -110,7 +111,7 @@ export default function MobileLayout({
         ))}
         </div>
       </nav>
-      <button className="mobile-fab" onClick={onAddClick} title={t('expense.add')}><IconPlus size={20} />{t('nav.newExpense')}</button>
+      <button className="mobile-fab" onClick={onAddClick} title={t('nav.newExpense')} aria-label={t('nav.newExpense')}><IconPlus size={24} /></button>
     </div>
   );
 }

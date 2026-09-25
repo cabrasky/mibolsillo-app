@@ -29,7 +29,9 @@ import CategoriesPage from './components/CategoriesPage';
 import ExcelPage from './components/ExcelPage';
 import HelpPage from './components/HelpPage';
 import DeveloperPage from './components/DeveloperPage';
-import { MonthlyChart, CashFlowChart, BalanceEvolution, IncomeExpenseComparison, SankeyChart, DailyTrendCharts, CategoryFilter, CategoryCompare, CAT_COLORS } from './components/Charts';
+import { MonthlyChart, CashFlowChart, BalanceEvolution, IncomeExpenseComparison, SankeyChart, DailyTrendCharts, CategoryFilter, CategoryCompare } from './components/Charts';
+import { catDot } from './categoryColors';
+import { BrandMark } from './components/Icons';
 import PeriodCompare from './components/CompareCharts';
 import './App.css';
 
@@ -51,12 +53,10 @@ function MonthlyCharts({ expenses, incomes }: { expenses: any[]; incomes: any[] 
   }, [expenses]);
   const [selected, setSelected] = useState<string[]>([]);
   const filtered = selected.length ? expenses.filter((e: any) => selected.includes(e.proposito)) : expenses;
-  const selCats = (selected.length ? selected : cats).map((name: string, i: number) => ({
-    name, color: CAT_COLORS[cats.indexOf(name) % CAT_COLORS.length] || CAT_COLORS[i % CAT_COLORS.length],
-  }));
+  const selCats = (selected.length ? selected : cats).map((name: string) => ({ name, color: catDot(name) }));
   return (
     <>
-      <CategoryFilter cats={cats.map((name: string, i: number) => ({ name, color: CAT_COLORS[i % CAT_COLORS.length] }))}
+      <CategoryFilter cats={cats.map((name: string) => ({ name, color: catDot(name) }))}
         selected={selected} onChange={setSelected} />
       {selCats.length > 0 && <CategoryCompare expenses={expenses} cats={selCats} />}
       <CashFlowChart expenses={filtered} incomes={incomes} />
@@ -159,7 +159,7 @@ function AppContent() {
   if (loading) {
     return (
       <div className="loading-screen">
-        <img src="/logo.png" alt="miBolsillo" className="brand-logo" />
+        <BrandMark size="lg" />
         <h2>miBolsillo</h2>
         <div className="loading-spinner" />
       </div>

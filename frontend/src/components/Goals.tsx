@@ -4,6 +4,7 @@ import { useLocale, fill, refLabel } from '../i18n';
 import type { Goal } from '../types';
 import { addGoal, updateGoal, deleteGoal } from '../store';
 import { IconPlus, IconX, IconEdit, IconTrash, IconTrendingUp, IconTarget } from './Icons';
+import { eur } from '../format';
 
 interface Props {
   goals: Goal[];
@@ -107,16 +108,16 @@ export default function GoalsPage({ goals, onRefresh }: Props) {
           </div>
         </div>
         <div className="goal-amounts">
-          <span className="goal-current">{goal.currentAmount.toFixed(2)} EUR</span>
+          <span className="goal-current">{eur(goal.currentAmount)}</span>
           <span className="goal-sep">/</span>
-          <span className="goal-target">{goal.targetAmount.toFixed(2)} EUR</span>
+          <span className="goal-target">{eur(goal.targetAmount)}</span>
         </div>
         <div className="progress-wrap goal-progress">
           <div className={`progress-fill ${done ? 'success' : urgent ? 'warning' : ''}`} style={{ width: `${gpct}%` }} />
         </div>
         <div className="goal-meta">
           <span>{gpct.toFixed(0)}% {t('goal.completed')}</span>
-          {remaining > 0 && <span>{t('goal.remaining')} {remaining.toFixed(2)} EUR</span>}
+          {remaining > 0 && <span>{t('goal.remaining')} {eur(remaining)}</span>}
           {daysLeft !== null && (
             <span>
               {daysLeft <= 0 ? t('goal.expired') : `${daysLeft} ${t('goal.days')}`}
@@ -138,11 +139,11 @@ export default function GoalsPage({ goals, onRefresh }: Props) {
         </div>
         <div className="stat">
           <div className="label">{t('goal.saved')}</div>
-          <div className="value positive">{totalSaved.toFixed(2)} EUR</div>
+          <div className="value positive">{eur(totalSaved)}</div>
         </div>
         <div className="stat">
           <div className="label">{t('goal.target')}</div>
-          <div className="value">{totalTarget.toFixed(2)} EUR</div>
+          <div className="value">{eur(totalTarget)}</div>
         </div>
         <div className="stat">
           <div className="label">{t('goal.globalProgress')}</div>
@@ -155,7 +156,7 @@ export default function GoalsPage({ goals, onRefresh }: Props) {
           <div className={`progress-fill ${pct >= 100 ? 'success' : ''}`} style={{ width: `${pct}%` }} />
         </div>
         <div style={{ textAlign: 'center', fontSize: '.82rem', color: 'var(--text-muted)' }}>
-          {totalSaved.toFixed(2)} / {totalTarget.toFixed(2)} EUR ({pct.toFixed(1)}%)
+          {eur(totalSaved)} / {eur(totalTarget)} ({pct.toFixed(1)}%)
         </div>
       </div>
 
@@ -182,11 +183,11 @@ export default function GoalsPage({ goals, onRefresh }: Props) {
           <div className="modal modal-sm" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{fill(t(contribGoal.currentAmount >= contribGoal.targetAmount ? 'goal.withdrawFrom' : 'goal.contributeTo'), { name: contribGoal.name })}</h2>
-              <button className="modal-close" onClick={() => setContribGoal(null)}><IconX size={20} /></button>
+              <button className="modal-close" onClick={() => setContribGoal(null)}><IconX size={18} /></button>
             </div>
             <div className="modal-body">
               <p style={{ fontSize: '.85rem', color: 'var(--text-muted)', marginBottom: 12 }}>
-                {t('goal.current')}: {contribGoal.currentAmount.toFixed(2)} EUR / {contribGoal.targetAmount.toFixed(2)} EUR
+                {t('goal.current')}: {eur(contribGoal.currentAmount)} / {eur(contribGoal.targetAmount)}
               </p>
               <div className="form-group">
                 <label>{t('common.amountEur')}</label>
@@ -211,7 +212,7 @@ export default function GoalsPage({ goals, onRefresh }: Props) {
           <div className="modal modal-sm" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{editing ? t('goal.edit') : t('goal.add')}</h2>
-              <button className="modal-close" onClick={() => setShowForm(false)}><IconX size={20} /></button>
+              <button className="modal-close" onClick={() => setShowForm(false)}><IconX size={18} /></button>
             </div>
             <form onSubmit={handleSubmit} className="modal-body">
               <div className="form-group" style={{ marginBottom: 10 }}>
@@ -220,11 +221,11 @@ export default function GoalsPage({ goals, onRefresh }: Props) {
               </div>
               <div className="form-row three">
                 <div className="form-group">
-                  <label>{t('goal.targetAmount')} (EUR)</label>
+                  <label>{t('goal.targetAmount')} (€)</label>
                   <input type="number" step="0.01" value={targetAmount} onChange={e => setTargetAmount(Number(e.target.value))} />
                 </div>
                 <div className="form-group">
-                  <label>{t('goal.savedAmount')} (EUR)</label>
+                  <label>{t('goal.savedAmount')} (€)</label>
                   <input type="number" step="0.01" value={currentAmount} onChange={e => setCurrentAmount(Number(e.target.value))} />
                 </div>
                 <div className="form-group">

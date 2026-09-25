@@ -14,10 +14,20 @@ const FIXED: Record<string, number> = {
   'ref.categories.transport': 7,
 };
 
-export function catColor(name: string): string {
+function catIndex(name: string): number {
   const key = refKeyOf('categories', name);
-  if (key && key in FIXED) return `cat-c${FIXED[key]}`;
+  if (key && key in FIXED) return FIXED[key];
   let h = 0;
   for (const ch of key || normText(name)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  return `cat-c${h % 8}`;
+  return h % 8;
+}
+
+export function catColor(name: string): string {
+  return `cat-c${catIndex(name)}`;
+}
+
+// Color del punto de la categoría (mismo que --cat-dot en claro) para gráficos
+const DOTS = ['#6E7CF2', '#2F9C8F', '#B45C9A', '#FF5A36', '#7FA836', '#D94F7C', '#D9A13B', '#5B87B8'];
+export function catDot(name: string): string {
+  return DOTS[catIndex(name)];
 }

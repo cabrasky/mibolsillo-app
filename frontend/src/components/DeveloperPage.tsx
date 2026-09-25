@@ -8,12 +8,12 @@ import {
 import { useLocale, localizeError, fill, LOCALE_TAG } from '../i18n';
 import RichText from './RichText';
 
-const B = { border: '1px solid var(--border)', borderRadius: 14, padding: 16, background: 'var(--surface)', marginBottom: 12 };
-const H = { margin: '0 0 8px', fontSize: 15.5, fontWeight: 800 } as const;
-const P = { lineHeight: 1.7, fontSize: 13.5, color: 'var(--text)' } as const;
+const B = { border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px 22px', background: 'var(--surface)', marginBottom: 16 };
+const H = { margin: '0 0 10px', fontSize: 16, fontWeight: 800 } as const;
+const P = { lineHeight: 1.7, fontSize: 14, color: 'var(--text)' } as const;
 const CODE: React.CSSProperties = {
-  display: 'block', background: 'var(--bg, #0f1115)', color: '#e5e7eb',
-  borderRadius: 8, padding: 10, fontSize: 12.5, fontFamily: 'ui-monospace, monospace',
+  display: 'block', background: 'var(--surface2)', color: 'var(--text)', border: '1px solid var(--border)',
+  borderRadius: 12, padding: 12, fontSize: 12.5, fontFamily: 'ui-monospace, monospace',
   overflowX: 'auto', whiteSpace: 'pre', margin: '6px 0 12px',
 };
 
@@ -85,12 +85,7 @@ export default function DeveloperPage() {
           type="button"
           onClick={toggle}
           disabled={busy}
-          style={{
-            padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border)',
-            cursor: busy ? 'default' : 'pointer', fontWeight: 700, fontSize: 14,
-            background: isDev ? 'var(--danger)' : 'var(--accent, #10b981)',
-            color: '#fff',
-          }}
+          className={`btn ${isDev ? 'danger' : 'primary'}`}
         >
           {isDev ? t('dev.disable') : t('dev.enable')}
         </button>
@@ -109,16 +104,15 @@ export default function DeveloperPage() {
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder={t('dev.namePh')}
-                style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 14 }}
+                style={{ flex: 1, height: 44, padding: '0 14px', borderRadius: 14, border: '1px solid var(--border-strong)', background: 'var(--surface2)', color: 'var(--text)', fontSize: 14, fontFamily: 'var(--font)' }}
               />
-              <button type="button" onClick={create} disabled={busy}
-                style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: 'var(--accent, #10b981)', color: '#fff', fontWeight: 700, cursor: busy ? 'default' : 'pointer' }}>
+              <button type="button" onClick={create} disabled={busy} className="btn primary">
                 {t('common.create')}
               </button>
             </div>
 
             {createdKey && (
-              <div style={{ border: '1px solid var(--accent, #10b981)', borderRadius: 8, padding: 12, background: 'color-mix(in srgb, var(--accent, #10b981) 10%, transparent)', marginBottom: 12 }}>
+              <div style={{ border: '1px solid var(--warn-tile-border)', borderRadius: 14, padding: 14, background: 'var(--warn-tile-bg)', color: 'var(--warn-ink)', marginBottom: 12 }}>
                 <b style={{ fontSize: 13.5 }}>{t('dev.saveNow')}</b>
                 <code style={{ ...CODE, wordBreak: 'break-all', whiteSpace: 'normal' }}>{createdKey}</code>
               </div>
@@ -132,14 +126,13 @@ export default function DeveloperPage() {
               <div key={k.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '8px 0', borderTop: '1px solid var(--border)' }}>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 700 }}>{k.name || t('dev.unnamed')}</div>
-                  <div style={{ fontSize: 12, color: 'var(--muted, #888)' }}>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                     <code>{k.prefix}…</code>
                     {' · '}{k.revoked ? t('dev.revoked') : k.last_used_at ? fill(t('dev.usedOn'), { d: new Date(k.last_used_at).toLocaleDateString(LOCALE_TAG[locale]) }) : t('dev.unused')}
                   </div>
                 </div>
                 {!k.revoked && (
-                  <button type="button" onClick={() => revoke(k.id)} disabled={busy}
-                    style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--danger)', background: 'transparent', color: 'var(--danger)', cursor: busy ? 'default' : 'pointer', fontWeight: 700, fontSize: 13 }}>
+                  <button type="button" onClick={() => revoke(k.id)} disabled={busy} className="btn sm danger">
                     {t('dev.revoke')}
                   </button>
                 )}

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
 import { getOAuthConfig, updateOAuthConfig, getSmtpConfig, updateSmtpConfig } from '../api';
 import { useLocale, localizeError } from '../i18n';
+import { IconLock, IconMail, IconCheckCircle, IconAlertCircle } from './Icons';
 
 export default function AdminPanel() {
   const { user } = useAuth();
@@ -104,7 +105,7 @@ export default function AdminPanel() {
       </div>
 
       <div className="admin-section">
-        <h3>🔐 Google OAuth</h3>
+        <h3 className="h3-icon"><IconLock size={18} />Google OAuth</h3>
         <p className="hint">
           {t('admin.oauthHintA')}{' '}
           <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Google Cloud Console</a>.
@@ -128,7 +129,7 @@ export default function AdminPanel() {
       </div>
 
       <div className="admin-section">
-        <h3>{t('admin.smtpTitle')}</h3>
+        <h3 className="h3-icon"><IconMail size={18} />{t('admin.smtpTitle')}</h3>
         <p className="hint">
           {t('admin.smtpHint')}
         </p>
@@ -151,7 +152,7 @@ export default function AdminPanel() {
         </div>
       </div>
 
-      {msg && <p className={msg.ok ? 'success' : 'error'}>{msg.text}</p>}
+      {msg && <p className={`msg-line ${msg.ok ? 'success' : 'error'}`}>{msg.ok ? <IconCheckCircle size={16} /> : <IconAlertCircle size={16} />}{msg.text}</p>}
     </div>
   );
 }

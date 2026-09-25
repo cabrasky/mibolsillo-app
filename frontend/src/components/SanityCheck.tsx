@@ -3,6 +3,7 @@ import type { Expense } from '../types';
 import { MOCK_EXPENSES, MOCK_INCOMES, MOCK_GOALS, MOCK_SUBSCRIPTIONS } from '../mockData';
 import { useLocale } from '../i18n';
 import { IconCheckCircle, IconAlertTriangle, IconAlertCircle, IconInfo, IconRefresh } from './Icons';
+import { eur } from '../format';
 
 interface Props {
   expenses: Expense[];
@@ -19,7 +20,7 @@ export default function SanityCheck({ expenses }: Props) {
       if (!e.amount) list.push({ text: `"${e.desc}" ${t('sanity.noAmount')}`, cls: 'warn' });
       if (e.ajeno && e.deudores && !e.deudaMetodo) list.push({ text: `"${e.desc}" ${t('sanity.noMethod')}`, cls: 'warn' });
       if (e.ajeno && !e.deudores) list.push({ text: `"${e.desc}" ${t('sanity.noDebtors')}`, cls: 'warn' });
-      if (e.amount > 1000) list.push({ text: `${t('sanity.highAmount')}: ${e.amount.toFixed(2)} EUR — "${e.desc}"`, cls: 'warn' });
+      if (e.amount > 1000) list.push({ text: `${t('sanity.highAmount')}: ${eur(e.amount)} — "${e.desc}"`, cls: 'warn' });
       if (e.amount < 0) list.push({ text: `${t('sanity.negative')}: "${e.desc}"`, cls: 'err' });
 
       const key = `${e.date}|${e.desc}|${e.amount}`;

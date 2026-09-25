@@ -2,7 +2,9 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Expense, Income, Goal, Subscription } from '../types';
 import { expenseCost, getMonth } from '../types';
-import { useLocale } from '../i18n';
+import { useLocale, LOCALE_TAG, fill, refLabel } from '../i18n';
+import { catColor } from '../categoryColors';
+import { eurFmt, capFirst } from '../format';
 import { IconArrowUpRight } from './Icons';
 
 interface Props {
@@ -14,8 +16,16 @@ interface Props {
 
 export default function Dashboard({ expenses, incomes, goals, subscriptions }: Props) {
   const navigate = useNavigate();
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const tag = LOCALE_TAG[locale];
+  const eur = (n: number, digits = 2) => eurFmt(tag, digits)(n);
+  const signed = (n: number, digits = 2) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${eur(Math.abs(n), digits)}`;
   const now = new Date();
+  const monthTitle = capFirst(now.toLocaleDateString(tag, { month: 'long', year: 'numeric' }));
+  const shortDate = (iso: string) => {
+    const [y, m, d] = iso.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString(tag, { day: 'numeric', month: 'short' });
+  };
   const thisMonth = now.getMonth() + 1;
   const thisYear = now.getFullYear();
 
@@ -78,123 +88,71 @@ export default function Dashboard({ expenses, incomes, goals, subscriptions }: P
 
   return (
     <div className="dashboard">
-      {/* Balance hero */}
-      <div className={`balance-hero ${stats.balance >= 0 ? 'positive' : 'negative'}`}>
-        <div className="balance-label">{t('dashboard.balance')}</div>
-        <div className="balance-amount">
-          {stats.balance >= 0 ? '+' : ''}{stats.balance.toFixed(2)}
-          <span className="balance-currency"> EUR</span>
+      <div className="xg-title">
+        <h1>{t('nav.dashboard')}</h1>
+        <p>{monthTitle}</p>
+      </div>
+
+      <div className="xg-tiles">
+        <div className="xg-tile hero">
+          <span className="xg-tile-label">{t('dashboard.balance')}</span>
+          <span className="xg-tile-value num">{signed(stats.balance)}</span>
+          <span className="xg-tile-sub">{eur(stats.totalIncomes, 0)} {t('dashboard.earned')} · {eur(stats.totalExpenses, 0)} {t('dashboard.spent')}</span>
         </div>
-        <div className="balance-sub">
-          {stats.totalIncomes.toFixed(0)} {t('dashboard.earned')} · {stats.totalExpenses.toFixed(0)} {t('dashboard.spent')}
-        </div>
+        <button type="button" className="xg-tile clickable" onClick={() => navigate('/incomes')}>
+          <span className="xg-tile-label">{t('dashboard.incomes')}</span>
+          <span className="xg-tile-value num">{eur(stats.monthIncomes)}</span>
+          <span className="xg-tile-sub">{t('dashboard.thisMonth')}</span>
+        </button>
+        <button type="button" className="xg-tile clickable" onClick={() => navigate('/expenses')}>
+          <span className="xg-tile-label">{t('dashboard.expenses')}</span>
+          <span className="xg-tile-value num">{eur(stats.monthExpenses)}</span>
+          <span className="xg-tile-sub">{fill(t('expense.days7'), { v: eur(stats.weekExpenses) })}</span>
+        </button>
+        <button type="button" className="xg-tile clickable" onClick={() => navigate('/subs')}>
+          <span className="xg-tile-label">{t('dashboard.subsMonth')}</span>
+          <span className="xg-tile-value num">{eur(stats.subMonthly, 0)}</span>
+          <span className="xg-tile-sub">{fill(t('dashboard.nActiveSubs'), { n: subscriptions.filter(s => s.active).length })}</span>
+        </button>
       </div>
 
       {/* Monthly snapshot */}
-      <div className="card">
-        <h3>{t('dashboard.thisMonth')} ({t(`ref.months.${thisMonth}`)})</h3>
-        <div className="month-snapshot">
-          <div className="ms-item">
-            <span className="ms-label">{t('dashboard.incomes')}</span>
-            <span className="ms-value positive">+{stats.monthIncomes.toFixed(2)}</span>
-          </div>
-          <div className="ms-item">
-            <span className="ms-label">{t('dashboard.expenses')}</span>
-            <span className="ms-value negative">-{stats.monthExpenses.toFixed(2)}</span>
-          </div>
-          <div className="ms-item ms-total">
-            <span className="ms-label">{t('dashboard.balanceLabel')}</span>
-            <span className={`ms-value ${stats.monthBalance >= 0 ? 'positive' : 'negative'}`}>
-              {stats.monthBalance >= 0 ? '+' : ''}{stats.monthBalance.toFixed(2)}
-            </span>
-          </div>
-        </div>
-        {stats.monthIncomes > 0 && (
-          <div className="progress-wrap" style={{ height: 10, marginTop: 8 }}>
-            <div
-              className="progress-fill"
-              style={{
-                width: `${Math.min(100, (stats.monthExpenses / stats.monthIncomes) * 100)}%`,
-                background: stats.monthExpenses > stats.monthIncomes ? 'var(--danger)' : 'var(--warning)'
-              }}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Quick stats */}
-      <div className="stats">
-        <div className="stat" onClick={() => navigate('/expenses')}>
-          <div className="label">{t('dashboard.expenses')}</div>
-          <div className="value negative">{stats.expenseCount}</div>
-        </div>
-        <div className="stat" onClick={() => navigate('/incomes')}>
-          <div className="label">{t('dashboard.incomes')}</div>
-          <div className="value positive">{stats.incomeCount}</div>
-        </div>
-        <div className="stat" onClick={() => navigate('/goals')}>
-          <div className="label">{t('dashboard.goals')}</div>
-          <div className="value primary">{goals.length}</div>
-        </div>
-        <div className="stat" onClick={() => navigate('/subs')}>
-          <div className="label">{t('dashboard.subsMonth')}</div>
-          <div className="value warning">{stats.subMonthly.toFixed(0)} EUR</div>
-        </div>
-      </div>
-
-      {/* Goals progress */}
-      {goals.length > 0 && (
-        <div className="card clickable" onClick={() => navigate('/goals')}>
-          <div className="card-header">
-            <h3>{t('dashboard.goalProgress')}</h3>
-            <IconArrowUpRight size={16} />
-          </div>
-          <div className="progress-wrap" style={{ height: 12 }}>
-            <div className={`progress-fill ${stats.goalPct >= 100 ? 'success' : ''}`} style={{ width: `${stats.goalPct}%` }} />
-          </div>
-          <div style={{ fontSize: '.78rem', color: 'var(--text-muted)', marginTop: 4, textAlign: 'center' }}>
-            {stats.goalSaved.toFixed(0)} / {stats.goalTotal.toFixed(0)} EUR ({stats.goalPct.toFixed(0)}%)
-          </div>
-        </div>
-      )}
-
-      {/* Cash flow summary */}
       <div className="card clickable" onClick={() => navigate('/more/monthly')}>
         <div className="card-header">
-          <h3>{t('dashboard.cashFlow')}</h3>
+          <h3>{t('dashboard.cashFlow')} · {t(`ref.months.${thisMonth}`)}</h3>
           <IconArrowUpRight size={16} />
         </div>
         <div className="month-snapshot">
           <div className="ms-item">
             <span className="ms-label">{t('dashboard.incomes')}</span>
-            <span className="ms-value positive">+{stats.monthIncomes.toFixed(0)}</span>
+            <span className="ms-value positive num">{signed(stats.monthIncomes)}</span>
           </div>
           <div className="ms-item">
             <span className="ms-label">{t('dashboard.expenses')}</span>
-            <span className="ms-value negative">-{stats.monthExpenses.toFixed(0)}</span>
+            <span className="ms-value negative num">{signed(-stats.monthExpenses)}</span>
           </div>
           <div className="ms-item ms-total">
             <span className="ms-label">{t('dashboard.balanceLabel')}</span>
-            <span className={`ms-value ${stats.monthBalance >= 0 ? 'positive' : 'negative'}`}>
-              {stats.monthBalance >= 0 ? '+' : ''}{stats.monthBalance.toFixed(0)}
-            </span>
+            <span className={`ms-value num ${stats.monthBalance >= 0 ? 'positive' : 'negative'}`}>{signed(stats.monthBalance)}</span>
           </div>
         </div>
         {stats.monthIncomes > 0 && (
-          <div className="progress-wrap" style={{ height: 8, marginTop: 4 }}>
-            <div className="progress-fill" style={{
-              width: `${Math.min(100, (stats.monthExpenses / stats.monthIncomes) * 100)}%`,
-              background: stats.monthExpenses > stats.monthIncomes ? 'var(--danger)' : 'var(--warning)'
-            }} />
+          <div className="progress-wrap" style={{ height: 10, marginTop: 14 }}>
+            <div
+              className={`progress-fill ${stats.monthExpenses > stats.monthIncomes ? 'danger' : 'warning'}`}
+              style={{ width: `${Math.min(100, (stats.monthExpenses / stats.monthIncomes) * 100)}%` }}
+            />
           </div>
         )}
-        <div style={{ fontSize: '.72rem', color: 'var(--text-muted)', marginTop: 4, textAlign: 'center' }}>
+        <div className="xg-muted" style={{ marginTop: 8, textAlign: 'center' }}>
           {stats.monthIncomes > 0
             ? `${((stats.monthExpenses / stats.monthIncomes) * 100).toFixed(0)}% ${t('dashboard.spent')}`
             : t('income.noData')}
         </div>
       </div>
 
+      <div className="dash-grid">
+        <div className="dash-col">
       {/* Recent expenses */}
       {recentExpenses.length > 0 && (
         <div className="card">
@@ -206,12 +164,35 @@ export default function Dashboard({ expenses, incomes, goals, subscriptions }: P
             {recentExpenses.map(e => (
               <div key={e.id} className="recent-item">
                 <div className="recent-left">
-                  <span className="recent-date">{e.date?.slice(5)}</span>
-                  <span className="recent-desc">{e.desc}</span>
+                  <span className={`xg-initial ${catColor(e.proposito || e.desc)}`} aria-hidden="true">{(e.proposito || e.desc || '?').charAt(0).toUpperCase()}</span>
+                  <span className="recent-text">
+                    <span className="recent-desc">{e.desc}</span>
+                    <span className="recent-meta">{[shortDate(e.date), e.proposito && refLabel('categories', e.proposito, t)].filter(Boolean).join(' · ')}</span>
+                  </span>
                 </div>
-                <span className="recent-amount">{e.amount.toFixed(2)} EUR</span>
+                <span className="recent-amount">{eur(e.amount)}</span>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+        </div>
+        <div className="dash-col">
+      {/* Goals progress */}
+      {goals.length > 0 && (
+        <div className="card clickable" onClick={() => navigate('/goals')}>
+          <div className="card-header">
+            <h3>{t('dashboard.goalProgress')}</h3>
+            <IconArrowUpRight size={16} />
+          </div>
+          <div className="progress-wrap" style={{ height: 12 }}>
+            <div className={`progress-fill ${stats.goalPct >= 100 ? 'success' : ''}`} style={{ width: `${stats.goalPct}%` }} />
+          </div>
+          <div className="goal-amounts" style={{ marginTop: 12 }}>
+            <span className="goal-current">{eur(stats.goalSaved, 0)}</span>
+            <span className="goal-sep">/</span>
+            <span className="goal-target">{eur(stats.goalTotal, 0)} · {stats.goalPct.toFixed(0)}%</span>
           </div>
         </div>
       )}
@@ -227,21 +208,16 @@ export default function Dashboard({ expenses, incomes, goals, subscriptions }: P
             <div key={s.id} className="recent-item">
               <div className="recent-left">
                 <span className={`recent-date ${s.days <= 3 ? 'urgent' : ''}`}>
-                  {s.days === 0 ? t('dashboard.today') : s.days === 1 ? t('dashboard.tomorrow') : `${s.days}${t('dashboard.days')}`}
+                  {s.days === 0 ? t('dashboard.today') : s.days === 1 ? t('dashboard.tomorrow') : `${s.days} ${t('dashboard.days')}`}
                 </span>
                 <span className="recent-desc">{s.name}</span>
               </div>
-              <span className="recent-amount">{s.amount.toFixed(2)} EUR</span>
+              <span className="recent-amount">{eur(s.amount)}</span>
             </div>
           ))}
         </div>
       )}
 
-      {/* Week spend */}
-      <div className="card">
-        <h3>{t('dashboard.weekSpent')}</h3>
-        <div className="balance-sub" style={{ fontSize: '1.3rem', fontWeight: 800, marginTop: 4 }}>
-          {stats.weekExpenses.toFixed(2)} EUR
         </div>
       </div>
     </div>

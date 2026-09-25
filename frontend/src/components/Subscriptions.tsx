@@ -6,6 +6,7 @@ import { addSubscription, updateSubscription, deleteSubscription, advanceSubscri
 import {
   IconPlus, IconX, IconEdit, IconTrash, IconCheckCircle
 } from './Icons';
+import { eur } from '../format';
 
 interface Props {
   subscriptions: Subscription[];
@@ -134,11 +135,11 @@ export default function SubscriptionsPage({ subscriptions, onRefresh }: Props) {
         </div>
         <div className="stat">
           <div className="label">{t('sub.monthlyCost')}</div>
-          <div className="value negative">{totals.monthly.toFixed(2)} EUR</div>
+          <div className="value negative">{eur(totals.monthly)}</div>
         </div>
         <div className="stat">
           <div className="label">{t('sub.yearlyCost')}</div>
-          <div className="value negative">{totals.yearly.toFixed(2)} EUR</div>
+          <div className="value negative">{eur(totals.yearly)}</div>
         </div>
         <div className="stat">
           <div className="label">{t('sub.upcoming30')}</div>
@@ -156,7 +157,7 @@ export default function SubscriptionsPage({ subscriptions, onRefresh }: Props) {
               return (
                 <div key={s.id} className={`upcoming-card ${days <= 3 ? 'urgent' : ''}`}>
                   <div className="upcoming-name">{s.name}</div>
-                  <div className="upcoming-amount">{s.amount.toFixed(2)} EUR</div>
+                  <div className="upcoming-amount">{eur(s.amount)}</div>
                   <div className="upcoming-meta">
                     {days === 0 ? t('sub.today') : days === 1 ? t('sub.tomorrow') : `${t('sub.in')} ${days} ${t('sub.days')}`}
                     {' '}· {s.nextBilling}
@@ -202,7 +203,7 @@ export default function SubscriptionsPage({ subscriptions, onRefresh }: Props) {
                   return (
                     <tr key={s.id}>
                       <td><strong>{s.name}</strong></td>
-                      <td style={{ fontWeight: 700 }}>{s.amount.toFixed(2)} EUR</td>
+                      <td style={{ fontWeight: 700 }}>{eur(s.amount)}</td>
                       <td>{t(`sub.per.${s.billingCycle}`)}</td>
                       <td>
                         <span className={`pill ${days <= 3 ? 'pill-danger' : days <= 7 ? 'pill-warning' : 'pill-ok'}`}>
@@ -245,7 +246,7 @@ export default function SubscriptionsPage({ subscriptions, onRefresh }: Props) {
                 {inactive.map(s => (
                   <tr key={s.id} style={{ opacity: 0.5 }}>
                     <td>{s.name}</td>
-                    <td>{s.amount.toFixed(2)} EUR</td>
+                    <td>{eur(s.amount)}</td>
                     <td>{t(`sub.per.${s.billingCycle}`)}</td>
                     <td>
                       <button className="btn sm outline" onClick={() => updateSubscription(s.id, { active: true })}>{t('sub.reactivate')}</button>
@@ -268,7 +269,7 @@ export default function SubscriptionsPage({ subscriptions, onRefresh }: Props) {
             <div className="modal-header">
               <h2>{editing ? t('sub.edit') : t('sub.add')}</h2>
               <button className="modal-close" onClick={() => setShowForm(false)}>
-                <IconX size={20} />
+                <IconX size={18} />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="modal-body">

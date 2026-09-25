@@ -4,6 +4,8 @@ import { useLocale, refLabel } from '../i18n';
 import type { Income } from '../types';
 import { addIncome, updateIncome, deleteIncome } from '../store';
 import { IconPlus, IconX, IconEdit, IconTrash, IconSearch } from './Icons';
+import { eur } from '../format';
+import { CHART, SERIES } from '../palette';
 
 interface Props {
   incomes: Income[];
@@ -88,11 +90,11 @@ export default function IncomesPage({ incomes, onRefresh }: Props) {
       <div className="stats">
         <div className="stat">
           <div className="label">{t('income.total')}</div>
-          <div className="value positive">{total.toFixed(2)} EUR</div>
+          <div className="value positive">{eur(total)}</div>
         </div>
         <div className="stat">
           <div className="label">{t('income.thisMonth')}</div>
-          <div className="value positive">{thisMonth.toFixed(2)} EUR</div>
+          <div className="value positive">{eur(thisMonth)}</div>
         </div>
         <div className="stat">
           <div className="label">{t('income.count')}</div>
@@ -100,7 +102,7 @@ export default function IncomesPage({ incomes, onRefresh }: Props) {
         </div>
         <div className="stat">
           <div className="label">{t('income.average')}</div>
-          <div className="value">{incomes.length ? (total / incomes.length).toFixed(2) : '0.00'} EUR</div>
+          <div className="value">{eur(incomes.length ? total / incomes.length : 0)}</div>
         </div>
       </div>
 
@@ -112,16 +114,16 @@ export default function IncomesPage({ incomes, onRefresh }: Props) {
             {byCategory.map(([cat, val]) => {
               const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
               const colors: Record<string, string> = {
-                Salario: '#6366f1', Freelance: '#f59e0b', Inversion: '#10b981',
-                Regalo: '#ec4899', Venta: '#8b5cf6', Devolucion: '#06b6d4', Otro: '#6b7280',
+                Salario: CHART.income, Freelance: SERIES[5], Inversion: SERIES[4],
+                Regalo: SERIES[7], Venta: SERIES[2], Devolucion: SERIES[0], Otro: CHART.neutral,
               };
               return (
                 <div key={cat} className="bar-row">
                   <span className="bar-label">{refLabel('incomeCats', cat, t)}</span>
                   <div className="progress-wrap">
-                    <div className="progress-fill" style={{ width: `${pct}%`, background: colors[cat] || '#6b7280' }} />
+                    <div className="progress-fill" style={{ width: `${pct}%`, background: colors[cat] || CHART.neutral }} />
                   </div>
-                  <span className="bar-value">{val.toFixed(2)} EUR ({pct}%)</span>
+                  <span className="bar-value">{eur(val)} ({pct}%)</span>
                 </div>
               );
             })}
@@ -158,7 +160,7 @@ export default function IncomesPage({ incomes, onRefresh }: Props) {
                   <tr key={i.id}>
                     <td>{i.date}</td>
                     <td><strong>{i.desc}</strong>{i.notes && <span className="td-meta">{i.notes}</span>}</td>
-                    <td className="td-amount" style={{ color: 'var(--success)' }}>+{i.amount.toFixed(2)} EUR</td>
+                    <td className="td-amount" style={{ color: 'var(--success)' }}>+{eur(i.amount)}</td>
                     <td><span className="tag">{refLabel('incomeCats', i.category, t)}</span></td>
                     <td>
                       <div className="row-actions">
@@ -180,7 +182,7 @@ export default function IncomesPage({ incomes, onRefresh }: Props) {
           <div className="modal modal-sm" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{editing ? t('income.edit') : t('income.new')}</h2>
-              <button className="modal-close" onClick={() => setShowForm(false)}><IconX size={20} /></button>
+              <button className="modal-close" onClick={() => setShowForm(false)}><IconX size={18} /></button>
             </div>
             <form onSubmit={handleSubmit} className="modal-body">
               <div className="form-row three">

@@ -5,7 +5,7 @@ import { useLocale, nextLocale } from '../i18n';
 import { useAuth } from '../AuthContext';
 import {
   IconPlus, IconList, IconTarget,
-  IconTrendingUp, IconRefresh, IconHome, IconGrid, IconUsers,
+  IconTrendingUp, IconRefresh, IconHome, IconGrid, IconUsers, BrandMark,
 } from './Icons';
 import { pendingDebtCount } from '../personas';
 
@@ -23,19 +23,37 @@ function pathToTab(pathname: string): Tab | null {
   return null;
 }
 
+// Título de página (Fraunces) para las secciones que no pintan el suyo propio
+const PAGE_TITLES: Record<string, string> = {
+  '/incomes': 'nav.incomes',
+  '/goals': 'nav.goals',
+  '/subs': 'nav.subs',
+  '/more/subs': 'nav.subs',
+  '/projects': 'nav.projects',
+  '/pending': 'nav.debts',
+  '/more': 'nav.more',
+  '/more/monthly': 'nav.monthly',
+  '/more/weekly': 'nav.weekly',
+  '/more/sanity': 'nav.check',
+  '/categories': 'more.categories',
+  '/excel': 'more.excel',
+  '/help': 'more.help',
+  '/developer': 'more.developer',
+};
+
 const NAV_ITEMS: { key: Tab; icon: React.ReactNode; i18nKey: string; path: string }[] = [
-  { key: 'dashboard', icon: <IconHome size={19} />, i18nKey: 'nav.dashboard', path: '/dashboard' },
-  { key: 'expenses', icon: <IconList size={19} />, i18nKey: 'nav.expenses', path: '/expenses' },
-  { key: 'incomes', icon: <IconTrendingUp size={19} />, i18nKey: 'nav.incomes', path: '/incomes' },
-  { key: 'goals', icon: <IconTarget size={19} />, i18nKey: 'nav.goals', path: '/goals' },
-  { key: 'subs', icon: <IconRefresh size={19} />, i18nKey: 'nav.subs', path: '/subs' },
+  { key: 'dashboard', icon: <IconHome size={18} />, i18nKey: 'nav.dashboard', path: '/dashboard' },
+  { key: 'expenses', icon: <IconList size={18} />, i18nKey: 'nav.expenses', path: '/expenses' },
+  { key: 'incomes', icon: <IconTrendingUp size={18} />, i18nKey: 'nav.incomes', path: '/incomes' },
+  { key: 'goals', icon: <IconTarget size={18} />, i18nKey: 'nav.goals', path: '/goals' },
+  { key: 'subs', icon: <IconRefresh size={18} />, i18nKey: 'nav.subs', path: '/subs' },
   {
     key: 'projects', icon: (
-      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg>
     ), i18nKey: 'nav.projects', path: '/projects',
   },
-  { key: 'pending', icon: <IconUsers size={19} />, i18nKey: 'nav.debts', path: '/pending' },
-  { key: 'more', icon: <IconGrid size={19} />, i18nKey: 'nav.more', path: '/more' },
+  { key: 'pending', icon: <IconUsers size={18} />, i18nKey: 'nav.debts', path: '/pending' },
+  { key: 'more', icon: <IconGrid size={18} />, i18nKey: 'nav.more', path: '/more' },
 ];
 
 interface Props {
@@ -67,26 +85,28 @@ export default function DesktopLayout({
     <div className="layout-desktop">
       <nav className="desktop-sidebar" aria-label={t('nav.main')}>
         <div className="header-brand">
-          <span className="brand-mark" aria-hidden="true">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4fd1ae" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h13a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H6a2 2 0 0 1-2-2V7z" /><path d="M4 7l11-3v3" /><circle cx="16" cy="13.5" r="1.2" /></svg>
-          </span>
+          <BrandMark size={44} bare />
           <span className="header-title">miBolsillo</span>
         </div>
         <button className="btn primary sidebar-addbtn" onClick={onAddClick}>
-          <IconPlus size={18} /> {t('nav.newExpense')}
+          <IconPlus size={18} />{t('nav.newExpense')}
         </button>
         <div className="sidebar-section">
-          {NAV_ITEMS.map(item => (
-            <button
-              key={item.key}
-              className={`sidebar-item ${currentTab === item.key ? 'active' : ''}`}
-              aria-current={currentTab === item.key ? 'page' : undefined}
-              onClick={() => navigate(item.path)}
-            >
-              {item.icon}<span>{t(item.i18nKey)}</span>
-              {item.key === 'pending' && pendingCount > 0 && <span className="sidebar-badge">{pendingCount}</span>}
-            </button>
-          ))}
+          {NAV_ITEMS.map(item => {
+            const active = currentTab === item.key;
+            const badge = item.key === 'pending' && pendingCount > 0;
+            return (
+              <button
+                key={item.key}
+                className={`sidebar-item ${active ? 'active' : ''}`}
+                aria-current={active ? 'page' : undefined}
+                onClick={() => navigate(item.path)}
+              >
+                {item.icon}<span>{t(item.i18nKey)}</span>
+                {badge ? <span className="sidebar-badge">{pendingCount}</span> : active && <span className="nav-dot" aria-hidden="true" />}
+              </button>
+            );
+          })}
         </div>
         <div className="sidebar-footer">
           {user && (
@@ -115,7 +135,7 @@ export default function DesktopLayout({
             </button>
             <button className="theme-btn" onClick={onToggleDark} title={t('theme.toggle')} aria-label={t('theme.toggle')}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                {dark ? <><circle cx="12" cy="12" r="5" /><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" /></> : <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />}
+                {dark ? <><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></> : <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />}
               </svg>
             </button>
             <button className="theme-btn" onClick={onExportCSV} title={t('common.exportCsv')} aria-label={t('common.exportCsv')}>
@@ -126,7 +146,12 @@ export default function DesktopLayout({
             </button>
           </div>
         </header>
-        <main className="desktop-content">{children}</main>
+        <main className="desktop-content">
+          {PAGE_TITLES[location.pathname] && (
+            <div className="xg-title page-title-block"><h1>{t(PAGE_TITLES[location.pathname])}</h1></div>
+          )}
+          {children}
+        </main>
       </div>
     </div>
   );

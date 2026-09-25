@@ -3,6 +3,8 @@ import { expenseCost } from '../types';
 import type { Expense } from '../types';
 import { WeeklyProgressChart } from './Charts';
 import { useLocale, fill } from '../i18n';
+import { eur } from '../format';
+import { IconCalendar } from './Icons';
 
 function weekOfYear(dateStr: string): number {
   const d = new Date(dateStr);
@@ -47,14 +49,14 @@ export default function WeeklyBudget({ expenses, weeklyGoal, onGoalChange }: Pro
     <>
       <div className="stats">
         <div className="stat"><div className="label">{t('weekly.goal')}</div><div className="value primary">{weeklyGoal} €</div></div>
-        <div className="stat"><div className="label">{t('weekly.annualGoal')}</div><div className="value">{totalGoal.toFixed(2)} €</div></div>
-        <div className="stat"><div className="label">{t('weekly.spent')}</div><div className={`value ${onTrack ? 'positive' : 'negative'}`}>{totalSpent.toFixed(2)} €</div></div>
-        <div className="stat"><div className="label">{t('weekly.diff')}</div><div className={`value ${onTrack ? 'positive' : 'negative'}`}>{onTrack ? '✅' : '⚠️'} {(totalGoal - totalSpent).toFixed(2)} €</div></div>
+        <div className="stat"><div className="label">{t('weekly.annualGoal')}</div><div className="value">{eur(totalGoal)}</div></div>
+        <div className="stat"><div className="label">{t('weekly.spent')}</div><div className={`value ${onTrack ? 'positive' : 'negative'}`}>{eur(totalSpent)}</div></div>
+        <div className="stat"><div className="label">{t('weekly.diff')}</div><div className={`value ${onTrack ? 'positive' : 'negative'}`}>{eur((totalGoal - totalSpent))}</div></div>
       </div>
 
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-          <h3>📅 {t('weekly.progress')}</h3>
+          <h3 className="h3-icon"><IconCalendar size={16} />{t('weekly.progress')}</h3>
           <label style={{ fontSize: '.8rem', display: 'flex', alignItems: 'center', gap: 4 }}>
             {t('weekly.goalInput')}
             <input type="number" value={weeklyGoal} onChange={e => onGoalChange(Number(e.target.value))}
@@ -66,7 +68,7 @@ export default function WeeklyBudget({ expenses, weeklyGoal, onGoalChange }: Pro
           <div className={`progress-fill ${onTrack ? 'success' : 'danger'}`} style={{ width: `${pct}%` }} />
         </div>
         <div style={{ textAlign: 'center', fontSize: '.8rem', color: 'var(--text-muted)', marginBottom: 12 }}>
-          {totalSpent.toFixed(2)} / {totalGoal.toFixed(2)} € ({pct.toFixed(1)}%)
+          {eur(totalSpent)} / {eur(totalGoal)} ({pct.toFixed(1)}%)
         </div>
         <div className="week-grid">
           {weeks.map(w => {
@@ -74,8 +76,8 @@ export default function WeeklyBudget({ expenses, weeklyGoal, onGoalChange }: Pro
             return (
               <div key={w.num} className="week-item">
                 <div className="wk-num">{fill(t('weekly.weekShort'), { n: w.num })}</div>
-                <div className="wk-meta">{w.spent.toFixed(2)} €</div>
-                <div className={`wk-amount ${w.avail >= 0 ? 'positive' : 'negative'}`}>{w.avail >= 0 ? '' : ''}{w.avail.toFixed(2)}</div>
+                <div className="wk-meta">{eur(w.spent)}</div>
+                <div className={`wk-amount ${w.avail >= 0 ? 'positive' : 'negative'}`}>{eur(w.avail)}</div>
                 <div className="progress-wrap" style={{ height: 4, marginTop: 4 }}>
                   <div className={`progress-fill ${wpct > 100 ? 'danger' : 'success'}`} style={{ width: `${Math.min(100, wpct)}%` }} />
                 </div>

@@ -6,20 +6,22 @@ import {
 import { expenseCost, getMonth, bucketOf } from '../types';
 import type { Expense, Income } from '../types';
 import { useLocale, fill, refLabel, LOCALE_TAG } from '../i18n';
+import { CHART, SERIES } from '../palette';
+import { eur } from '../format';
 
-const COLORS = ['#6366f1', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6'];
+const COLORS = SERIES;
 type T = (key: string) => string;
 const shortMonths = (t: T) => Array.from({ length: 12 }, (_, i) => t(`ref.months.short.${i + 1}`));
 
 const tooltipStyle = {
   background: 'var(--surface)',
   border: '1px solid var(--border)',
-  borderRadius: 8,
+  borderRadius: 12,
   color: 'var(--text)',
   fontSize: 13,
 };
 
-const formatEuro = (v: number | string) => `${Number(v).toFixed(0)}EUR`;
+const formatEuro = (v: number | string) => eur(Number(v), 0);
 
 /* ── Daily trend line charts (semana y mes) ─────────────────────── */
 function isoDay(d: Date) {
@@ -57,10 +59,10 @@ export function DailyTrendCharts({ expenses }: { expenses: Expense[] }) {
         <ResponsiveContainer width="100%" height={220}>
           <LineChart data={week} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'var(--muted)' }} />
-            <YAxis tick={{ fontSize: 11, fill: 'var(--muted)' }} tickFormatter={(v) => `${v}`} />
-            <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${Number(v).toFixed(2)} EUR`, t('chart.spend')]} />
-            <Line type="monotone" dataKey="total" stroke="#10b981" strokeWidth={2.5} dot={{ r: 3 }} name={t('chart.spend')} />
+            <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
+            <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickFormatter={(v) => `${v}`} />
+            <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [eur(Number(v)), t('chart.spend')]} />
+            <Line type="monotone" dataKey="total" stroke={CHART.income} strokeWidth={2.5} dot={{ r: 3 }} name={t('chart.spend')} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -69,10 +71,10 @@ export function DailyTrendCharts({ expenses }: { expenses: Expense[] }) {
         <ResponsiveContainer width="100%" height={220}>
           <LineChart data={month} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'var(--muted)' }} />
-            <YAxis tick={{ fontSize: 11, fill: 'var(--muted)' }} tickFormatter={(v) => `${v}`} />
-            <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${Number(v).toFixed(2)} EUR`, t('chart.spend')]} />
-            <Line type="monotone" dataKey="total" stroke="#6366f1" strokeWidth={2.5} dot={{ r: 3 }} name={t('chart.spend')} />
+            <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
+            <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickFormatter={(v) => `${v}`} />
+            <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [eur(Number(v)), t('chart.spend')]} />
+            <Line type="monotone" dataKey="total" stroke={CHART.expense} strokeWidth={2.5} dot={{ r: 3 }} name={t('chart.spend')} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -116,7 +118,7 @@ export function MonthlyChart({ expenses }: { expenses: Expense[] }) {
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={formatEuro} />
-              <Tooltip formatter={(v: any) => [`${Number(v).toFixed(2)} EUR`, t('common.total')]} contentStyle={tooltipStyle} />
+              <Tooltip formatter={(v: any) => [eur(Number(v)), t('common.total')]} contentStyle={tooltipStyle} />
               <Bar dataKey="total" fill="var(--primary)" radius={[4, 4, 0, 0]} maxBarSize={32} />
             </BarChart>
           </ResponsiveContainer>
@@ -131,7 +133,7 @@ export function MonthlyChart({ expenses }: { expenses: Expense[] }) {
                 <Pie data={pieData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="value">
                   {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="none" />)}
                 </Pie>
-                <Tooltip formatter={(v: any) => [`${Number(v).toFixed(2)}EUR`]} contentStyle={tooltipStyle} />
+                <Tooltip formatter={(v: any) => [eur(Number(v))]} contentStyle={tooltipStyle} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
               </PieChart>
             </ResponsiveContainer>
@@ -169,7 +171,7 @@ export function CashFlowChart({ expenses, incomes }: { expenses: Expense[]; inco
       <div className="card-header">
         <h3>{t('chart.cashFlow')}</h3>
         <span className={`card-total ${balance >= 0 ? 'positive' : 'negative'}`}>
-          {balance >= 0 ? '+' : ''}{balance.toFixed(0)} EUR
+          {balance >= 0 ? '+' : ''}{eur(balance, 0)}
         </span>
       </div>
       <div className="chart-container">
@@ -180,14 +182,14 @@ export function CashFlowChart({ expenses, incomes }: { expenses: Expense[]; inco
             <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={formatEuro} />
             <Tooltip contentStyle={tooltipStyle} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Bar dataKey="ingresos" name={t('dashboard.incomes')} fill="#22c55e" radius={[4, 4, 0, 0]} maxBarSize={24} />
-            <Bar dataKey="gastos" name={t('dashboard.expenses')} fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={24} />
+            <Bar dataKey="ingresos" name={t('dashboard.incomes')} fill={CHART.income} radius={[4, 4, 0, 0]} maxBarSize={24} />
+            <Bar dataKey="gastos" name={t('dashboard.expenses')} fill={CHART.expense} radius={[4, 4, 0, 0]} maxBarSize={24} />
           </BarChart>
         </ResponsiveContainer>
       </div>
       <div className="chart-legend-row">
-        <span><span className="legend-dot" style={{background:'#22c55e'}} /> {t('dashboard.incomes')}: {totalIngresos.toFixed(0)} EUR</span>
-        <span><span className="legend-dot" style={{background:'#ef4444'}} /> {t('dashboard.expenses')}: {totalGastos.toFixed(0)} EUR</span>
+        <span><span className="legend-dot" style={{ background: CHART.income }} /> {t('dashboard.incomes')}: {eur(totalIngresos, 0)}</span>
+        <span><span className="legend-dot" style={{ background: CHART.expense }} /> {t('dashboard.expenses')}: {eur(totalGastos, 0)}</span>
       </div>
     </div>
   );
@@ -218,7 +220,7 @@ export function BalanceEvolution({ expenses, incomes }: { expenses: Expense[]; i
       <div className="card-header">
         <h3>{t('chart.balanceEvolution')}</h3>
         <span className={`card-total ${finalBalance >= 0 ? 'positive' : 'negative'}`}>
-          {finalBalance.toFixed(0)} EUR
+          {eur(finalBalance, 0)}
         </span>
       </div>
       <div className="chart-container">
@@ -234,7 +236,7 @@ export function BalanceEvolution({ expenses, incomes }: { expenses: Expense[]; i
             <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={formatEuro} />
             <Tooltip
-              formatter={(v: any) => [`${Number(v).toFixed(2)}EUR`]}
+              formatter={(v: any) => [eur(Number(v))]}
               contentStyle={tooltipStyle}
               labelFormatter={(l) => fill(t('chart.balanceAt'), { l: String(l) })}
             />
@@ -276,26 +278,26 @@ export function IncomeExpenseComparison({ expenses, incomes }: { expenses: Expen
       <h3>{t('chart.comparison')}</h3>
       <div className="comparison-grid">
         <div>
-          <h4 style={{ color: '#ef4444', marginBottom: 8, fontSize: '.82rem' }}>{t('chart.expByPurpose')}</h4>
+          <h4 style={{ color: 'var(--danger)', marginBottom: 8 }}>{t('chart.expByPurpose')}</h4>
           {data.topExp.map(([name, val]) => (
             <div key={name} className="bar-row" style={{ marginBottom: 4 }}>
               <span className="bar-label" style={{ minWidth: 80, fontSize: '.75rem' }}>{refLabel('categories', name, t)}</span>
               <div className="progress-wrap" style={{ flex: 1 }}>
-                <div className="progress-fill" style={{ width: `${(val / data.maxVal) * 100}%`, background: '#ef4444' }} />
+                <div className="progress-fill" style={{ width: `${(val / data.maxVal) * 100}%`, background: CHART.expense }} />
               </div>
-              <span className="bar-value" style={{ minWidth: 80, fontSize: '.75rem' }}>{val.toFixed(0)} EUR</span>
+              <span className="bar-value" style={{ minWidth: 80, fontSize: 12 }}>{eur(val, 0)}</span>
             </div>
           ))}
         </div>
         <div>
-          <h4 style={{ color: '#22c55e', marginBottom: 8, fontSize: '.82rem' }}>{t('chart.incByCategory')}</h4>
+          <h4 style={{ color: 'var(--success)', marginBottom: 8 }}>{t('chart.incByCategory')}</h4>
           {data.topInc.map(([name, val]) => (
             <div key={name} className="bar-row" style={{ marginBottom: 4 }}>
               <span className="bar-label" style={{ minWidth: 80, fontSize: '.75rem' }}>{refLabel('incomeCats', name, t)}</span>
               <div className="progress-wrap" style={{ flex: 1 }}>
-                <div className="progress-fill" style={{ width: `${(val / data.maxVal) * 100}%`, background: '#22c55e' }} />
+                <div className="progress-fill" style={{ width: `${(val / data.maxVal) * 100}%`, background: CHART.income }} />
               </div>
-              <span className="bar-value" style={{ minWidth: 80, fontSize: '.75rem' }}>{val.toFixed(0)} EUR</span>
+              <span className="bar-value" style={{ minWidth: 80, fontSize: 12 }}>{eur(val, 0)}</span>
             </div>
           ))}
         </div>
@@ -317,7 +319,7 @@ export function WeeklyProgressChart({ weeks, goal }: { weeks: { num: number; spe
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} interval={3} />
             <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={formatEuro} />
-            <Tooltip formatter={(v: any) => [`${Number(v).toFixed(2)} EUR`]} contentStyle={tooltipStyle} />
+            <Tooltip formatter={(v: any) => [eur(Number(v))]} contentStyle={tooltipStyle} />
             <Bar dataKey="goal" name={t('weekly.goal')} fill="var(--border)" radius={[2, 2, 0, 0]} maxBarSize={12} />
             <Bar dataKey="spent" name={t('weekly.spent')} fill="var(--primary)" radius={[2, 2, 0, 0]} maxBarSize={12} />
           </BarChart>
@@ -390,9 +392,9 @@ export function SankeyChart({ expenses, incomes }: { expenses: Expense[]; income
   const TGT_EDGE = RIGHT_X;               // left edge of target bars
 
   // ── Colors ──
-  const srcColors = ['#22c55e', '#16a34a', '#86efac'];
+  const srcColors = [CHART.income, '#2F6A51', '#8CC7A5'];
   const grpColor: Record<string, string> = {
-    savings: '#3b82f6', fixed: '#f59e0b', disc: '#ef4444', other: '#8b5cf6',
+    savings: SERIES[6], fixed: SERIES[5], disc: CHART.expense, other: SERIES[4],
   };
   const grpOpacity: Record<string, number> = {
     savings: 0.20, fixed: 0.17, disc: 0.14, other: 0.15,
@@ -416,7 +418,7 @@ export function SankeyChart({ expenses, incomes }: { expenses: Expense[]; income
   let ty = PAD;
   const tgtNodes = targets.map((t, i) => {
     const y = ty; ty += tgtH[i] + GAP;
-    return { name: t.name, val: t.val, y, h: tgtH[i], b: y + tgtH[i], color: grpColor[t.group] || '#8b5cf6', group: t.group };
+    return { name: t.name, val: t.val, y, h: tgtH[i], b: y + tgtH[i], color: grpColor[t.group] || SERIES[4], group: t.group };
   });
 
   // ── Build flows (port-based: each source→target pair gets a slice) ──
@@ -498,7 +500,7 @@ export function SankeyChart({ expenses, incomes }: { expenses: Expense[]; income
           {links.map((lnk, i) => (
             <path key={`l${i}`}
               d={flowPath(lnk.sT, lnk.sB, lnk.tT, lnk.tB)}
-              fill={grpColor[lnk.grp] || '#8b5cf6'} fillOpacity={grpOpacity[lnk.grp] || 0.15} stroke="none" />
+              fill={grpColor[lnk.grp] || SERIES[4]} fillOpacity={grpOpacity[lnk.grp] || 0.15} stroke="none" />
           ))}
 
           {/* ═══ Hub label — no badge, text with outline over the flow ═══ */}
@@ -550,7 +552,7 @@ export function SankeyChart({ expenses, incomes }: { expenses: Expense[]; income
 
 
 /* ── Filtro por categorías (chips) ───────────────────────────────── */
-export const CAT_COLORS = ['#10b981', '#6366f1', '#f59e0b', '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#8b5cf6'];
+export const CAT_COLORS = SERIES;
 
 export function CategoryFilter({ cats, selected, onChange }: {
   cats: { name: string; color?: string }[];
@@ -564,17 +566,14 @@ export function CategoryFilter({ cats, selected, onChange }: {
   };
   const chip = (label: string, active: boolean, color?: string, key?: string) => (
     <button key={key || label} onClick={() => toggle(key || label)} aria-pressed={active}
-      style={{
-        border: active ? '1.5px solid ' + (color || '#10b981') : '1px solid #cbd5e1',
-        background: active ? (color || '#10b981') + '22' : 'transparent',
-        color: active ? (color || '#0f172a') : '#475569',
-        borderRadius: 999, padding: '4px 12px', fontSize: 12.5, cursor: 'pointer', fontWeight: active ? 700 : 500,
-      }}>{label}</button>
+      className={`xg-chip${active ? ' on' : ''}`}>
+      {color && <span className="xg-dot" style={{ background: color }} />}{label}
+    </button>
   );
   return (
     <div className="card">
       <h3 style={{ marginBottom: 10 }}>{t('chart.categoryFilter')}</h3>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
         {chip(t('common.allF'), selected.length === 0, undefined, '__all__')}
         {cats.map((c, i) => chip(refLabel('categories', c.name, t), selected.includes(c.name), c.color || CAT_COLORS[i % CAT_COLORS.length], c.name))}
       </div>
@@ -627,7 +626,7 @@ export function CategoryCompare({ expenses, cats }: { expenses: any[]; cats: { n
       <h3>{t('chart.categoryCompare')}</h3>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 10 }}>
         {statCats.map(c => (
-          <div key={c.name} style={{ border: '1px solid #e2e8f0', borderRadius: 12, padding: '10px 12px' }}>
+          <div key={c.name} style={{ border: '1px solid var(--border)', borderRadius: 14, padding: '12px 14px', background: 'var(--surface2)' }}>
             <div style={{ fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ width: 9, height: 9, borderRadius: 99, background: c.color, display: 'inline-block' }} />
               {refLabel('categories', c.name, t)}
@@ -648,7 +647,7 @@ export function CategoryCompare({ expenses, cats }: { expenses: any[]; cats: { n
           <h4 style={{ fontSize: 13, marginBottom: 6 }}>{t('chart.evolution18')}</h4>
           <ResponsiveContainer width="100%" height={230}>
             <LineChart data={series} margin={{ top: 5, right: 10, bottom: 0, left: -18 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
               <YAxis tick={{ fontSize: 10 }} />
               <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => eur(Number(v) || 0)} />

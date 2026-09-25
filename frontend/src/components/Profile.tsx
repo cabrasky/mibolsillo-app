@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { updateMe, changePassword } from '../api';
 import { useLocale, localizeError } from '../i18n';
+import { IconUser, IconKey, IconCheckCircle, IconAlertCircle } from './Icons';
 
 export default function Profile() {
   const { user, refreshUser } = useAuth();
@@ -64,12 +65,12 @@ export default function Profile() {
       </div>
 
       <div className="admin-section">
-        <h3>{t('profile.personal')}</h3>
+        <h3 className="h3-icon"><IconUser size={18} />{t('profile.personal')}</h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
           {user.avatar_url ? (
-            <img src={user.avatar_url} alt={user.name || ''} width={56} height={56} style={{ borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border, rgba(0,0,0,.1))' }} />
+            <img src={user.avatar_url} alt={user.name || ''} width={56} height={56} style={{ borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border)' }} />
           ) : (
-            <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--primary, #6366f1)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 700 }}>
+            <div className="user-avatar-fallback" style={{ width: 56, height: 56, borderRadius: '50%', fontSize: 22 }}>
               {(user.name || '?').charAt(0).toUpperCase()}
             </div>
           )}
@@ -90,7 +91,7 @@ export default function Profile() {
       </div>
 
       <div className="admin-section">
-        <h3>{t('profile.changePassword')}</h3>
+        <h3 className="h3-icon"><IconKey size={18} />{t('profile.changePassword')}</h3>
         <div className="auth-form">
           <label>{t('profile.currentPassword')}</label>
           <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} placeholder={t('profile.currentPh')} autoComplete="current-password" />
@@ -107,7 +108,7 @@ export default function Profile() {
         </div>
       </div>
 
-      {msg && <p className={msg.ok ? 'success' : 'error'}>{msg.text}</p>}
+      {msg && <p className={`msg-line ${msg.ok ? 'success' : 'error'}`}>{msg.ok ? <IconCheckCircle size={16} /> : <IconAlertCircle size={16} />}{msg.text}</p>}
     </div>
   );
 }

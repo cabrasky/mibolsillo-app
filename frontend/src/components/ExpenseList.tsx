@@ -7,7 +7,8 @@ import { apiSendToCC, apiUploadExpensePhoto, apiDeleteExpensePhoto, fetchExpense
 import { useLocale, localizeError, LOCALE_TAG, fill, refLabel } from '../i18n';
 import { personasOf } from '../personas';
 import { catColor } from '../categoryColors';
-import { IconSearch, IconEdit } from './Icons';
+import { IconSearch, IconEdit, IconFilter, IconArrowUpRight, IconChevronRight, IconX } from './Icons';
+import { eurFmt } from '../format';
 
 interface Props {
   expenses: Expense[];
@@ -23,7 +24,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 // Formateadores ligados al idioma activo
 const formatters = (tag: string) => ({
-  eur: (n: number) => `${n.toLocaleString(tag, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`,
+  eur: eurFmt(tag),
   monthLabel: (key: string) => {
     const [y, m] = key.split('-').map(Number);
     return cap(new Date(y, m - 1, 1).toLocaleDateString(tag, { month: 'long', year: 'numeric' }));
@@ -94,10 +95,11 @@ export default function ExpenseList({ expenses, onEdit, onDelete, compact = fals
       if (p.r === 'deb' && !p.repaid && p.n.trim()) { pendingAmount += Number(p.m) || 0; pendingPeople++; }
     }));
     const yearTotal = sum(inYear);
+    const monthTotal = sum(inMonth);
     return {
-      month: sum(inMonth), monthCount: inMonth.length,
+      month: monthTotal, monthCount: inMonth.length, monthAvg: inMonth.length ? monthTotal / inMonth.length : 0,
       week: sum(inWeek), weekFrom: weekAgo,
-      year: yearTotal, yearAvg: inYear.length ? yearTotal / inYear.length : 0,
+      year: yearTotal, yearCount: inYear.length,
       pendingAmount, pendingPeople,
     };
   }, [expenses]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -228,7 +230,6 @@ export default function ExpenseList({ expenses, onEdit, onDelete, compact = fals
           <span className="xg-dot" />{catName(c)}
         </button>
       ))}
-      {compact && <button className={`xg-chip${showFilters ? ' on' : ''}`} onClick={() => setShowFilters(v => !v)}>{t('expense.filters')}</button>}
     </div>
   );
   const pendingCheck = (
@@ -240,7 +241,7 @@ export default function ExpenseList({ expenses, onEdit, onDelete, compact = fals
   const photoModal = photoId && (
     <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) closePhoto(); }}>
       <div className="modal modal-sm">
-        <div className="modal-header"><h2>{t('expense.photoTitle')}</h2><button className="modal-close" onClick={closePhoto} aria-label={t('common.close')}>×</button></div>
+        <div className="modal-header"><h2>{t('expense.photoTitle')}</h2><button className="modal-close" onClick={closePhoto} aria-label={t('common.close')}><IconX size={18} /></button></div>
         <div className="modal-body">
           {photoError && <p className="error">{photoError}</p>}
           {photoUrl && <img src={photoUrl} alt={t('expense.photoTitle')} style={{ maxWidth: '100%' }} />}
@@ -261,12 +262,22 @@ export default function ExpenseList({ expenses, onEdit, onDelete, compact = fals
     return (
       <div className="xg xg-compact">
         <header className="xg-mhead">
-          <div className="xg-mhead-row">
-            <div>
-              <span className="xg-mtotal num">{eur(total)}</span>
-              <div className="xg-muted">{filtered.length} · {periodLabel}</div>
+          <div className="hero-card xg-mhero">
+            <span className="hero-label">{cap(periodLabel)}</span>
+            <span className="hero-num">{eur(total)}</span>
+            <div className="xg-mhero-row">
+              <span className="hero-sub">{fill(t(filtered.length === 1 ? 'expense.nOne' : 'expense.nMany'), { n: filtered.length })}</span>
+              <span className="hero-sub">{fill(t('expense.days7'), { v: eur(stats.week) })}</span>
             </div>
-            <button className="xg-icon-btn bordered" aria-label={t('common.search')} aria-expanded={showSearch} onClick={() => setShowSearch(v => !v)}><IconSearch size={18} /></button>
+          </div>
+          <div className="xg-mhead-row">
+            {stats.pendingPeople > 0
+              ? <Link to="/pending" className="xg-mpending">{t('expense.owed')} <strong className="num">{eur(stats.pendingAmount)}</strong><IconChevronRight size={14} /></Link>
+              : <span />}
+            <div className="xg-mhead-actions">
+              <button className="xg-icon-btn bordered" aria-label={t('common.search')} aria-expanded={showSearch} onClick={() => setShowSearch(v => !v)}><IconSearch size={18} /></button>
+              <button className="xg-icon-btn bordered" aria-label={t('expense.filters')} aria-expanded={showFilters} onClick={() => setShowFilters(v => !v)}><IconFilter size={18} /></button>
+            </div>
           </div>
           {showSearch && (
             <label className="xg-search">
@@ -274,11 +285,8 @@ export default function ExpenseList({ expenses, onEdit, onDelete, compact = fals
               <input type="search" autoFocus placeholder={t('expense.searchPh')} value={search} onChange={e => setSearch(e.target.value)} aria-label={t('expense.searchLabel')} />
             </label>
           )}
-          {stats.pendingPeople > 0 && (
-            <Link to="/pending" className="xg-mpending">{t('expense.owed')} <strong className="num">{eur(stats.pendingAmount)}</strong> ›</Link>
-          )}
-          {chips}
           {showFilters && <div className="xg-mfilters">{selects}{pendingCheck}</div>}
+          {chips}
         </header>
         {groups.length === 0 && <div className="empty"><IconSearch size={24} /><p>{t('common.noResults')}</p></div>}
         {groups.map(g => (
@@ -290,7 +298,7 @@ export default function ExpenseList({ expenses, onEdit, onDelete, compact = fals
                 return (
                   <div key={e.id} className="xg-mrow">
                     <button className="xg-mrow-main" onClick={() => onEdit(e.id)}>
-                      <span className={`xg-initial ${catColor(e.proposito)}`}>{(e.proposito || e.desc || '?').charAt(0).toUpperCase()}</span>
+                      <span className={`xg-initial ${catColor(e.proposito || e.desc)}`} aria-hidden="true">{(e.proposito || e.desc || '?').charAt(0).toUpperCase()}</span>
                       <span className="xg-mrow-text">
                         <span className="xg-desc">{e.desc}</span>
                         <span className="xg-meta">{[e.proposito && catName(e.proposito), e.metodo && methodName(e.metodo)].filter(Boolean).join(' · ')}</span>
@@ -321,9 +329,13 @@ export default function ExpenseList({ expenses, onEdit, onDelete, compact = fals
       </div>
 
       <div className="xg-tiles">
-        <div className="xg-tile"><span className="xg-tile-label">{t('dashboard.thisMonth')}</span><span className="xg-tile-value num">{eur(stats.month)}</span><span className="xg-tile-sub">{fill(t(stats.monthCount === 1 ? 'expense.nOne' : 'expense.nMany'), { n: stats.monthCount })}</span></div>
+        <div className="xg-tile hero">
+          <span className="xg-tile-label">{fill(t('expense.spentIn'), { m: monthInline(monthKey(now)) })}</span>
+          <span className="xg-tile-value num">{eur(stats.month)}</span>
+          <span className="xg-tile-sub">{fill(t(stats.monthCount === 1 ? 'expense.nOne' : 'expense.nMany'), { n: stats.monthCount })} · {fill(t('expense.avgPer'), { v: eur(stats.monthAvg) })}</span>
+        </div>
         <div className="xg-tile"><span className="xg-tile-label">{t('expense.last7')}</span><span className="xg-tile-value num">{eur(stats.week)}</span><span className="xg-tile-sub">{fill(t('expense.since'), { d: shortDate(stats.weekFrom) })}</span></div>
-        <div className="xg-tile"><span className="xg-tile-label">{t('monthly.totalYear')}</span><span className="xg-tile-value num">{eur(stats.year)}</span><span className="xg-tile-sub">{fill(t('expense.avgPer'), { v: eur(stats.yearAvg) })}</span></div>
+        <div className="xg-tile"><span className="xg-tile-label">{t('monthly.totalYear')}</span><span className="xg-tile-value num">{eur(stats.year)}</span><span className="xg-tile-sub">{fill(t(stats.yearCount === 1 ? 'expense.nOne' : 'expense.nMany'), { n: stats.yearCount })}</span></div>
         <div className="xg-tile warn">
           <span className="xg-tile-label">{t('expense.owed')}</span>
           <span className="xg-tile-value num">{eur(stats.pendingAmount)}</span>
@@ -349,7 +361,7 @@ export default function ExpenseList({ expenses, onEdit, onDelete, compact = fals
         </div>
 
         <div className="xg-grid xg-head">
-          <span>{t('expense.description')}</span><span>{t('expense.purpose')}</span><span>{t('expense.method')}</span><span>{t('expense.debt')}</span><span className="right">{t('expense.amount')}</span><span className="sr-only">{t('common.actions')}</span>
+          <span aria-hidden="true" /><span>{t('expense.description')}</span><span>{t('expense.purpose')}</span><span>{t('expense.method')}</span><span>{t('expense.debt')}</span><span className="right">{t('expense.amount')}</span><span className="sr-only">{t('common.actions')}</span>
         </div>
 
         {groups.length === 0 && <div className="empty"><IconSearch size={24} /><p>{t('common.noResults')}</p></div>}
@@ -363,13 +375,14 @@ export default function ExpenseList({ expenses, onEdit, onDelete, compact = fals
               const own = expenseCost(e);
               return (
                 <div key={e.id} className="xg-grid xg-row">
+                  <span className={`xg-initial ${catColor(e.proposito || e.desc)}`} aria-hidden="true">{(e.proposito || e.desc || '?').charAt(0).toUpperCase()}</span>
                   <div className="xg-cell-desc">
                     <span className="xg-desc">{e.desc}</span>
                     {(note || hasPeople(e)) && (
                       <div className="xg-meta">
                         {note && <span className="xg-note">{note}</span>}
                         {hasPeople(e) && (url
-                          ? <a className="xg-cc" href={url} target="_blank" rel="noreferrer">{t('expense.inCC')}</a>
+                          ? <a className="xg-cc" href={url} target="_blank" rel="noreferrer">{t('expense.inCC')}<IconArrowUpRight size={13} /></a>
                           : <button className="xg-cc" type="button" disabled={busyCc === e.id} onClick={() => pushCc(e)}>
                               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
                               {busyCc === e.id ? t('expense.sending') : t('expense.addCC')}
