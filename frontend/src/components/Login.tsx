@@ -7,7 +7,7 @@ import { BrandMark, IconArrowLeft } from './Icons';
 import LegalLinks from './LegalLinks';
 
 export default function Login() {
-  const { login, googleLogin } = useAuth();
+  const { login, googleLogin, authError } = useAuth();
   const navigate = useNavigate();
   const { t } = useLocale();
   const [email, setEmail] = useState('');
@@ -41,7 +41,7 @@ export default function Login() {
           <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
           <label>{t('auth.password')}</label>
           <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
-          {error && <p className="error">{error}</p>}
+          {(error || authError === 'suspended') && <p className="error">{error || t('error.suspended')}</p>}
           <button className="btn primary" type="submit" disabled={busy}>
             {busy ? t('auth.entering') : t('auth.enter')}
           </button>

@@ -19,20 +19,26 @@ const pt: LegalDocs = {
         '**O que registas na app:** despesas (valor, data, descrição, categoria, método de pagamento…), fotos de talões que carregues, receitas, metas de poupança, assinaturas, projetos e categorias próprias.',
         '**Pessoas com quem partilhas despesas:** os nomes que escreves e o que te devem ou já te devolveram.',
         '**Chaves de API** do modo programador: só se guarda a sua impressão digital (hash), não a chave.',
+        '**Pedidos de suporte:** o que escreves ao suporte e as respostas que recebes.',
         '**Dados técnicos:** endereço IP, data e caminho de cada pedido, nos registos do servidor, para a segurança e para resolver erros.',
       ], 'Não pedimos dados bancários nem nos ligamos ao teu banco.'] },
       { h: 'Para quê e com que base legal', p: [[
         '**Prestar o serviço:** criar a tua conta, guardar e sincronizar os teus dados entre a web e a app, e enviar-te o email para recuperar a palavra-passe. É necessário para cumprir os [Termos de utilização](/legal/terminos) que aceitas ao registar-te (art. 6.º, n.º 1, al. b) do RGPD).',
-        '**Segurança e funcionamento:** guardar registos técnicos e evitar abusos, por interesse legítimo em manter o serviço seguro (art. 6.º, n.º 1, al. f) do RGPD).',
+        '**Atender o suporte:** responder aos teus pedidos na app e por email (art. 6.º, n.º 1, al. b) do RGPD).',
+        '**Segurança e funcionamento:** guardar registos técnicos, detetar erros e evitar abusos, por interesse legítimo em manter o serviço seguro (art. 6.º, n.º 1, al. f) do RGPD).',
       ], 'Não usamos os teus dados para publicidade nem para criar perfis. Não há análise nem rastreio, e os teus dados não são vendidos nem cedidos a ninguém.'] },
       { h: 'Com quem são partilhados', p: [
         'Apenas nestes casos, e só se usares a função correspondente:',
         [
           '**Google**, se escolheres «Continuar com o Google»: o Google identifica-te e envia-nos o teu nome, email e foto. A Google LLC pode tratar dados nos EUA ao abrigo do Quadro de Privacidade de Dados UE-EUA; aplica-se também a [política de privacidade da Google](https://policies.google.com/privacy).',
           '**Cuentas Claras** (cuentas-claras.cabrasky.net), se enviares para lá uma despesa partilhada: são enviados o título, a data, os valores, os nomes das pessoas da divisão e o teu email. É um serviço do mesmo responsável, e o que enviares é gerido nessa app.',
-          '**Email:** os emails de recuperação da palavra-passe são enviados a partir de um servidor de correio próprio (mail.cabrasky.net).',
+          '**Email:** os emails de recuperação da palavra-passe e as respostas do suporte são enviados a partir de um servidor de correio próprio (mail.cabrasky.net).',
         ],
         'A web não carrega recursos de terceiros: as fontes e restantes ficheiros são servidos a partir do nosso próprio servidor. Só seriam dados dados a uma autoridade se a lei o exigisse.',
+      ] },
+      { h: 'O que vê o administrador', p: [
+        'O painel de administração mostra os dados da tua conta (nome, email, datas de registo e de último acesso, como entras e se usas a app móvel), **quantos** registos tens e os teus pedidos de suporte, para manter o serviço e ajudar-te. Não mostra o conteúdo das tuas despesas, receitas nem dos restantes registos.',
+        'O administrador pode suspender ou eliminar uma conta que não cumpra os [Termos de utilização](/legal/terminos), e enviar-te a ligação para repor a palavra-passe se o pedires.',
       ] },
       { h: 'Dados de outras pessoas', p: [
         'Se registares nomes de outras pessoas em despesas partilhadas, fá-lo com o conhecimento delas e limita-te ao necessário: basta um nome ou uma alcunha. Esses dados só são usados dentro da tua conta.',
@@ -40,7 +46,8 @@ const pt: LegalDocs = {
       { h: 'Durante quanto tempo os guardamos', p: [[
         'Os teus dados são conservados enquanto tiveres conta.',
         'Se **eliminares a conta**, são apagados de imediato da base de dados: a conta, as despesas, as fotos, as receitas, as metas, as assinaturas, os projetos, as categorias e as chaves de API. As cópias de segurança renovam-se automaticamente, e os dados apagados desaparecem delas em **30 dias, no máximo**.',
-        'Os registos técnicos do servidor são apagados com a sua rotação automática.',
+        'Os pedidos de suporte guardam-se enquanto tiveres conta e são apagados ao eliminá-la.',
+        'Os registos técnicos do servidor são apagados com a sua rotação automática, e os erros do servidor (caminho, tipo de erro e identificador, sem o conteúdo dos teus dados) ao fim de 30 dias.',
       ]] },
       { h: 'Os teus direitos', p: [
         'Tens direito de **acesso, retificação, apagamento, oposição, limitação e portabilidade**. Podes exercê-los assim:',

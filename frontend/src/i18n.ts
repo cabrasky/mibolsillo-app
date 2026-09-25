@@ -77,6 +77,14 @@ export function localizeError(error: unknown, t: (key: string, fallback?: string
   let localized = '';
   if (normalized.includes('demo account')) localized = t('demo.readOnly');
   else if (normalized.includes('email confirmation does not match')) localized = t('account.emailMismatch');
+  else if (normalized.includes('account suspended')) localized = t('error.suspended');
+  else if (normalized.includes('too many support requests')) localized = t('support.tooMany');
+  else if (normalized.includes('your own account')) localized = t('admin.errSelf');
+  else if (normalized.includes('not allowed on the demo')) localized = t('admin.errDemo');
+  else if (normalized.includes('remove admin rights')) localized = t('admin.errIsAdmin');
+  else if (normalized.includes('at least one admin')) localized = t('admin.errLastAdmin');
+  else if (normalized.includes('reactivate the account')) localized = t('admin.errReactivate');
+  else if (normalized.includes('could not send email')) localized = t('admin.errEmail');
   else if (normalized.includes('database unavailable') || normalized.includes('schema is out of date')) localized = t('error.database');
   else if (normalized.includes('internal server error')) localized = t('error.internal');
   else if (normalized.includes('incorrect email') || normalized.includes('invalid credentials')) localized = t('error.credentials');

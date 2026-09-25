@@ -56,6 +56,23 @@ class AccountDeleteRequest(BaseModel):
     confirm_email: str
 
 
+class SupportCreate(BaseModel):
+    """Nueva consulta de soporte (web o app)."""
+    subject: str = Field(min_length=3, max_length=120)
+    category: Literal["problem", "question", "suggestion"] = "question"
+    body: str = Field(min_length=5, max_length=4000)
+    platform: Literal["web", "android"] = "web"
+    app_version: str = Field(default="", max_length=32)
+
+
+class SupportReply(BaseModel):
+    body: str = Field(min_length=1, max_length=4000)
+
+
+class AdminSetRole(BaseModel):
+    is_admin: bool
+
+
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     avatar_url: Optional[str] = None

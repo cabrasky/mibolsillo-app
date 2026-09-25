@@ -19,20 +19,26 @@ const es: LegalDocs = {
         '**Lo que anotas en la app:** gastos (importe, fecha, descripción, categoría, método de pago…), fotos de tickets que subas, ingresos, metas de ahorro, suscripciones, proyectos y categorías propias.',
         '**Personas con las que compartes gastos:** los nombres que escribas y lo que te deben o te han devuelto.',
         '**Claves de API** del modo desarrollador: se guarda solo su huella (hash), no la clave.',
+        '**Consultas de soporte:** lo que escribes al soporte y las respuestas que recibes.',
         '**Datos técnicos:** dirección IP, fecha y ruta de cada petición, en los registros del servidor, para la seguridad y para resolver errores.',
       ], 'No pedimos datos bancarios ni nos conectamos a tu banco.'] },
       { h: 'Para qué y con qué base legal', p: [[
         '**Darte el servicio:** crear tu cuenta, guardar y sincronizar tus datos entre la web y la app, y enviarte el email para recuperar la contraseña. Es necesario para cumplir los [Términos de uso](/legal/terminos) que aceptas al registrarte (art. 6.1.b del RGPD).',
-        '**Seguridad y funcionamiento:** guardar registros técnicos y evitar abusos, por interés legítimo en mantener el servicio seguro (art. 6.1.f del RGPD).',
+        '**Atender el soporte:** responder a tus consultas en la app y por email (art. 6.1.b del RGPD).',
+        '**Seguridad y funcionamiento:** guardar registros técnicos, detectar errores y evitar abusos, por interés legítimo en mantener el servicio seguro (art. 6.1.f del RGPD).',
       ], 'No usamos tus datos para publicidad ni para hacer perfiles. No hay analítica ni seguimiento, y no se venden ni se ceden a nadie.'] },
       { h: 'Con quién se comparten', p: [
         'Solo en estos casos, y solo si usas la función correspondiente:',
         [
           '**Google**, si eliges «Continuar con Google»: Google te identifica y nos devuelve tu nombre, email y foto. Google LLC puede tratar datos en EE. UU. al amparo del Marco de Privacidad de Datos UE-EE. UU.; además se aplica la [política de privacidad de Google](https://policies.google.com/privacy).',
           '**Cuentas Claras** (cuentas-claras.cabrasky.net), si envías allí un gasto compartido: se envían el título, la fecha, los importes, los nombres de las personas del reparto y tu email. Es un servicio del mismo responsable, y lo que envíes se gestiona en esa app.',
-          '**Correo:** los emails de recuperación de contraseña salen de un servidor de correo propio (mail.cabrasky.net).',
+          '**Correo:** los emails de recuperación de contraseña y las respuestas del soporte salen de un servidor de correo propio (mail.cabrasky.net).',
         ],
         'La web no carga recursos de terceros: las fuentes y demás archivos se sirven desde nuestro propio servidor. Solo se darían datos a una autoridad si una ley lo exigiera.',
+      ] },
+      { h: 'Qué ve el administrador', p: [
+        'El panel de administración muestra los datos de tu cuenta (nombre, email, fechas de alta y de último acceso, cómo entras y si usas la app móvil), **cuántos** registros tienes y tus consultas de soporte, para mantener el servicio y atenderte. No muestra el contenido de tus gastos, ingresos ni del resto de registros.',
+        'El administrador puede suspender o eliminar una cuenta que incumpla los [Términos de uso](/legal/terminos), y enviarte el enlace para restablecer la contraseña si se lo pides.',
       ] },
       { h: 'Datos de otras personas', p: [
         'Si anotas nombres de otras personas en gastos compartidos, hazlo con su conocimiento y limítate a lo necesario: basta un nombre o un apodo. Esos datos solo se usan dentro de tu cuenta.',
@@ -40,7 +46,8 @@ const es: LegalDocs = {
       { h: 'Cuánto tiempo los guardamos', p: [[
         'Tus datos se conservan mientras tengas la cuenta.',
         'Si **eliminas la cuenta**, se borran al momento de la base de datos: la cuenta, los gastos, las fotos, los ingresos, las metas, las suscripciones, los proyectos, las categorías y las claves de API. Las copias de seguridad se renuevan automáticamente, y los datos borrados desaparecen de ellas en **30 días como máximo**.',
-        'Los registros técnicos del servidor se borran con su rotación automática.',
+        'Las consultas de soporte se guardan mientras tengas la cuenta y se borran al eliminarla.',
+        'Los registros técnicos del servidor se borran con su rotación automática, y los errores del servidor (ruta, tipo de error e identificador, sin el contenido de tus datos) a los 30 días.',
       ]] },
       { h: 'Tus derechos', p: [
         'Tienes derecho de **acceso, rectificación, supresión, oposición, limitación y portabilidad**. Puedes ejercerlos así:',

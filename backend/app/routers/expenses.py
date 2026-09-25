@@ -80,13 +80,16 @@ async def list_expenses(
     # Lógica de gastos recurrentes: si toca (p. ej. día 2 del mes) y falta la
     # fila, se crea antes de devolver la lista para que la web esté al día.
     request_id = getattr(request.state, "request_id", "unknown")
+    # Leer antes del try: si el chequeo falla, el rollback expira `user` y volver a
+    # leer sus atributos fuera del contexto async da MissingGreenlet (503).
+    user_id = user.id
     try:
-        await ensure_recurring_expense(db, user.id, bool(getattr(user, "is_admin", False)))
+        await ensure_recurring_expense(db, user_id, bool(getattr(user, "is_admin", False)))
     except SQLAlchemyError:
         await db.rollback()
         logger.exception("Expense recurring check failed request_id=%s", request_id)
         # Recurring expenses are optional; they must never block the expense list.
-    stmt = select(Expense).where(Expense.user_id == user.id).order_by(Expense.date.desc())
+    stmt = select(Expense).where(Expense.user_id == user_id).order_by(Expense.date.desc())
     if month and year:
         stmt = stmt.where(
             func.extract("month", Expense.date) == month,

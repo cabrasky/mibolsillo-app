@@ -27,6 +27,10 @@ export default function HelpPage() {
           </ul>
         </section>
       ))}
+      <section style={B}>
+        <h2 style={H}>{t('support.title')}</h2>
+        <p style={{ margin: 0 }}><RichText text={t('support.helpLink')} /></p>
+      </section>
     </div>
   );
 }

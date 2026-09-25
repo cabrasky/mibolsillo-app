@@ -3,7 +3,7 @@ import enum
 import uuid
 from datetime import date, datetime
 from typing import Optional
-from sqlalchemy import String, Float, Date, DateTime, Boolean, Text, LargeBinary, ForeignKey, Enum as SAEnum, false
+from sqlalchemy import String, Float, Date, DateTime, Boolean, Integer, Text, LargeBinary, ForeignKey, Enum as SAEnum, false
 from sqlalchemy.orm import Mapped, mapped_column
 from app.config import settings
 from app.database import Base
@@ -42,6 +42,8 @@ class User(Base):
     weekly_goal: Mapped[Optional[float]] = mapped_column(Float, nullable=True, default=None)
     setup_done: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
     mobile_tour_done: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
+    # Suspensión por un admin (None = activa): no puede entrar ni usar la API
+    suspended_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, default=None)
 
     @property
     def is_demo(self) -> bool:
@@ -201,3 +203,53 @@ class ApiKey(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     last_used_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, default=None)
     revoked_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, default=None)
+
+
+class SupportTicket(Base):
+    """Consulta de soporte de un usuario: hilo de mensajes con el admin.
+
+    status: open (espera al admin) · answered (espera al usuario) · closed.
+    """
+
+    __tablename__ = "support_tickets"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=gen_uuid)
+    user_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    subject: Mapped[str] = mapped_column(String(120), nullable=False)
+    category: Mapped[str] = mapped_column(String(20), default="question")  # problem | question | suggestion
+    status: Mapped[str] = mapped_column(String(12), default="open", index=True)
+    platform: Mapped[str] = mapped_column(String(12), default="web")  # web | android
+    app_version: Mapped[str] = mapped_column(String(32), default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class SupportMessage(Base):
+    __tablename__ = "support_messages"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=gen_uuid)
+    ticket_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("support_tickets.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    author: Mapped[str] = mapped_column(String(8), nullable=False)  # user | admin
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class ServerError(Base):
+    """Errores 5xx recientes para el panel de admin (se guardan 30 días).
+
+    En BD y no en memoria: en producción hay varias réplicas del backend.
+    Solo metadatos (ruta sin query, tipo y primera línea del mensaje).
+    """
+
+    __tablename__ = "server_errors"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=gen_uuid)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    method: Mapped[str] = mapped_column(String(8), default="")
+    path: Mapped[str] = mapped_column(String(255), default="")
+    status: Mapped[int] = mapped_column(Integer, default=500)
+    request_id: Mapped[str] = mapped_column(String(64), default="")
+    error_type: Mapped[str] = mapped_column(String(80), default="")
+    message: Mapped[str] = mapped_column(String(300), default="")

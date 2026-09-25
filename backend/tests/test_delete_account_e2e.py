@@ -38,7 +38,7 @@ async def main():
 
     from starlette.testclient import TestClient
     from sqlalchemy import func, select
-    from app.models.models import ExpensePhoto, Expense, User
+    from app.models.models import ExpensePhoto, Expense, SupportMessage, SupportTicket, User
     from app.services.accounts import USER_TABLES
 
     fails = 0
@@ -53,6 +53,8 @@ async def main():
             out = {m.__tablename__: await conn.scalar(select(func.count()).select_from(m).where(m.user_id == uid)) for m in USER_TABLES}
             out["expense_photos"] = await conn.scalar(select(func.count()).select_from(ExpensePhoto).where(
                 ExpensePhoto.expense_id.in_(select(Expense.id).where(Expense.user_id == uid))))
+            out["support_messages"] = await conn.scalar(select(func.count()).select_from(SupportMessage).where(
+                SupportMessage.ticket_id.in_(select(SupportTicket.id).where(SupportTicket.user_id == uid))))
             out["users"] = await conn.scalar(select(func.count()).select_from(User).where(User.id == uid))
             return out
 
@@ -69,6 +71,7 @@ async def main():
         c.post("/api/categories", headers=H, json={"kind": "expense", "name": "Mascotas"})
         c.put("/api/developer/toggle", headers=H)
         c.post("/api/developer/keys", headers=H, json={"name": "script"})
+        c.post("/api/support", headers=H, json={"subject": "Duda", "body": "¿Cómo exporto mis gastos?"})
         return uid, H
 
     with TestClient(app) as c:

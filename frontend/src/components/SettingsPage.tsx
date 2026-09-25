@@ -9,7 +9,7 @@ import { usePreferences } from '../PreferencesContext';
 import { exportExpensesCsv } from '../exportCsv';
 import PreferencesForm from './PreferencesForm';
 import Profile from './Profile';
-import { IconSettings, IconDownload, IconLogOut, IconInfo, IconTrash } from './Icons';
+import { IconSettings, IconDownload, IconLogOut, IconInfo, IconTrash, IconLifeBuoy } from './Icons';
 import LegalLinks from './LegalLinks';
 import DeleteAccountModal from './DeleteAccountModal';
 import { useAuth } from '../AuthContext';
@@ -38,6 +38,15 @@ export default function SettingsPage({ expenses }: { expenses: Expense[] }) {
             <IconDownload size={16} />{t('common.exportCsv')}
           </button>
           <Link to="/excel" className="btn outline">{t('more.excel')}</Link>
+        </div>
+      </section>
+
+      <section className="admin-section">
+        <h3 className="h3-icon"><IconLifeBuoy size={18} />{t('support.title')}</h3>
+        <p className="hint">{t('support.desc')}</p>
+        <div className="row-actions">
+          <Link to="/support" className="btn outline">{t('support.open')}</Link>
+          <Link to="/help" className="btn outline">{t('more.help')}</Link>
         </div>
       </section>
 

@@ -30,6 +30,7 @@ import ResetPassword from './components/ResetPassword';
 import AdminPanel from './components/AdminPanel';
 import Landing from './components/Landing';
 import LegalPage from './components/LegalPage';
+import SupportPage from './components/SupportPage';
 import CategoriesPage from './components/CategoriesPage';
 import ExcelPage from './components/ExcelPage';
 import HelpPage from './components/HelpPage';
@@ -188,6 +189,7 @@ function AppContent() {
       } />
       <Route path="/excel" element={<ExcelPage onImported={refresh} />} />
       <Route path="/help" element={<HelpPage />} />
+      <Route path="/support" element={<SupportPage />} />
       <Route path="/legal" element={<Navigate to="/legal/privacidad" replace />} />
       <Route path="/legal/:doc" element={<LegalPage />} />
       <Route path="/developer" element={<DeveloperPage />} />
