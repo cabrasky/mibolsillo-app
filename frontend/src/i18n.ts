@@ -2,16 +2,16 @@ import { createContext, useContext } from 'react';
 import es from './locales/es';
 import en from './locales/en';
 import pt from './locales/pt';
+import { loadLocaleCookie, type Locale } from './preferences';
 
-export type Locale = 'es' | 'en' | 'pt';
+export type { Locale };
 
-export const LOCALE_STORAGE_KEY = 'gastos_locale';
+// Idioma del navegador: el que se usa la primera vez, antes de que el usuario elija
+export const browserLocale = (): Locale =>
+  navigator.language?.startsWith('pt') ? 'pt' : navigator.language?.startsWith('en') ? 'en' : 'es';
 
 export function loadLocale(): Locale {
-  const v = localStorage.getItem(LOCALE_STORAGE_KEY);
-  if (v === 'es' || v === 'en' || v === 'pt') return v;
-  return navigator.language?.startsWith('pt') ? 'pt' :
-         navigator.language?.startsWith('en') ? 'en' : 'es';
+  return loadLocaleCookie() ?? browserLocale();
 }
 
 // Textos por idioma en src/locales/{es,en,pt}.ts

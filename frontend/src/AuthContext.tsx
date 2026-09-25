@@ -1,6 +1,6 @@
 /* ── AuthContext: manages login state across the app ───────────────────────── */
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { login as apiLogin, register as apiRegister, getMe, getGoogleAuthUrl, setToken, getToken, setStoredUser, getStoredUser } from './api';
+import { login as apiLogin, register as apiRegister, getMe, getGoogleAuthUrl, setToken, getToken, setStoredUser, getStoredUser, updatePreferences as apiUpdatePreferences, type AccountPreferences } from './api';
 
 interface User {
   id: string;
@@ -9,6 +9,11 @@ interface User {
   avatar_url: string;
   is_admin: boolean;
   is_developer: boolean;
+  locale?: AccountPreferences['locale'];
+  theme?: AccountPreferences['theme'];
+  weekly_goal?: number | null;
+  setup_done?: boolean;
+  mobile_tour_done?: boolean;
 }
 
 interface AuthContextType {
@@ -19,6 +24,7 @@ interface AuthContextType {
   logout: () => void;
   googleLogin: () => void;
   refreshUser: () => Promise<void>;
+  updatePreferences: (body: Partial<AccountPreferences>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -78,12 +84,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  // Guarda preferencias en la cuenta y refresca el usuario con lo que devuelve el servidor
+  const updatePreferences = useCallback(async (body: Partial<AccountPreferences>) => {
+    const updated = await apiUpdatePreferences(body);
+    setUser(updated);
+    setStoredUser(updated);
+  }, []);
+
   const googleLogin = () => {
     window.location.href = getGoogleAuthUrl();
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, googleLogin, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, googleLogin, refreshUser, updatePreferences }}>
       {children}
     </AuthContext.Provider>
   );

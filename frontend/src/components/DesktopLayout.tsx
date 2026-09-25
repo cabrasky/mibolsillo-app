@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { Expense } from '../types';
-import { useLocale, nextLocale } from '../i18n';
+import { useLocale } from '../i18n';
 import { useAuth } from '../AuthContext';
 import {
   IconPlus, IconList, IconTarget,
-  IconTrendingUp, IconRefresh, IconHome, IconGrid, IconUsers, BrandMark,
+  IconTrendingUp, IconRefresh, IconHome, IconGrid, IconUsers, IconSettings, BrandMark,
 } from './Icons';
 import { pendingDebtCount } from '../personas';
 
@@ -39,6 +39,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/excel': 'more.excel',
   '/help': 'more.help',
   '/developer': 'more.developer',
+  '/settings': 'settings.title',
 };
 
 const NAV_ITEMS: { key: Tab; icon: React.ReactNode; i18nKey: string; path: string }[] = [
@@ -60,18 +61,10 @@ interface Props {
   children: React.ReactNode;
   expenses: Expense[];
   onAddClick: () => void;
-  dark: boolean;
-  onToggleDark: () => void;
-  onExportCSV: () => void;
-  onExportJSON: () => void;
-  layout: 'desktop' | 'mobile';
-  onLayoutChange: (l: 'desktop' | 'mobile') => void;
 }
 
 export default function DesktopLayout({
   children, expenses, onAddClick,
-  dark, onToggleDark, onExportCSV, onExportJSON,
-  layout, onLayoutChange,
 }: Props) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -79,7 +72,7 @@ export default function DesktopLayout({
   const currentTab = pathToTab(location.pathname);
 
   const pendingCount = useMemo(() => pendingDebtCount(expenses), [expenses]);
-  const { t, locale, setLocale } = useLocale();
+  const { t } = useLocale();
 
   return (
     <div className="layout-desktop">
@@ -110,7 +103,7 @@ export default function DesktopLayout({
         </div>
         <div className="sidebar-footer">
           {user && (
-            <button className="user-card" onClick={() => navigate('/profile')} title={t('nav.profile')}>
+            <button className="user-card" onClick={() => navigate('/settings')} title={t('settings.title')} aria-current={location.pathname === '/settings' ? 'page' : undefined}>
               {user.avatar_url ? (
                 <img src={user.avatar_url} alt="" className="user-avatar" />
               ) : (
@@ -120,32 +113,12 @@ export default function DesktopLayout({
                 <span className="user-name">{user.name}</span>
                 <span className="user-email">{user.email}</span>
               </span>
+              <span className="user-card-gear" aria-hidden="true"><IconSettings size={18} /></span>
             </button>
           )}
         </div>
       </nav>
       <div className="desktop-main">
-        <header className="desktop-header">
-          <div className="header-actions">
-            <button className="theme-btn" onClick={() => setLocale(nextLocale(locale))} title={t('lang.select')} aria-label={t('lang.select')}>
-              {locale.toUpperCase()}
-            </button>
-            <button className="layout-toggle-btn" onClick={() => onLayoutChange(layout === 'desktop' ? 'mobile' : 'desktop')} title={layout === 'desktop' ? t('nav.mobile') : t('nav.desktop')} aria-label={layout === 'desktop' ? t('nav.mobile') : t('nav.desktop')}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></svg>
-            </button>
-            <button className="theme-btn" onClick={onToggleDark} title={t('theme.toggle')} aria-label={t('theme.toggle')}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                {dark ? <><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></> : <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />}
-              </svg>
-            </button>
-            <button className="theme-btn" onClick={onExportCSV} title={t('common.exportCsv')} aria-label={t('common.exportCsv')}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
-            </button>
-            <button className="theme-btn" onClick={onExportJSON} title={t('common.backupJson')} aria-label={t('common.backupJson')}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M5 4h11l3 3v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z" /><path d="M8 4v5h7V4M8 20v-6h8v6" /></svg>
-            </button>
-          </div>
-        </header>
         <main className="desktop-content">
           {PAGE_TITLES[location.pathname] && (
             <div className="xg-title page-title-block"><h1>{t(PAGE_TITLES[location.pathname])}</h1></div>

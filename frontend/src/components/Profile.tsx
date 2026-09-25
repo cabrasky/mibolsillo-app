@@ -1,4 +1,5 @@
-/* ── Perfil: editar mi usuario (nombre, avatar) y cambiar contraseña ────────── */
+/* ── Perfil: editar mi usuario (nombre, avatar) y cambiar contraseña ──────────
+   Se muestra dentro de Configuración (SettingsPage). */
 import { useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { updateMe, changePassword } from '../api';
@@ -59,11 +60,7 @@ export default function Profile() {
   if (!user) return null;
 
   return (
-    <div className="admin-panel">
-      <div className="admin-header">
-        <h2>{t('nav.profile')}</h2>
-      </div>
-
+    <>
       <div className="admin-section">
         <h3 className="h3-icon"><IconUser size={18} />{t('profile.personal')}</h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
@@ -109,6 +106,6 @@ export default function Profile() {
       </div>
 
       {msg && <p className={`msg-line ${msg.ok ? 'success' : 'error'}`}>{msg.ok ? <IconCheckCircle size={16} /> : <IconAlertCircle size={16} />}{msg.text}</p>}
-    </div>
+    </>
   );
 }
