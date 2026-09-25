@@ -1,7 +1,7 @@
 """Pydantic schemas for API request/response validation."""
 import datetime as _dt
 from datetime import date, datetime
-from typing import Optional
+from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 
@@ -31,8 +31,23 @@ class UserOut(BaseModel):
     avatar_url: str = ""
     is_admin: bool = False
     is_developer: bool = False
+    # Preferencias de cuenta
+    locale: str = ""
+    theme: str = "system"
+    weekly_goal: Optional[float] = None
+    setup_done: bool = False
+    mobile_tour_done: bool = False
 
     model_config = {"from_attributes": True}
+
+
+class PreferencesUpdate(BaseModel):
+    """Actualización parcial de las preferencias de la cuenta."""
+    locale: Optional[Literal["es", "en", "pt"]] = None
+    theme: Optional[Literal["system", "light", "dark"]] = None
+    weekly_goal: Optional[float] = Field(default=None, ge=0, le=1_000_000)
+    setup_done: Optional[bool] = None
+    mobile_tour_done: Optional[bool] = None
 
 
 class UserUpdate(BaseModel):

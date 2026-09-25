@@ -14,11 +14,8 @@ const es = {
   'nav.subs': 'Suscripciones',
   'nav.check': 'Check',
   'nav.add': 'Añadir',
-  'nav.desktop': 'Escritorio',
-  'nav.mobile': 'Móvil',
   'nav.main': 'Principal',
   'nav.newExpense': 'Nuevo gasto',
-  'nav.profile': 'Mi perfil',
 
   // Common
   'common.save': 'Guardar',
@@ -52,7 +49,6 @@ const es = {
   'common.next': 'Siguiente',
   'common.actions': 'Acciones',
   'common.exportCsv': 'Exportar CSV',
-  'common.backupJson': 'Guardar copia (JSON)',
 
   // Reference data
   'ref.months.1': 'Enero',
@@ -353,7 +349,6 @@ const es = {
   // Theme
   'theme.dark': 'Oscuro',
   'theme.light': 'Claro',
-  'theme.toggle': 'Cambiar tema',
 
   // Language
   'lang.select': 'Idioma',
@@ -398,8 +393,6 @@ const es = {
   'more.developerDesc': 'API y claves de acceso',
   'more.categories': 'Categorías',
   'more.categoriesDesc': 'Crea y renombra las tuyas',
-  'more.profile': 'Perfil',
-  'more.profileDesc': 'Cuenta y contraseña',
   'more.admin': 'Admin',
   'more.adminDesc': 'OAuth y SMTP',
   'more.logout': 'Cerrar sesión',
@@ -741,6 +734,25 @@ const es = {
 
   // Common
   'common.email': 'Email',
+
+  // Configuración y ventana de bienvenida
+  'settings.title': 'Configuración',
+  'settings.desc': 'Idioma, tema, perfil y datos',
+  'settings.prefs': 'Preferencias',
+  'settings.prefsHint': 'Se guardan en tu cuenta, así la web y la app móvil se ven igual.',
+  'settings.language': 'Idioma',
+  'settings.theme': 'Tema',
+  'settings.themeSystem': 'Sistema',
+  'settings.themeLight': 'Claro',
+  'settings.themeDark': 'Oscuro',
+  'settings.weeklyGoal': 'Presupuesto semanal',
+  'settings.weeklyGoalHint': 'Lo máximo que quieres gastar cada semana. Se usa en el Resumen semanal.',
+  'settings.data': 'Tus datos',
+  'settings.dataHint': 'Descarga todos tus gastos en CSV, o usa la sección Excel para la plantilla e importar.',
+  'setup.title': 'Configura tu cuenta',
+  'setup.intro': 'Elige cómo quieres usar miBolsillo. Podrás cambiarlo cuando quieras en Configuración.',
+  'setup.save': 'Guardar y empezar',
+  'setup.later': 'Más tarde',
 };
 
 export type TKey = keyof typeof es;

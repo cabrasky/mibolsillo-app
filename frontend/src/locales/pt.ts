@@ -14,11 +14,8 @@ const pt: Record<TKey, string> = {
   'nav.subs': 'Assinaturas',
   'nav.check': 'Check',
   'nav.add': 'Adicionar',
-  'nav.desktop': 'Desktop',
-  'nav.mobile': 'Mobile',
   'nav.main': 'Principal',
   'nav.newExpense': 'Nova despesa',
-  'nav.profile': 'O meu perfil',
 
   'common.save': 'Salvar',
   'common.cancel': 'Cancelar',
@@ -51,7 +48,6 @@ const pt: Record<TKey, string> = {
   'common.next': 'Seguinte',
   'common.actions': 'Ações',
   'common.exportCsv': 'Exportar CSV',
-  'common.backupJson': 'Guardar cópia (JSON)',
 
   'ref.months.1': 'Janeiro',
   'ref.months.2': 'Fevereiro',
@@ -339,7 +335,6 @@ const pt: Record<TKey, string> = {
 
   'theme.dark': 'Escuro',
   'theme.light': 'Claro',
-  'theme.toggle': 'Alternar tema',
 
   'lang.select': 'Idioma',
   'lang.es': 'Espanhol',
@@ -383,8 +378,6 @@ const pt: Record<TKey, string> = {
   'more.developerDesc': 'API e chaves de acesso',
   'more.categories': 'Categorias',
   'more.categoriesDesc': 'Cria e renomeia as tuas',
-  'more.profile': 'Perfil',
-  'more.profileDesc': 'Conta e palavra-passe',
   'more.admin': 'Admin',
   'more.adminDesc': 'OAuth e SMTP',
   'more.logout': 'Terminar sessão',
@@ -726,6 +719,25 @@ const pt: Record<TKey, string> = {
 
   // Common
   'common.email': 'Email',
+
+  // Configuración y ventana de bienvenida
+  'settings.title': 'Definições',
+  'settings.desc': 'Idioma, tema, perfil e dados',
+  'settings.prefs': 'Preferências',
+  'settings.prefsHint': 'Ficam guardadas na tua conta, para que a web e a app móvel fiquem iguais.',
+  'settings.language': 'Idioma',
+  'settings.theme': 'Tema',
+  'settings.themeSystem': 'Sistema',
+  'settings.themeLight': 'Claro',
+  'settings.themeDark': 'Escuro',
+  'settings.weeklyGoal': 'Orçamento semanal',
+  'settings.weeklyGoalHint': 'O máximo que queres gastar por semana. Usado no Resumo semanal.',
+  'settings.data': 'Os teus dados',
+  'settings.dataHint': 'Descarrega todas as tuas despesas em CSV, ou usa a secção Excel para o modelo e importar.',
+  'setup.title': 'Configura a tua conta',
+  'setup.intro': 'Escolhe como queres usar o miBolsillo. Podes mudar quando quiseres nas Definições.',
+  'setup.save': 'Guardar e começar',
+  'setup.later': 'Mais tarde',
 };
 
 export default pt;

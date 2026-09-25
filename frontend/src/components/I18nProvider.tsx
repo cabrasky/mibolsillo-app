@@ -1,13 +1,14 @@
 /* ── Proveedor de idioma: guarda el idioma elegido y expone t() ─────────── */
 import { useState, useCallback, type ReactNode } from 'react';
-import { I18nContext, LOCALE_MAP, LOCALE_STORAGE_KEY, loadLocale, type Locale } from '../i18n';
+import { I18nContext, LOCALE_MAP, loadLocale, type Locale } from '../i18n';
+import { saveLocaleCookie } from '../preferences';
 
 export default function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(loadLocale);
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);
-    localStorage.setItem(LOCALE_STORAGE_KEY, l);
+    saveLocaleCookie(l);
     document.documentElement.lang = l;
   }, []);
 

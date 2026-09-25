@@ -4,7 +4,9 @@ import { AuthProvider, useAuth } from './AuthContext';
 import { loadData, deleteExpense, loadAllFromServer } from './store';
 import { tNow } from './i18n';
 import AddExpense from './components/AddExpense';
-import Profile from './components/Profile';
+import SettingsPage from './components/SettingsPage';
+import SetupModal from './components/SetupModal';
+import { PreferencesProvider, usePreferences } from './PreferencesContext';
 import Dashboard from './components/Dashboard';
 import ExpenseList from './components/ExpenseList';
 import IncomesPage from './components/Incomes';
@@ -36,14 +38,9 @@ import PeriodCompare from './components/CompareCharts';
 import './App.css';
 
 const LAYOUT_BREAK = 1024;
-const LAYOUT_PIN = 'gastos_layout_pin';
 const autoLayout = (): 'desktop' | 'mobile' => (window.innerWidth < LAYOUT_BREAK ? 'mobile' : 'desktop');
-
-function getSavedLayout(): 'desktop' | 'mobile' {
-  const v = localStorage.getItem(LAYOUT_PIN);
-  if (v === 'mobile' || v === 'desktop') return v;
-  return autoLayout();
-}
+// Limpieza: el antiguo selector manual escritorio/móvil ya no existe
+try { localStorage.removeItem('gastos_layout_pin'); } catch { /* sin localStorage */ }
 
 function MonthlyCharts({ expenses, incomes }: { expenses: any[]; incomes: any[] }) {
   const cats = useMemo(() => {
@@ -73,32 +70,19 @@ function MonthlyCharts({ expenses, incomes }: { expenses: any[]; incomes: any[] 
 
 function AppContent() {
   const { user, loading } = useAuth();
-  const [layout, setLayout] = useState<'desktop' | 'mobile'>(getSavedLayout);
+  const [layout, setLayout] = useState<'desktop' | 'mobile'>(autoLayout);
+  const { weeklyGoal, setPrefs } = usePreferences();
+  const [setupLater, setSetupLater] = useState(false);
   const [data, setData] = useState(() => loadData());
   const [editId, setEditId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addPresetProject, setAddPresetProject] = useState('');
-  const [dark, setDark] = useState(() => localStorage.getItem('gastos_dark') === 'true');
-  const [weeklyGoal, setWeeklyGoal] = useState(() => Number(localStorage.getItem('gastos_goal')) || 50);
-
-  const handleLayoutChange = (l: 'desktop' | 'mobile') => {
-    setLayout(l);
-    try { localStorage.setItem(LAYOUT_PIN, l); } catch { /* ignore */ }
-  };
+  // El layout se adapta solo al ancho de la pantalla
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', dark);
-    localStorage.setItem('gastos_dark', dark ? 'true' : 'false');
-  }, [dark]);
-  // Auto-adaptación del layout al cambiar el tamaño de la pantalla (salvo pin manual)
-  useEffect(() => {
-    const onResize = () => {
-      if (localStorage.getItem(LAYOUT_PIN)) return;
-      setLayout(autoLayout());
-    };
+    const onResize = () => setLayout(autoLayout());
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
-  useEffect(() => { localStorage.setItem('gastos_goal', String(weeklyGoal)); }, [weeklyGoal]);
 
   const refresh = useCallback(() => { setData(loadData()); setEditId(null); }, []);
 
@@ -123,37 +107,7 @@ function AppContent() {
     }
   }, [user, serverSynced, refresh]);
 
-  const handleExportCSV = () => {
-    const now = new Date();
-    const headers = ['Fecha','Descripcion','Importe','Proposito','Motivo','Tipo','Metodo','Gasto Ajeno','Deudores','Metodo Devolucion','Devuelto','Me Corresponde','Viaje'];
-    const rows = [headers];
-    data.expenses.forEach((e: any) => {
-      rows.push([e.date, e.desc, String(e.amount), e.proposito, e.motivo, e.tipo, e.metodo, String(e.ajeno), e.deudores, e.deudaMetodo, e.devuelto, String(e.meCorresponde), e.viaje]);
-    });
-    const csv = rows.map(r => r.map((v: any) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `gastos_${now.getFullYear()}.csv`;
-    a.click(); URL.revokeObjectURL(url);
-  };
-
-  const handleExportJSON = () => {
-    const json = JSON.stringify({ ...data, exportedAt: new Date().toISOString() }, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `gastos_${new Date().getFullYear()}.json`;
-    a.click(); URL.revokeObjectURL(url);
-  };
-
   const editExpense = editId ? data.expenses.find((e: any) => e.id === editId) || null : null;
-
-  const sharedLayoutProps = {
-    dark, onToggleDark: () => setDark((d: boolean) => !d),
-    onExportCSV: handleExportCSV, onExportJSON: handleExportJSON,
-    layout, onLayoutChange: handleLayoutChange,
-  };
 
   // Show loading screen while checking auth
   if (loading) {
@@ -204,7 +158,7 @@ function AppContent() {
         <MonthlyCharts expenses={data.expenses} incomes={data.incomes} />
       } />
       <Route path="/more/weekly" element={
-        <WeeklyBudget expenses={data.expenses} weeklyGoal={weeklyGoal} onGoalChange={setWeeklyGoal} />
+        <WeeklyBudget expenses={data.expenses} weeklyGoal={weeklyGoal} onGoalChange={v => setPrefs({ weeklyGoal: v })} />
       } />
       <Route path="/pending" element={
         <PendingPayments expenses={data.expenses} onRefresh={refresh} />
@@ -219,9 +173,8 @@ function AppContent() {
       <Route path="/admin" element={
         <AdminPanel />
       } />
-      <Route path="/profile" element={
-        <Profile />
-      } />
+      <Route path="/settings" element={<SettingsPage expenses={data.expenses} />} />
+      <Route path="/profile" element={<Navigate to="/settings" replace />} />
       <Route path="/categories" element={
         <CategoriesPage expenses={data.expenses} incomes={data.incomes} subscriptions={data.subscriptions} />
       } />
@@ -237,28 +190,26 @@ function AppContent() {
     </Routes>
   );
 
+  // Primera vez en su espacio: ventana para elegir nombre, idioma, tema y presupuesto
+  const setupModal = user.setup_done === false && !setupLater ? <SetupModal onLater={() => setSetupLater(true)} /> : null;
+
   if (layout === 'desktop') {
     return (
-      <DesktopLayout
-        expenses={data.expenses}
-        onAddClick={handleAddClick}
-        {...sharedLayoutProps}
-      >
+      <DesktopLayout expenses={data.expenses} onAddClick={handleAddClick}>
         {routes}
         <AddExpense isOpen={showAddModal} editExpense={editExpense} onClose={handleCloseAdd} onSaved={handleSave} presetProjectId={addPresetProject} />
+        {setupModal}
       </DesktopLayout>
     );
   }
 
   return (
     <>
-      <MobileLayout
-        onAddClick={handleAddClick}
-        {...sharedLayoutProps}
-      >
+      <MobileLayout onAddClick={handleAddClick}>
         {routes}
       </MobileLayout>
       <AddExpense isOpen={showAddModal} editExpense={editExpense} onClose={handleCloseAdd} onSaved={handleSave} presetProjectId={addPresetProject} />
+      {setupModal}
     </>
   );
 }
@@ -266,7 +217,9 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <PreferencesProvider>
+        <AppContent />
+      </PreferencesProvider>
     </AuthProvider>
   );
 }

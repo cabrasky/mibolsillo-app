@@ -64,6 +64,15 @@ async function request<T>(method: string, path: string, body?: unknown, auth = f
 
 /* ── Auth API ──────────────────────────────────────────────────────────────── */
 
+// Preferencias de la cuenta (compartidas con la app móvil)
+export interface AccountPreferences {
+  locale: '' | 'es' | 'en' | 'pt';   // '' = aún sin elegir
+  theme: '' | 'system' | 'light' | 'dark';
+  weekly_goal: number | null;
+  setup_done: boolean;
+  mobile_tour_done: boolean;
+}
+
 export interface AuthResponse {
   token: string;
   token_type: string;
@@ -74,7 +83,7 @@ export interface AuthResponse {
     avatar_url: string;
     is_admin: boolean;
     is_developer: boolean;
-  };
+  } & Partial<AccountPreferences>;
 }
 
 export async function register(email: string, password: string, name: string): Promise<AuthResponse> {
@@ -347,6 +356,10 @@ export async function apiDeleteSubscription(id: string): Promise<void> {
 
 export async function updateMe(body: { name?: string; avatar_url?: string }): Promise<AuthResponse['user']> {
   return request<AuthResponse['user']>('PUT', '/auth/me', body, true);
+}
+
+export async function updatePreferences(body: Partial<AccountPreferences>): Promise<AuthResponse['user']> {
+  return request<AuthResponse['user']>('PUT', '/auth/me/preferences', body, true);
 }
 
 export async function changePassword(current_password: string, new_password: string): Promise<{ message: string }> {

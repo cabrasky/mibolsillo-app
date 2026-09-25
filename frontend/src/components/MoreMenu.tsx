@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { IconChart, IconTarget, IconWallet, IconRefresh, IconCheck } from './Icons';
+import { IconChart, IconTarget, IconWallet, IconRefresh, IconCheck, IconSettings, IconLock } from './Icons';
 import { useAuth } from '../AuthContext';
 import { useLocale } from '../i18n';
 
@@ -16,6 +16,11 @@ export default function MoreMenu() {
   const { t } = useLocale();
   return (
     <div className="more-grid">
+      <Link to="/settings" className="more-card" style={{ textDecoration: 'none', color: 'inherit' }}>
+        <div className="more-icon"><IconSettings size={24} /></div>
+        <div className="more-label">{t('settings.title')}</div>
+        <div className="more-desc">{t('settings.desc')}</div>
+      </Link>
       {ITEMS.map(item => (
         <Link key={item.key} to={item.path} className="more-card" style={{ textDecoration: 'none', color: 'inherit' }}>
           <div className="more-icon">{item.icon}</div>
@@ -58,18 +63,9 @@ export default function MoreMenu() {
         <div className="more-label">{t('more.categories')}</div>
         <div className="more-desc">{t('more.categoriesDesc')}</div>
       </Link>
-      <Link to="/profile" className="more-card" style={{ textDecoration: 'none', color: 'inherit' }}>
-        <div className="more-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        </div>
-        <div className="more-label">{t('more.profile')}</div>
-        <div className="more-desc">{t('more.profileDesc')}</div>
-      </Link>
       {user?.is_admin && (
         <Link to="/admin" className="more-card admin-card" style={{ textDecoration: 'none' }}>
-          <div className="more-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          </div>
+          <div className="more-icon"><IconLock size={24} /></div>
           <div className="more-label">{t('more.admin')}</div>
           <div className="more-desc">{t('more.adminDesc')}</div>
         </Link>

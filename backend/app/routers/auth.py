@@ -23,6 +23,7 @@ from app.schemas.schemas import (
     AuthResponse,
     UserOut,
     UserUpdate,
+    PreferencesUpdate,
     PasswordChangeRequest,
     ForgotPasswordRequest,
     ResetPasswordRequest,
@@ -381,6 +382,20 @@ async def update_me(
         current_user.name = name
     if body.avatar_url is not None:
         current_user.avatar_url = body.avatar_url.strip()
+    await db.flush()
+    return UserOut.model_validate(current_user)
+
+
+@router.put("/me/preferences", response_model=UserOut)
+async def update_preferences(
+    body: PreferencesUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Update the account preferences (language, theme, weekly goal, onboarding flags)."""
+    for field, value in body.model_dump(exclude_unset=True).items():
+        if value is not None:
+            setattr(current_user, field, value)
     await db.flush()
     return UserOut.model_validate(current_user)
 

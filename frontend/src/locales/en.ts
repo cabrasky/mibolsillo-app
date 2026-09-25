@@ -14,11 +14,8 @@ const en: Record<TKey, string> = {
   'nav.subs': 'Subscriptions',
   'nav.check': 'Check',
   'nav.add': 'Add',
-  'nav.desktop': 'Desktop',
-  'nav.mobile': 'Mobile',
   'nav.main': 'Main',
   'nav.newExpense': 'New expense',
-  'nav.profile': 'My profile',
 
   'common.save': 'Save',
   'common.cancel': 'Cancel',
@@ -51,7 +48,6 @@ const en: Record<TKey, string> = {
   'common.next': 'Next',
   'common.actions': 'Actions',
   'common.exportCsv': 'Export CSV',
-  'common.backupJson': 'Save backup (JSON)',
 
   'ref.months.1': 'January',
   'ref.months.2': 'February',
@@ -340,7 +336,6 @@ const en: Record<TKey, string> = {
 
   'theme.dark': 'Dark',
   'theme.light': 'Light',
-  'theme.toggle': 'Toggle theme',
 
   'lang.select': 'Language',
   'lang.es': 'Spanish',
@@ -384,8 +379,6 @@ const en: Record<TKey, string> = {
   'more.developerDesc': 'API and access keys',
   'more.categories': 'Categories',
   'more.categoriesDesc': 'Create and rename your own',
-  'more.profile': 'Profile',
-  'more.profileDesc': 'Account and password',
   'more.admin': 'Admin',
   'more.adminDesc': 'OAuth and SMTP',
   'more.logout': 'Log out',
@@ -727,6 +720,25 @@ const en: Record<TKey, string> = {
 
   // Common
   'common.email': 'Email',
+
+  // Configuración y ventana de bienvenida
+  'settings.title': 'Settings',
+  'settings.desc': 'Language, theme, profile and data',
+  'settings.prefs': 'Preferences',
+  'settings.prefsHint': 'Saved to your account, so the web and the mobile app look the same.',
+  'settings.language': 'Language',
+  'settings.theme': 'Theme',
+  'settings.themeSystem': 'System',
+  'settings.themeLight': 'Light',
+  'settings.themeDark': 'Dark',
+  'settings.weeklyGoal': 'Weekly budget',
+  'settings.weeklyGoalHint': 'The most you want to spend each week. Used in the Weekly summary.',
+  'settings.data': 'Your data',
+  'settings.dataHint': 'Download all your expenses as CSV, or use the Excel section for the template and imports.',
+  'setup.title': 'Set up your account',
+  'setup.intro': 'Choose how you want to use miBolsillo. You can change it any time in Settings.',
+  'setup.save': 'Save and start',
+  'setup.later': 'Later',
 };
 
 export default en;
