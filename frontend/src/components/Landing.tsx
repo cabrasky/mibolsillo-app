@@ -1,8 +1,9 @@
 /* ── Landing pública (no autenticados) ────────────────────────────────────── */
-import { Link } from 'react-router-dom';
-import { useLocale, nextLocale } from '../i18n';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../AuthContext';
+import { useLocale, nextLocale, localizeError } from '../i18n';
 import { BrandMark, IconDownload, IconGrid, IconList, IconRefresh, IconSmartphone, IconTarget, IconWallet, IconArrowRight, IconSparkle } from './Icons';
-import { useDemoLogin } from './useDemoLogin';
 
 const APK_URL = '/apk/mibolsillo-1.0.0.apk';
 
@@ -18,7 +19,19 @@ const FEATURES = [
 
 export default function Landing() {
   const { t, locale, setLocale } = useLocale();
-  const demo = useDemoLogin();
+  const { loginDemo } = useAuth();
+  const navigate = useNavigate();
+  // La demo solo se abre desde aquí (no desde el login)
+  const [demo, setDemo] = useState({ busy: false, error: '' });
+  const tryDemo = async () => {
+    setDemo({ busy: true, error: '' });
+    try {
+      await loginDemo();
+      navigate('/dashboard');
+    } catch (err) {
+      setDemo({ busy: false, error: localizeError(err, t) });
+    }
+  };
   const mock = [
     { d: t('landing.mock1'), c: t('ref.categories.savings'), a: '450,00 €', cat: 'cat-c2', income: false },
     { d: t('landing.mock2'), c: t('ref.categories.food'), a: '3,50 €', cat: 'cat-c4', income: false },
@@ -50,7 +63,7 @@ export default function Landing() {
             <a href={APK_URL} className="btn primary lg"><IconSmartphone size={18} />{t('landing.downloadAndroid')}</a>
             <Link to="/login" className="btn outline lg">{t('landing.openWeb')}<IconArrowRight size={16} /></Link>
           </div>
-          <button type="button" className="landing-demo" onClick={demo.tryDemo} disabled={demo.busy}>
+          <button type="button" className="landing-demo" onClick={tryDemo} disabled={demo.busy}>
             <span className="landing-demo-icon"><IconSparkle size={18} /></span>
             <span className="landing-demo-text">
               <strong>{demo.busy ? t('demo.entering') : t('demo.try')}</strong>

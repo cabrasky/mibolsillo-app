@@ -8,11 +8,13 @@ import { usePreferences } from '../PreferencesContext';
 import { exportExpensesCsv } from '../exportCsv';
 import PreferencesForm from './PreferencesForm';
 import Profile from './Profile';
-import { IconSettings, IconDownload } from './Icons';
+import { IconSettings, IconDownload, IconLogOut } from './Icons';
+import { useAuth } from '../AuthContext';
 
 export default function SettingsPage({ expenses }: { expenses: Expense[] }) {
   const { t } = useLocale();
   const prefs = usePreferences();
+  const { logout } = useAuth();
 
   return (
     <div className="settings-page">
@@ -34,6 +36,12 @@ export default function SettingsPage({ expenses }: { expenses: Expense[] }) {
           <Link to="/excel" className="btn outline">{t('more.excel')}</Link>
         </div>
       </section>
+
+      <div>
+        <button type="button" className="btn outline danger-text" onClick={logout}>
+          <IconLogOut size={16} />{t('more.logout')}
+        </button>
+      </div>
     </div>
   );
 }
