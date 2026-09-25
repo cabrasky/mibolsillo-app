@@ -1,4 +1,5 @@
-/* ── Textos legales: /legal/privacidad, /cookies, /aviso-legal, /terminos ───
+/* ── Textos legales: /legal/privacidad, /cookies, /aviso-legal, /terminos,
+   /eliminar-cuenta (el enlace de baja de la ficha de Google Play).
    Con sesión se ven dentro del layout de la app; sin sesión, como página pública
    con la cabecera de la portada. */
 import { useEffect } from 'react';

@@ -8,6 +8,7 @@ const LABEL: Record<LegalSlug, string> = {
   cookies: 'legal.cookies',
   'aviso-legal': 'legal.notice',
   terminos: 'legal.terms',
+  'eliminar-cuenta': 'account.deleteTitle',
 };
 
 export default function LegalLinks({ className = '' }: { className?: string }) {

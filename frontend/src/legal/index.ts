@@ -1,4 +1,4 @@
-/* ── Textos legales (privacidad, cookies, aviso legal, términos) ─────────────
+/* ── Textos legales (privacidad, cookies, aviso legal, términos, baja) ──────
    Contenido estructurado por idioma. Los párrafos admiten el formato de
    RichText: **negrita** y [enlaces](/ruta | mailto:… | https://…).
    Un elemento que es un array se muestra como lista. */
@@ -7,8 +7,8 @@ import es from './es';
 import en from './en';
 import pt from './pt';
 
-export type LegalSlug = 'privacidad' | 'cookies' | 'aviso-legal' | 'terminos';
-export const LEGAL_SLUGS: LegalSlug[] = ['privacidad', 'cookies', 'aviso-legal', 'terminos'];
+export type LegalSlug = 'privacidad' | 'cookies' | 'aviso-legal' | 'terminos' | 'eliminar-cuenta';
+export const LEGAL_SLUGS: LegalSlug[] = ['privacidad', 'cookies', 'aviso-legal', 'terminos', 'eliminar-cuenta'];
 
 /** Fecha de la última revisión de los textos (cámbiala al editarlos) */
 export const LEGAL_UPDATED = '2026-09-25';

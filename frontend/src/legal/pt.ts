@@ -47,12 +47,12 @@ const pt: LegalDocs = {
         'Os teus dados são conservados enquanto tiveres conta.',
         'Se **eliminares a conta**, são apagados de imediato da base de dados: a conta, as despesas, as fotos, as receitas, as metas, as assinaturas, os projetos, as categorias e as chaves de API. As cópias de segurança renovam-se automaticamente, e os dados apagados desaparecem delas em **30 dias, no máximo**.',
         'Os pedidos de suporte guardam-se enquanto tiveres conta e são apagados ao eliminá-la.',
-        'Os registos técnicos do servidor são apagados com a sua rotação automática, e os erros do servidor (caminho, tipo de erro e identificador, sem o conteúdo dos teus dados) ao fim de 30 dias.',
+        'Os registos técnicos do servidor são apagados ao fim de **14 dias**, e os erros do servidor (caminho, tipo de erro e identificador, sem o conteúdo dos teus dados) ao fim de 30 dias.',
       ]] },
       { h: 'Os teus direitos', p: [
         'Tens direito de **acesso, retificação, apagamento, oposição, limitação e portabilidade**. Podes exercê-los assim:',
         [
-          'Na app: em **Configurações** podes editar os teus dados, exportar as tuas despesas (CSV ou Excel) e **eliminar a tua conta** com todos os seus dados.',
+          'Na app ou na web: em **Definições** podes editar os teus dados, exportar as tuas despesas (CSV ou Excel) e **eliminar a tua conta** com todos os seus dados. Tens os passos em [Eliminar a tua conta](/legal/eliminar-cuenta).',
           `Por email para ${MAIL}, para qualquer outro pedido.`,
         ],
         'Se achares que os teus dados não foram bem tratados, podes apresentar reclamação à Agência Espanhola de Proteção de Dados ([aepd.es](https://www.aepd.es)).',
@@ -61,7 +61,7 @@ const pt: LegalDocs = {
         'As ligações são cifradas (HTTPS), as palavras-passe são guardadas com hash e o acesso ao servidor é restrito. Nenhum sistema é infalível, por isso usa uma palavra-passe que não uses noutros sítios.',
       ] },
       { h: 'App móvel', p: [
-        'A app Android guarda no telemóvel uma cópia dos teus dados para funcionar sem ligação, e sincroniza as alterações quando a rede volta. Essa cópia é apagada ao terminar sessão ou ao eliminar a conta. A app é descarregada a partir desta web e consulta-a para saber se há versões novas.',
+        'A app Android guarda no telemóvel uma cópia dos teus dados para funcionar sem ligação, e sincroniza as alterações quando a rede volta. Essa cópia é apagada ao terminar sessão ou ao eliminar a conta. A app instala-se a partir do Google Play, que se encarrega de a atualizar, ou a partir desta web: nesse caso consulta-a para saber se há versões novas.',
       ] },
       { h: 'Conta demo', p: [
         'A demo da [página inicial](/) é uma conta pública de exemplo e só de leitura: não guarda dados de quem a experimenta. O idioma ou o tema que escolheres nela ficam apenas no teu navegador.',
@@ -162,6 +162,45 @@ const pt: LegalDocs = {
       ] },
       { h: 'Lei aplicável', p: [
         'Estes termos regem-se pela lei espanhola. Se fores consumidor, podes recorrer aos tribunais do teu domicílio.',
+      ] },
+    ],
+  },
+
+  'eliminar-cuenta': {
+    title: 'Eliminar a tua conta',
+    intro: 'Como eliminar a tua conta do **miBolsillo** (a app Android e o site mibolsillo.cabrasky.net, de Javier Mateos) com todos os seus dados, o que é apagado e o que se conserva durante algum tempo. Não precisas de ter a app instalada: também podes fazê-lo a partir da web ou por email.',
+    sections: [
+      { h: 'A partir da app Android', p: [[
+        'Abre **Mais → Definições**.',
+        'Desce até **Eliminar conta** e escreve o teu email para confirmar.',
+        'Toca em **Eliminar a minha conta e os meus dados**.',
+      ]] },
+      { h: 'A partir da web', p: [[
+        'Entra em [mibolsillo.cabrasky.net](/login) com a tua conta.',
+        'Abre **Definições**: no computador, clicando no teu nome no menu lateral; no telemóvel, a partir de **Mais**.',
+        'Em **Eliminar conta**, clica em **Eliminar a minha conta**, escreve o teu email e confirma com **Eliminar a minha conta e os meus dados**.',
+      ], 'Se não te lembras da palavra-passe, podes [repô-la](/forgot-password). Se entras com o Google, usa «Continuar com o Google».'] },
+      { h: 'Se não conseguires entrar', p: [
+        `Escreve para ${MAIL} a partir do email da tua conta e pede que a eliminemos. Fá-lo-emos num prazo máximo de 30 dias e confirmaremos por email.`,
+      ] },
+      { h: 'O que é apagado', p: [
+        'De imediato, e sem possibilidade de recuperação, é apagado da base de dados:',
+        [
+          'A tua conta: nome, email, palavra-passe (o seu hash), foto de perfil, identificador do Google e preferências.',
+          'Despesas, fotos de talões, receitas, metas de poupança, assinaturas, projetos, categorias e pessoas com quem partilhas despesas.',
+          'Chaves de API e pedidos de suporte.',
+        ],
+        'A cópia dos teus dados que a app guarda no telemóvel também é apagada ao eliminar a conta.',
+      ] },
+      { h: 'O que se conserva e durante quanto tempo', p: [[
+        '**Cópias de segurança:** os dados apagados desaparecem delas em **30 dias, no máximo**, quando se renovam.',
+        '**Registos técnicos do servidor** (endereço IP, data e caminho de cada pedido): são apagados ao fim de **14 dias**.',
+        '**Erros do servidor:** são apagados ao fim de **30 dias**. Só guardam o caminho, o tipo de erro e um identificador, sem dados teus.',
+        '**Cuentas Claras:** as divisões que tenhas enviado para o Cuentas Claras são geridas nessa app e não são apagadas com a tua conta do miBolsillo.',
+      ], 'Não se guarda mais nada, nem para outros fins.'] },
+      { h: 'Apagar dados sem eliminar a conta', p: [
+        'Na app ou na web podes apagar quando quiseres qualquer despesa, foto de talão, receita, meta, assinatura, projeto ou categoria, e revogar as tuas chaves de API. São apagados de imediato, e das cópias de segurança em 30 dias, no máximo.',
+        `Para apagar qualquer outro dado, como os teus pedidos de suporte, escreve para ${MAIL}.`,
       ] },
     ],
   },

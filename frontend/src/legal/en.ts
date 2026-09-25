@@ -47,12 +47,12 @@ const en: LegalDocs = {
         'Your data is kept for as long as you have an account.',
         'If you **delete your account**, it is erased from the database immediately: the account, expenses, photos, incomes, goals, subscriptions, projects, categories and API keys. Backups are rotated automatically, and deleted data disappears from them within **30 days at most**.',
         'Support requests are kept while you have an account and deleted when you delete it.',
-        'Server logs are deleted as they are rotated automatically, and server errors (path, error type and ID, without the content of your data) after 30 days.',
+        'Server logs are deleted after **14 days**, and server errors (path, error type and ID, without the content of your data) after 30 days.',
       ]] },
       { h: 'Your rights', p: [
         'You have the right of **access, rectification, erasure, objection, restriction and portability**. You can exercise them:',
         [
-          'In the app: in **Settings** you can edit your data, export your expenses (CSV or Excel) and **delete your account** with all its data.',
+          'In the app or on the website: in **Settings** you can edit your data, export your expenses (CSV or Excel) and **delete your account** with all its data. The steps are in [Delete your account](/legal/eliminar-cuenta).',
           `By email to ${MAIL}, for any other request.`,
         ],
         'If you think your data has not been handled properly, you can complain to the Spanish Data Protection Agency ([aepd.es](https://www.aepd.es)).',
@@ -61,7 +61,7 @@ const en: LegalDocs = {
         'Connections are encrypted (HTTPS), passwords are stored hashed and access to the server is restricted. No system is infallible, so use a password you don’t use anywhere else.',
       ] },
       { h: 'Mobile app', p: [
-        'The Android app keeps a copy of your data on your phone so it works offline, and syncs changes when you are back online. That copy is deleted when you log out or delete your account. The app is downloaded from this website and checks it for new versions.',
+        'The Android app keeps a copy of your data on your phone so it works offline, and syncs changes when you are back online. That copy is deleted when you log out or delete your account. The app is installed from Google Play, which keeps it updated, or from this website: in that case it checks here for new versions.',
       ] },
       { h: 'Demo account', p: [
         'The demo on the [home page](/) is a public, read-only sample account: it keeps no data about whoever tries it. The language or theme you pick in it stay only in your browser.',
@@ -162,6 +162,45 @@ const en: LegalDocs = {
       ] },
       { h: 'Governing law', p: [
         'These terms are governed by Spanish law. If you are a consumer, you may go to the courts where you live.',
+      ] },
+    ],
+  },
+
+  'eliminar-cuenta': {
+    title: 'Delete your account',
+    intro: 'How to delete your **miBolsillo** account (the Android app and the mibolsillo.cabrasky.net website, by Javier Mateos) with all its data, what is deleted and what is kept for a while. You don’t need the app installed: you can also do it from the website or by email.',
+    sections: [
+      { h: 'From the Android app', p: [[
+        'Open **More → Settings**.',
+        'Scroll down to **Delete account** and type your email to confirm.',
+        'Tap **Delete my account and my data**.',
+      ]] },
+      { h: 'From the website', p: [[
+        'Log in to [mibolsillo.cabrasky.net](/login) with your account.',
+        'Open **Settings**: on a computer, by clicking your name in the side menu; on a phone, from **More**.',
+        'Under **Delete account**, click **Delete my account**, type your email and confirm with **Delete my account and my data**.',
+      ], 'If you don’t remember your password, you can [reset it](/forgot-password). If you sign in with Google, use “Continue with Google”.'] },
+      { h: 'If you can’t log in', p: [
+        `Write to ${MAIL} from your account’s email address and ask us to delete it. We will do it within 30 days at most and confirm it by email.`,
+      ] },
+      { h: 'What is deleted', p: [
+        'Immediately, and with no way to recover it, the following is erased from the database:',
+        [
+          'Your account: name, email, password (its hash), profile picture, Google ID and preferences.',
+          'Expenses, receipt photos, incomes, savings goals, subscriptions, projects, categories and the people you share expenses with.',
+          'API keys and support requests.',
+        ],
+        'The copy of your data that the app keeps on your phone is also deleted when you delete your account.',
+      ] },
+      { h: 'What is kept and for how long', p: [[
+        '**Backups:** deleted data disappears from them within **30 days at most**, as they are rotated.',
+        '**Server logs** (IP address, date and path of each request): deleted after **14 days**.',
+        '**Server errors:** deleted after **30 days**. They only keep the path, the error type and an ID, with none of your data.',
+        '**Cuentas Claras:** splits you have sent to Cuentas Claras are managed in that app and are not deleted with your miBolsillo account.',
+      ], 'Nothing else is kept, for any purpose.'] },
+      { h: 'Delete data without deleting your account', p: [
+        'From the app or the website you can delete at any time any expense, receipt photo, income, goal, subscription, project or category, and revoke your API keys. They are erased immediately, and from backups within 30 days at most.',
+        `To delete any other data, such as your support requests, write to ${MAIL}.`,
       ] },
     ],
   },

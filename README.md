@@ -31,7 +31,7 @@ La app de Android está en [`cabrasky/mibolsillo-mobile`](https://github.com/cab
   - ventana de bienvenida la primera vez;
   - eliminar la cuenta con todos sus datos.
 - **Demo pública de solo lectura** desde la portada, con datos de ejemplo que se renuevan cada día.
-- **Textos legales:** privacidad, cookies, aviso legal y términos (`/legal/…`).
+- **Textos legales:** privacidad, cookies, aviso legal, términos y cómo eliminar la cuenta (`/legal/…`; `/legal/eliminar-cuenta` es el enlace de baja de la ficha de Google Play).
 - **Soporte técnico:** los usuarios escriben desde la web o la app y el admin responde; las respuestas llegan también por email.
 - **Panel de admin (`/admin`):**
   - uso de la app con gráficos;

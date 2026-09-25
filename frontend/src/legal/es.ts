@@ -47,12 +47,12 @@ const es: LegalDocs = {
         'Tus datos se conservan mientras tengas la cuenta.',
         'Si **eliminas la cuenta**, se borran al momento de la base de datos: la cuenta, los gastos, las fotos, los ingresos, las metas, las suscripciones, los proyectos, las categorías y las claves de API. Las copias de seguridad se renuevan automáticamente, y los datos borrados desaparecen de ellas en **30 días como máximo**.',
         'Las consultas de soporte se guardan mientras tengas la cuenta y se borran al eliminarla.',
-        'Los registros técnicos del servidor se borran con su rotación automática, y los errores del servidor (ruta, tipo de error e identificador, sin el contenido de tus datos) a los 30 días.',
+        'Los registros técnicos del servidor se borran a los **14 días**, y los errores del servidor (ruta, tipo de error e identificador, sin el contenido de tus datos) a los 30 días.',
       ]] },
       { h: 'Tus derechos', p: [
         'Tienes derecho de **acceso, rectificación, supresión, oposición, limitación y portabilidad**. Puedes ejercerlos así:',
         [
-          'Desde la app: en **Configuración** puedes editar tus datos, exportar tus gastos (CSV o Excel) y **eliminar tu cuenta** con todos sus datos.',
+          'Desde la app o la web: en **Configuración** puedes editar tus datos, exportar tus gastos (CSV o Excel) y **eliminar tu cuenta** con todos sus datos. Tienes los pasos en [Eliminar tu cuenta](/legal/eliminar-cuenta).',
           `Por email a ${MAIL}, para cualquier otra petición.`,
         ],
         'Si crees que no hemos tratado bien tus datos, puedes reclamar ante la Agencia Española de Protección de Datos ([aepd.es](https://www.aepd.es)).',
@@ -61,7 +61,7 @@ const es: LegalDocs = {
         'Las conexiones van cifradas (HTTPS), las contraseñas se guardan con hash y el acceso al servidor está restringido. Ningún sistema es infalible, así que usa una contraseña que no uses en otros sitios.',
       ] },
       { h: 'App móvil', p: [
-        'La app de Android guarda en tu móvil una copia de tus datos para funcionar sin conexión, y sincroniza los cambios cuando vuelve la red. Esa copia se borra al cerrar sesión o al eliminar la cuenta. La app se descarga desde esta web y consulta en ella si hay versiones nuevas.',
+        'La app de Android guarda en tu móvil una copia de tus datos para funcionar sin conexión, y sincroniza los cambios cuando vuelve la red. Esa copia se borra al cerrar sesión o al eliminar la cuenta. La app se instala desde Google Play, que se encarga de actualizarla, o desde esta web: en ese caso consulta aquí si hay versiones nuevas.',
       ] },
       { h: 'Cuenta demo', p: [
         'La demo de la [portada](/) es una cuenta pública de ejemplo y de solo lectura: no guarda datos de quien la prueba. El idioma o el tema que elijas en ella se quedan solo en tu navegador.',
@@ -162,6 +162,45 @@ const es: LegalDocs = {
       ] },
       { h: 'Ley aplicable', p: [
         'Estos términos se rigen por la ley española. Si eres consumidor, puedes acudir a los juzgados de tu domicilio.',
+      ] },
+    ],
+  },
+
+  'eliminar-cuenta': {
+    title: 'Eliminar tu cuenta',
+    intro: 'Cómo eliminar tu cuenta de **miBolsillo** (la app de Android y la web mibolsillo.cabrasky.net, de Javier Mateos) con todos sus datos, qué se borra y qué se conserva durante un tiempo. No hace falta tener la app instalada: también puedes hacerlo desde la web o por email.',
+    sections: [
+      { h: 'Desde la app de Android', p: [[
+        'Abre **Más → Configuración**.',
+        'Baja hasta **Eliminar cuenta** y escribe tu email para confirmar.',
+        'Pulsa **Eliminar mi cuenta y mis datos**.',
+      ]] },
+      { h: 'Desde la web', p: [[
+        'Entra en [mibolsillo.cabrasky.net](/login) con tu cuenta.',
+        'Abre **Configuración**: en el ordenador, pulsando tu nombre en el menú lateral; en el móvil, desde **Más**.',
+        'En **Eliminar cuenta**, pulsa **Eliminar mi cuenta**, escribe tu email y confirma con **Eliminar mi cuenta y mis datos**.',
+      ], 'Si no recuerdas la contraseña, puedes [restablecerla](/forgot-password). Si entras con Google, usa «Continuar con Google».'] },
+      { h: 'Si no puedes entrar', p: [
+        `Escribe a ${MAIL} desde el email de tu cuenta y pide que la eliminemos. Lo haremos en un plazo máximo de 30 días y te lo confirmaremos por email.`,
+      ] },
+      { h: 'Qué se borra', p: [
+        'Al momento, y sin posibilidad de recuperarlo, se borra de la base de datos:',
+        [
+          'Tu cuenta: nombre, email, contraseña (su hash), foto de perfil, identificador de Google y preferencias.',
+          'Gastos, fotos de tickets, ingresos, metas de ahorro, suscripciones, proyectos, categorías y personas con las que compartes gastos.',
+          'Claves de API y consultas de soporte.',
+        ],
+        'La copia de tus datos que guarda la app en el móvil también se borra al eliminar la cuenta.',
+      ] },
+      { h: 'Qué se conserva y cuánto tiempo', p: [[
+        '**Copias de seguridad:** los datos borrados desaparecen de ellas en **30 días como máximo**, al renovarse.',
+        '**Registros técnicos del servidor** (dirección IP, fecha y ruta de cada petición): se borran a los **14 días**.',
+        '**Errores del servidor:** se borran a los **30 días**. Solo guardan la ruta, el tipo de error y un identificador, sin datos tuyos.',
+        '**Cuentas Claras:** los repartos que hayas enviado a Cuentas Claras se gestionan en esa app y no se borran con tu cuenta de miBolsillo.',
+      ], 'No se guarda nada más, ni para otros fines.'] },
+      { h: 'Borrar datos sin eliminar la cuenta', p: [
+        'Desde la app o la web puedes borrar cuando quieras cualquier gasto, foto de ticket, ingreso, meta, suscripción, proyecto o categoría, y revocar tus claves de API. Se borran al momento, y de las copias de seguridad en 30 días como máximo.',
+        `Para borrar cualquier otro dato, como tus consultas de soporte, escribe a ${MAIL}.`,
       ] },
     ],
   },
