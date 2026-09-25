@@ -3,8 +3,7 @@ import { useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLocale, localizeError } from '../i18n';
-import { BrandMark, IconArrowLeft, IconSparkle } from './Icons';
-import { useDemoLogin } from './useDemoLogin';
+import { BrandMark, IconArrowLeft } from './Icons';
 
 export default function Login() {
   const { login, googleLogin } = useAuth();
@@ -14,7 +13,6 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const demo = useDemoLogin();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,11 +48,6 @@ export default function Login() {
         <button className="btn google-btn" onClick={googleLogin}>
           {t('auth.google')}
         </button>
-        <button className="btn google-btn demo-btn" onClick={demo.tryDemo} disabled={demo.busy}>
-          <IconSparkle size={16} />{demo.busy ? t('demo.entering') : t('demo.try')}
-        </button>
-        <p className="auth-hint">{t('demo.tryHint')}</p>
-        {demo.error && <p className="error">{demo.error}</p>}
         <p className="auth-link">
           {t('auth.noAccount')} <Link to="/register">{t('auth.signUp')}</Link>
         </p>

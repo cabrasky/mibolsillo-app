@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { IconPlus, IconList, IconTrendingUp, IconTarget, IconGrid, IconHome, IconArrowLeft, BrandMark } from './Icons';
+import { IconPlus, IconList, IconTrendingUp, IconTarget, IconGrid, IconHome, IconArrowLeft, IconLogOut, BrandMark } from './Icons';
 import { useLocale } from '../i18n';
+import { useAuth } from '../AuthContext';
 
 type BottomTab = 'dashboard' | 'expenses' | 'incomes' | 'goals' | 'more';
 
@@ -64,6 +65,7 @@ export default function MobileLayout({
   const isMoreSub = MORE_SUBPATHS.includes(location.pathname);
   const showBack = isMoreSub || location.pathname.startsWith('/projects') || ['/settings', '/admin', '/subs', '/categories', '/excel', '/help', '/developer'].includes(location.pathname);
   const { t } = useLocale();
+  const { logout } = useAuth();
 
   return (
     <div className="layout-mobile">
@@ -76,6 +78,11 @@ export default function MobileLayout({
           )}
           {!showBack && <BrandMark size="sm" />}
           <span className="mobile-header-title">{t(info.titleKey || info.i18nKey)}</span>
+        </div>
+        <div className="mobile-header-right">
+          <button type="button" className="back-btn" onClick={logout} title={t('more.logout')} aria-label={t('more.logout')}>
+            <IconLogOut size={18} />
+          </button>
         </div>
       </header>
       <main className="mobile-content">{children}</main>

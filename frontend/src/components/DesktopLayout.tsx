@@ -5,7 +5,7 @@ import { useLocale } from '../i18n';
 import { useAuth } from '../AuthContext';
 import {
   IconPlus, IconList, IconTarget,
-  IconTrendingUp, IconRefresh, IconHome, IconGrid, IconUsers, IconSettings, BrandMark,
+  IconTrendingUp, IconRefresh, IconHome, IconGrid, IconUsers, IconSettings, IconLogOut, BrandMark,
 } from './Icons';
 import { pendingDebtCount } from '../personas';
 
@@ -68,7 +68,7 @@ export default function DesktopLayout({
 }: Props) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const currentTab = pathToTab(location.pathname);
 
   const pendingCount = useMemo(() => pendingDebtCount(expenses), [expenses]);
@@ -114,6 +114,11 @@ export default function DesktopLayout({
                 <span className="user-email">{user.email}</span>
               </span>
               <span className="user-card-gear" aria-hidden="true"><IconSettings size={18} /></span>
+            </button>
+          )}
+          {user && (
+            <button type="button" className="sidebar-logout" onClick={logout}>
+              <IconLogOut size={18} />{t('more.logout')}
             </button>
           )}
         </div>
