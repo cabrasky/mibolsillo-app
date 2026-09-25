@@ -253,3 +253,38 @@ class ServerError(Base):
     request_id: Mapped[str] = mapped_column(String(64), default="")
     error_type: Mapped[str] = mapped_column(String(80), default="")
     message: Mapped[str] = mapped_column(String(300), default="")
+
+
+class ApkBuild(Base):
+    """Una build del APK en el repositorio de versiones.
+
+    El fichero vive en APK_DIR (`file` es la ruta relativa, p. ej.
+    builds/mibolsillo-1.2.0-b43-abc1234.apk); aquí van sus datos, las notas y
+    cuántas veces se ha descargado. Qué build se sirve está en AppSetting.
+    """
+
+    __tablename__ = "apk_builds"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=gen_uuid)
+    file: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    version: Mapped[str] = mapped_column(String(32), default="")
+    version_code: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, default=None)
+    build_number: Mapped[str] = mapped_column(String(32), default="")
+    commit: Mapped[str] = mapped_column(String(40), default="")
+    source: Mapped[str] = mapped_column(String(10), default="ci")  # ci | upload | legacy
+    size: Mapped[int] = mapped_column(Integer, default=0)
+    sha256: Mapped[str] = mapped_column(String(64), default="")
+    uploaded_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    uploaded_by: Mapped[str] = mapped_column(String(255), default="")
+    notes: Mapped[str] = mapped_column(Text, default="")
+    downloads: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class AppSetting(Base):
+    """Ajustes globales de la app (clave → valor), p. ej. qué build del APK se sirve."""
+
+    __tablename__ = "app_settings"
+
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    value: Mapped[str] = mapped_column(Text, default="")
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

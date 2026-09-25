@@ -15,7 +15,7 @@ from app.config import settings
 from app.database import engine, Base, async_session_factory
 from app.schema_sync import run_alembic_upgrade, sync_missing_columns
 from app.models.models import User
-from app.routers import auth, expenses, incomes, goals, subscriptions, projects, categories, excel, developer, admin, support
+from app.routers import auth, expenses, incomes, goals, subscriptions, projects, categories, excel, developer, admin, support, apk
 from app.services.demo import demo_read_only
 from app.services.errors import record_server_error
 
@@ -175,6 +175,8 @@ app.include_router(excel.router, prefix="/api")
 app.include_router(developer.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
 app.include_router(support.router, prefix="/api")
+app.include_router(apk.public, prefix="/api")
+app.include_router(apk.admin_router, prefix="/api")
 
 
 @app.get("/api/health")

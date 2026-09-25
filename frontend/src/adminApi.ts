@@ -1,5 +1,5 @@
-/* ── Soporte técnico y panel de admin (uso, usuarios, soporte, sistema) ───── */
-import { request } from './api';
+/* ── Soporte técnico y panel de admin (uso, usuarios, soporte, sistema, APK) ─ */
+import { request, BASE, getToken } from './api';
 
 /* Soporte (usuario) */
 
@@ -123,3 +123,60 @@ export const adminSetTicketOpen = (id: string, open: boolean) =>
 export const adminSystem = () => request<AdminSystem>('GET', '/admin/system', undefined, true);
 
 export const adminTestEmail = () => request<{ ok: boolean; to: string }>('POST', '/admin/system/test-email', undefined, true);
+
+/* APK de Android: build servida (público) y repositorio de versiones (admin) */
+
+export interface ApkLatest {
+  id: string; version: string; version_code: number | null; build_number: string;
+  size: number; published_at: string; notes: string; download_url: string;
+}
+
+export interface ApkBuild {
+  id: string; file: string; version: string; version_code: number | null; build_number: string;
+  commit: string; source: 'ci' | 'upload' | 'legacy'; size: number; sha256: string;
+  uploaded_at: string; uploaded_by: string; notes: string; downloads: number;
+  served: boolean; file_url: string; missing: boolean;
+}
+
+export interface ApkRepo {
+  served_id: string | null; chunk_bytes: number; max_bytes: number; storage_ok: boolean; builds: ApkBuild[];
+}
+
+export const apkLatest = () => request<ApkLatest>('GET', '/apk/latest');
+export const apkDownloadUrl = `${BASE}/apk/download`;
+
+export const adminApkRepo = () => request<ApkRepo>('GET', '/admin/apk', undefined, true);
+
+export const adminApkServe = (id: string) => request<ApkBuild>('POST', `/admin/apk/${id}/serve`, undefined, true);
+
+export const adminApkUpdate = (id: string, body: { notes?: string; version_code?: number }) =>
+  request<ApkBuild>('PUT', `/admin/apk/${id}`, body, true);
+
+/** Sube un APK por trozos (por debajo del límite de tamaño del proxy). Si falla, cancela la subida. */
+export async function adminApkUpload(
+  file: File,
+  meta: { version: string; version_code?: number; notes: string },
+  serve: boolean,
+  onProgress: (sent: number, total: number) => void,
+): Promise<ApkBuild> {
+  const init = await request<{ id: string; chunk_bytes: number }>('POST', '/admin/apk/uploads',
+    { filename: file.name, size: file.size, ...meta }, true);
+  try {
+    for (let offset = 0; offset < file.size; offset += init.chunk_bytes) {
+      const res = await fetch(`${BASE}/admin/apk/uploads/${init.id}?offset=${offset}`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/octet-stream' },
+        body: file.slice(offset, offset + init.chunk_bytes),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(typeof data.detail === 'string' ? data.detail : `Error ${res.status}`);
+      }
+      onProgress(Math.min(offset + init.chunk_bytes, file.size), file.size);
+    }
+    return await request<ApkBuild>('POST', `/admin/apk/uploads/${init.id}/complete`, { serve }, true);
+  } catch (e) {
+    request('DELETE', `/admin/apk/uploads/${init.id}`, undefined, true).catch(() => {});
+    throw e;
+  }
+}

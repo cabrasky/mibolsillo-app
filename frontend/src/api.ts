@@ -1,7 +1,7 @@
 /* ── API service for gastos-app backend ─────────────────────────────────────── */
 import { tNow } from './i18n';
 
-const BASE = import.meta.env.VITE_API_URL || '/api';
+export const BASE = import.meta.env.VITE_API_URL || '/api';
 
 /* ── Token helpers ─────────────────────────────────────────────────────────── */
 

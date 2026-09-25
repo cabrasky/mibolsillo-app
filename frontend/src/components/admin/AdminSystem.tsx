@@ -1,6 +1,7 @@
 /* ── Admin · Sistema: estado de los servicios, versiones y errores recientes ─ */
 import { useCallback, useEffect, useState } from 'react';
-import { adminSystem, adminTestEmail, type AdminSystem as SystemInfo } from '../../adminApi';
+import { useSearchParams } from 'react-router-dom';
+import { adminSystem, adminTestEmail, apkLatest, type AdminSystem as SystemInfo, type ApkLatest } from '../../adminApi';
 import { useLocale, localizeError, fill } from '../../i18n';
 import { IconRefresh, IconMail, IconCheckCircle, IconAlertTriangle, IconXCircle } from '../Icons';
 import { fmtAgo, fmtBytes, fmtDate, fmtDateTime } from './format';
@@ -12,12 +13,11 @@ function Status({ state, children }: { state: State; children: React.ReactNode }
   return <span className={`adm-state ${state}`}><Icon size={15} />{children}</span>;
 }
 
-interface Manifest { version: string; publishedAt?: string }
-
 export default function AdminSystem() {
   const { t, locale } = useLocale();
   const [info, setInfo] = useState<SystemInfo | null>(null);
-  const [apk, setApk] = useState<Manifest | null | 'error'>(null);
+  const [apk, setApk] = useState<ApkLatest | null | 'error'>(null);
+  const [, setParams] = useSearchParams();
   const [error, setError] = useState('');
   const [mail, setMail] = useState<{ ok: boolean; text: string } | null>(null);
   const [sending, setSending] = useState(false);
@@ -25,9 +25,7 @@ export default function AdminSystem() {
   const load = useCallback(() => {
     setError('');
     adminSystem().then(setInfo).catch(e => setError(localizeError(e, t)));
-    fetch('/apk/manifest.json', { cache: 'no-store' })
-      .then(r => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-      .then(setApk).catch(() => setApk('error'));
+    apkLatest().then(setApk).catch(() => setApk('error'));
   }, [t]);
   useEffect(() => { load(); }, [load]);
 
@@ -116,10 +114,11 @@ export default function AdminSystem() {
             <Status state="warn">{t('admin.sApkMissing')}</Status>
           ) : (
             <>
-              <Status state="ok">v{apk.version}</Status>
-              {apk.publishedAt && <p className="hint">{fill(t('admin.sPublished'), { d: fmtDateTime(apk.publishedAt, locale) })}</p>}
+              <Status state="ok">v{apk.version}{apk.build_number ? ` · #${apk.build_number}` : ''}</Status>
+              <p className="hint">{fill(t('admin.sPublished'), { d: fmtDateTime(apk.published_at, locale) })}</p>
             </>
           )}
+          <button type="button" className="link-btn" onClick={() => setParams({ tab: 'apk' })}>{t('apk.manage')}</button>
         </section>
       </div>
 
