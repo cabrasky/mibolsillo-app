@@ -16,6 +16,7 @@ import type {
   ServerProject, ProjectCreateBody,
 } from './api';
 import { tNow } from './i18n';
+import { blockedInDemo } from './demo';
 
 const STORAGE_KEY = 'gastos_app_data';
 
@@ -67,6 +68,13 @@ export function loadData(): AppData {
   } catch {
     return { ...EMPTY_DATA };
   }
+}
+
+/** Al cerrar sesión o entrar a la demo: olvida los datos de la cuenta anterior
+ *  (si no, al entrar en una cuenta vacía se subirían como "datos locales"). */
+export function clearLocalData() {
+  localStorage.removeItem(STORAGE_KEY);
+  catCache = { expense: [], income: [] };
 }
 
 function saveData(data: AppData) {
@@ -130,7 +138,8 @@ interface ExpenseInput {
   devuelto?: 'yes' | 'no'; meCorresponde?: number; viaje?: string; proyectoId?: string;
 }
 
-export function addExpense(input: ExpenseInput): Expense {
+export function addExpense(input: ExpenseInput): Expense | null {
+  if (blockedInDemo()) return null;
   const data = loadData();
   const expense: Expense = {
     id: genId(), date: input.date, desc: input.desc, amount: input.amount,
@@ -148,6 +157,7 @@ export function addExpense(input: ExpenseInput): Expense {
 }
 
 export function updateExpense(id: string, updates: Partial<ExpenseInput>) {
+  if (blockedInDemo()) return;
   const data = loadData();
   const idx = data.expenses.findIndex(e => e.id === id);
   if (idx === -1) return;
@@ -157,6 +167,7 @@ export function updateExpense(id: string, updates: Partial<ExpenseInput>) {
 }
 
 export function deleteExpense(id: string) {
+  if (blockedInDemo()) return;
   const data = loadData();
   data.expenses = data.expenses.filter(e => e.id !== id);
   saveData(data);
@@ -246,7 +257,8 @@ interface IncomeInput {
   category?: string; notes?: string;
 }
 
-export function addIncome(input: IncomeInput): Income {
+export function addIncome(input: IncomeInput): Income | null {
+  if (blockedInDemo()) return null;
   const data = loadData();
   const income: Income = {
     id: genId(), date: input.date, desc: input.desc, amount: input.amount,
@@ -260,6 +272,7 @@ export function addIncome(input: IncomeInput): Income {
 }
 
 export function updateIncome(id: string, updates: Partial<IncomeInput>) {
+  if (blockedInDemo()) return;
   const data = loadData();
   const idx = data.incomes.findIndex(i => i.id === id);
   if (idx === -1) return;
@@ -269,6 +282,7 @@ export function updateIncome(id: string, updates: Partial<IncomeInput>) {
 }
 
 export function deleteIncome(id: string) {
+  if (blockedInDemo()) return;
   const data = loadData();
   data.incomes = data.incomes.filter(i => i.id !== id);
   saveData(data);
@@ -322,7 +336,8 @@ interface GoalInput {
   deadline?: string; category?: string; notes?: string;
 }
 
-export function addGoal(input: GoalInput): Goal {
+export function addGoal(input: GoalInput): Goal | null {
+  if (blockedInDemo()) return null;
   const data = loadData();
   const goal: Goal = {
     id: genId(), name: input.name, targetAmount: input.targetAmount,
@@ -337,6 +352,7 @@ export function addGoal(input: GoalInput): Goal {
 }
 
 export function updateGoal(id: string, updates: Partial<GoalInput & { currentAmount?: number }>) {
+  if (blockedInDemo()) return;
   const data = loadData();
   const idx = data.goals.findIndex(g => g.id === id);
   if (idx === -1) return;
@@ -346,6 +362,7 @@ export function updateGoal(id: string, updates: Partial<GoalInput & { currentAmo
 }
 
 export function deleteGoal(id: string) {
+  if (blockedInDemo()) return;
   const data = loadData();
   data.goals = data.goals.filter(g => g.id !== id);
   saveData(data);
@@ -405,7 +422,8 @@ interface SubscriptionInput {
   active?: boolean; notes?: string;
 }
 
-export function addSubscription(input: SubscriptionInput): Subscription {
+export function addSubscription(input: SubscriptionInput): Subscription | null {
+  if (blockedInDemo()) return null;
   const data = loadData();
   const sub: Subscription = {
     id: genId(), name: input.name, amount: input.amount,
@@ -421,6 +439,7 @@ export function addSubscription(input: SubscriptionInput): Subscription {
 }
 
 export function updateSubscription(id: string, updates: Partial<SubscriptionInput>) {
+  if (blockedInDemo()) return;
   const data = loadData();
   const idx = data.subscriptions.findIndex(s => s.id === id);
   if (idx === -1) return;
@@ -430,6 +449,7 @@ export function updateSubscription(id: string, updates: Partial<SubscriptionInpu
 }
 
 export function deleteSubscription(id: string) {
+  if (blockedInDemo()) return;
   const data = loadData();
   data.subscriptions = data.subscriptions.filter(s => s.id !== id);
   saveData(data);
@@ -437,6 +457,7 @@ export function deleteSubscription(id: string) {
 }
 
 export function advanceSubscription(sub: Subscription): Subscription {
+  if (blockedInDemo()) return sub;
   const next = new Date(sub.nextBilling + 'T12:00:00');
   switch (sub.billingCycle) {
     case 'weekly': next.setDate(next.getDate() + 7); break;
@@ -507,7 +528,8 @@ function fromServerProject(s: ServerProject): Project {
   return { id: s.id, name: s.name, createdAt: s.created_at };
 }
 
-export function addProject(name: string): Project {
+export function addProject(name: string): Project | null {
+  if (blockedInDemo()) return null;
   const data = loadData();
   const project: Project = { id: genId(), name, createdAt: new Date().toISOString() };
   data.projects.push(project);
@@ -521,6 +543,7 @@ export function addProject(name: string): Project {
 }
 
 export function updateProject(id: string, name: string) {
+  if (blockedInDemo()) return;
   const data = loadData();
   const p = data.projects.find(x => x.id === id);
   if (!p) return;
@@ -538,6 +561,7 @@ export function updateProject(id: string, name: string) {
 }
 
 export function deleteProject(id: string) {
+  if (blockedInDemo()) return;
   const data = loadData();
   // Desvincular los gastos que apuntaban al proyecto
   const affected = data.expenses.filter(e => e.proyectoId === id).map(e => e.id);

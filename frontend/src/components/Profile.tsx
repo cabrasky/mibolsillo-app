@@ -76,7 +76,7 @@ export default function Profile() {
             <div style={{ fontSize: '.85rem', color: 'var(--text-muted)' }}>{user.email}{user.is_admin ? ' · admin' : ''}</div>
           </div>
         </div>
-        <div className="auth-form">
+        {user.is_demo ? <p className="hint">{t('demo.profile')}</p> : <div className="auth-form">
           <label>{t('common.name')}</label>
           <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('profile.namePh')} />
           <label>{t('profile.avatar')}</label>
@@ -84,10 +84,10 @@ export default function Profile() {
           <button className="btn primary" onClick={handleSaveProfile} disabled={saving}>
             {saving ? t('common.saving') : t('profile.save')}
           </button>
-        </div>
+        </div>}
       </div>
 
-      <div className="admin-section">
+      {!user.is_demo && <div className="admin-section">
         <h3 className="h3-icon"><IconKey size={18} />{t('profile.changePassword')}</h3>
         <div className="auth-form">
           <label>{t('profile.currentPassword')}</label>
@@ -103,7 +103,7 @@ export default function Profile() {
             {t('profile.hint')}
           </p>
         </div>
-      </div>
+      </div>}
 
       {msg && <p className={`msg-line ${msg.ok ? 'success' : 'error'}`}>{msg.ok ? <IconCheckCircle size={16} /> : <IconAlertCircle size={16} />}{msg.text}</p>}
     </>

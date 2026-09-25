@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.models.models import User, ApiKey, OAuthConfig, SmtpConfig
+from app.services.demo import DEMO_EMAIL, DEMO_ENABLED, get_demo_user, is_demo
 from app.schemas.schemas import (
     RegisterRequest,
     LoginRequest,
@@ -175,7 +176,7 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
     password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
     existing = await db.execute(select(User).where(User.email == email))
-    if existing.scalar_one_or_none():
+    if existing.scalar_one_or_none() or email == DEMO_EMAIL:
         raise HTTPException(status_code=409, detail="Email is already registered")
 
     user = User(
@@ -217,6 +218,16 @@ async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
         token=token,
         user=UserOut.model_validate(user),
     )
+
+
+@router.post("/demo", response_model=AuthResponse)
+async def demo_login(db: AsyncSession = Depends(get_db)):
+    """Entra con la cuenta demo compartida (datos de ejemplo que se reinician solos)."""
+    if not DEMO_ENABLED:
+        raise HTTPException(status_code=404, detail="Demo not available")
+    user = await get_demo_user(db)
+    token = _make_jwt(user.id, user.email, False)
+    return AuthResponse(token=token, user=UserOut.model_validate(user))
 
 
 @router.get("/google")
@@ -393,9 +404,12 @@ async def update_preferences(
     db: AsyncSession = Depends(get_db),
 ):
     """Update the account preferences (language, theme, weekly goal, onboarding flags)."""
-    for field, value in body.model_dump(exclude_unset=True).items():
-        if value is not None:
-            setattr(current_user, field, value)
+    changes = {k: v for k, v in body.model_dump(exclude_unset=True).items() if v is not None}
+    if is_demo(current_user):
+        # Cuenta compartida: se devuelven aplicadas pero no se guardan
+        return UserOut.model_validate(current_user).model_copy(update=changes)
+    for field, value in changes.items():
+        setattr(current_user, field, value)
     await db.flush()
     return UserOut.model_validate(current_user)
 

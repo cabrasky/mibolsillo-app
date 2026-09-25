@@ -16,6 +16,7 @@ from app.database import engine, Base, async_session_factory
 from app.schema_sync import run_alembic_upgrade, sync_missing_columns
 from app.models.models import User
 from app.routers import auth, expenses, incomes, goals, subscriptions, projects, categories, excel, developer
+from app.services.demo import demo_read_only
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +76,10 @@ app = FastAPI(
     version="1.1.0",
     lifespan=lifespan,
 )
+
+# Cuenta demo pública: solo lectura (se registra antes que el resto para que
+# request-id y CORS también envuelvan su 403)
+app.middleware("http")(demo_read_only)
 
 
 @app.middleware("http")

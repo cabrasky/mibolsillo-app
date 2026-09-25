@@ -4,6 +4,7 @@ import { cats, refreshCategories, type UserCategory } from '../store';
 import * as api from '../api';
 import { useLocale, fill, localizeError } from '../i18n';
 import type { Expense, Income, Subscription } from '../types';
+import { blockedInDemo } from '../demo';
 
 interface Props {
   expenses?: Expense[];
@@ -34,7 +35,7 @@ export default function CategoriesPage({ expenses = [], incomes = [], subscripti
   };
 
   const add = async (kind: 'expense' | 'income') => {
-    if (!adding.trim() || busy) return;
+    if (!adding.trim() || busy || blockedInDemo()) return;
     setBusy(true); setErr('');
     try {
       await api.apiCreateCategory({ kind, name: adding.trim() });
@@ -43,7 +44,7 @@ export default function CategoriesPage({ expenses = [], incomes = [], subscripti
   };
 
   const rename = async (cat: UserCategory) => {
-    if (!editingName.trim() || busy) return;
+    if (!editingName.trim() || busy || blockedInDemo()) return;
     setBusy(true); setErr('');
     try {
       await api.apiUpdateCategory(cat.id, { name: editingName.trim() });
@@ -52,6 +53,7 @@ export default function CategoriesPage({ expenses = [], incomes = [], subscripti
   };
 
   const remove = async (kind: 'expense' | 'income', cat: UserCategory) => {
+    if (blockedInDemo()) return;
     const used = usedCount(kind, cat.name);
     if (used > 0) { setErr(fill(t('cat.inUseBlock'), { name: cat.name, n: used })); return; }
     if (!confirm(fill(t('cat.confirmDelete'), { name: cat.name }))) return;

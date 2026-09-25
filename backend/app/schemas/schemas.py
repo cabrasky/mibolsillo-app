@@ -37,6 +37,7 @@ class UserOut(BaseModel):
     weekly_goal: Optional[float] = None
     setup_done: bool = False
     mobile_tour_done: bool = False
+    is_demo: bool = False
 
     model_config = {"from_attributes": True}
 
