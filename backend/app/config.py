@@ -47,6 +47,11 @@ class Settings(BaseSettings):
     demo_enabled: bool = True
     demo_email: str = "demo@mibolsillo.app"
 
+    # Repositorio de APKs de Android (carpeta compartida con nginx, que sirve /apk)
+    apk_dir: str = "/data/apk"
+    apk_chunk_bytes: int = 896 * 1024          # trozos de subida por debajo del límite del proxy
+    apk_max_bytes: int = 200 * 1024 * 1024
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

@@ -38,7 +38,12 @@ La app de Android está en [`cabrasky/mibolsillo-mobile`](https://github.com/cab
   - usuarios: suspender, dar admin, reset, eliminar;
   - soporte;
   - estado del sistema y errores recientes;
+  - App Android (ver abajo);
   - configuración de Google y del correo.
+- **App Android, repositorio de versiones:**
+  - cada build de Jenkins, y cada APK que se sube a mano desde el panel (por trozos), queda en `/opt/gastos-apk/builds/`;
+  - el admin elige qué build se sirve en la portada y en el aviso de actualización de la app (`manifest.json`);
+  - notas por versión y contador de descargas.
 - **Correos** con la plantilla «Salvia y tomate» (logo incrustado, modo oscuro).
 - **Diseño:** sistema visual «Salvia y tomate», modo claro y oscuro, disposición de escritorio y de móvil que se adapta sola. Idiomas: es, en y pt.
 

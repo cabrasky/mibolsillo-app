@@ -85,6 +85,11 @@ export function localizeError(error: unknown, t: (key: string, fallback?: string
   else if (normalized.includes('at least one admin')) localized = t('admin.errLastAdmin');
   else if (normalized.includes('reactivate the account')) localized = t('admin.errReactivate');
   else if (normalized.includes('could not send email')) localized = t('admin.errEmail');
+  else if (normalized.includes('not a valid apk')) localized = t('apk.errNotApk');
+  else if (normalized.includes('apk file is missing')) localized = t('apk.errMissing');
+  else if (normalized.includes('apk is too large')) localized = t('apk.errTooBig');
+  else if (normalized.includes('apk storage is not available')) localized = t('apk.noStorage');
+  else if (normalized.includes('incomplete upload') || normalized.includes('expected offset')) localized = t('apk.errIncomplete');
   else if (normalized.includes('database unavailable') || normalized.includes('schema is out of date')) localized = t('error.database');
   else if (normalized.includes('internal server error')) localized = t('error.internal');
   else if (normalized.includes('incorrect email') || normalized.includes('invalid credentials')) localized = t('error.credentials');

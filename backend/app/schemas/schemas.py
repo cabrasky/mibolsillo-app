@@ -69,6 +69,24 @@ class SupportReply(BaseModel):
     body: str = Field(min_length=1, max_length=4000)
 
 
+class ApkUploadInit(BaseModel):
+    """Empezar a subir un APK desde el panel (luego van los trozos)."""
+    filename: str = Field(default="", max_length=255)
+    size: int = Field(gt=0)
+    version: str = Field(min_length=1, max_length=32, pattern=r"^\d+(\.\d+){0,3}([-+][0-9A-Za-z.]+)?$")
+    version_code: Optional[int] = Field(default=None, ge=1, le=2_100_000_000)
+    notes: str = Field(default="", max_length=1000)
+
+
+class ApkUploadComplete(BaseModel):
+    serve: bool = False
+
+
+class ApkBuildUpdate(BaseModel):
+    notes: Optional[str] = Field(default=None, max_length=1000)
+    version_code: Optional[int] = Field(default=None, ge=1, le=2_100_000_000)
+
+
 class AdminSetRole(BaseModel):
     is_admin: bool
 

@@ -1,10 +1,11 @@
 /* ── Landing pública (no autenticados) ────────────────────────────────────── */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { useLocale, nextLocale, localizeError } from '../i18n';
+import { useLocale, nextLocale, localizeError, fill, LOCALE_TAG } from '../i18n';
 import { BrandMark, IconDownload, IconGrid, IconList, IconRefresh, IconSmartphone, IconTarget, IconWallet, IconArrowRight, IconSparkle, IconCheckCircle, IconX, IconAlertCircle, IconServer, IconQrCode } from './Icons';
 import LegalLinks from './LegalLinks';
+import { apkDownloadUrl, apkLatest, type ApkLatest } from '../adminApi';
 
 // Lo que viene (ver ROADMAP.md): sin fecha, se anuncia como «Próximamente»
 const ROADMAP = [
@@ -13,7 +14,8 @@ const ROADMAP = [
   { icon: IconQrCode, title: 'landing.r3t', desc: 'landing.r3d' },
 ];
 
-const APK_URL = '/apk/mibolsillo-1.0.0.apk';
+// La build que se sirve la elige un admin (Administración → App Android)
+const APK_URL = apkDownloadUrl;
 
 const FEATURES = [
   { icon: 'list', title: 'landing.f1t', desc: 'landing.f1d' },
@@ -31,6 +33,8 @@ export default function Landing() {
   const navigate = useNavigate();
   // La demo solo se abre desde aquí (no desde el login)
   const [demo, setDemo] = useState({ busy: false, error: '' });
+  const [apk, setApk] = useState<ApkLatest | null>(null);
+  useEffect(() => { apkLatest().then(setApk).catch(() => {}); }, []);
   // Tras eliminar la cuenta se vuelve aquí con ?deleted=1
   const [deleted, setDeleted] = useState(() => new URLSearchParams(window.location.search).has('deleted'));
   const closeDeleted = () => { setDeleted(false); window.history.replaceState(null, '', '/'); };
@@ -168,7 +172,9 @@ export default function Landing() {
           <p>{t('landing.downloadText')}</p>
           <a href={APK_URL} download className="btn primary lg"><IconDownload size={18} />{t('landing.downloadApk')}</a>
           <div className="landing-download-info">
-            {t('landing.apkInfo')}<br />
+            {apk
+              ? fill(t('landing.apkInfo'), { v: apk.version, mb: Math.max(1, Math.round(apk.size / 1048576)), d: new Date(`${apk.published_at}Z`).toLocaleDateString(LOCALE_TAG[locale], { day: 'numeric', month: 'short', year: 'numeric' }) })
+              : t('landing.apkInfoBasic')}<br />
             {t('landing.apkHelp')}
           </div>
         </div>
