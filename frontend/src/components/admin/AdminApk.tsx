@@ -3,9 +3,9 @@
    cuál sirve la web (portada y aviso de actualización de la app) y se pueden
    subir APKs a mano. Las descargas se cuentan por build. */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { adminApkRepo, adminApkServe, adminApkUpdate, adminApkUpload, type ApkBuild, type ApkRepo } from '../../adminApi';
+import { adminApkDelete, adminApkRepo, adminApkServe, adminApkUpdate, adminApkUpload, type ApkBuild, type ApkRepo } from '../../adminApi';
 import { useLocale, localizeError, fill, LOCALE_TAG } from '../../i18n';
-import { IconDownload, IconCheckCircle, IconAlertCircle, IconAlertTriangle, IconEdit, IconX } from '../Icons';
+import { IconDownload, IconCheckCircle, IconAlertCircle, IconAlertTriangle, IconEdit, IconTrash, IconX } from '../Icons';
 import { fmtBytes, fmtDateTime } from './format';
 
 const REPO_URL = 'https://github.com/cabrasky/mibolsillo-mobile/commit/';
@@ -32,6 +32,19 @@ export default function AdminApk() {
     try {
       await adminApkServe(b.id);
       setMsg({ ok: true, text: fill(t('apk.served'), { v: b.version }) });
+      load();
+    } catch (e) {
+      setMsg({ ok: false, text: localizeError(e, t) });
+    }
+    setBusy('');
+  };
+
+  const remove = async (b: ApkBuild) => {
+    if (!confirm(fill(t('apk.confirmDelete'), { v: b.version || '?', b: b.build_number || b.commit || b.file }))) return;
+    setBusy(`delete:${b.id}`); setMsg(null);
+    try {
+      await adminApkDelete(b.id);
+      setMsg({ ok: true, text: fill(t('apk.deleted'), { v: b.version || '?' }) });
       load();
     } catch (e) {
       setMsg({ ok: false, text: localizeError(e, t) });
@@ -121,6 +134,12 @@ export default function AdminApk() {
                       </button>
                     )}
                     {!b.missing && <a className="btn outline sm" href={b.file_url} download aria-label={t('apk.download')}><IconDownload size={14} /></a>}
+                    {!b.served && (
+                      <button type="button" className="btn danger sm" disabled={!!busy} onClick={() => remove(b)}
+                        aria-label={t('apk.delete')} title={t('apk.delete')}>
+                        <IconTrash size={14} />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -87,6 +87,7 @@ export function localizeError(error: unknown, t: (key: string, fallback?: string
   else if (normalized.includes('could not send email')) localized = t('admin.errEmail');
   else if (normalized.includes('not a valid apk')) localized = t('apk.errNotApk');
   else if (normalized.includes('apk file is missing')) localized = t('apk.errMissing');
+  else if (normalized.includes('cannot delete the served build')) localized = t('apk.errDeleteServed');
   else if (normalized.includes('apk is too large')) localized = t('apk.errTooBig');
   else if (normalized.includes('apk storage is not available')) localized = t('apk.noStorage');
   else if (normalized.includes('incomplete upload') || normalized.includes('expected offset')) localized = t('apk.errIncomplete');

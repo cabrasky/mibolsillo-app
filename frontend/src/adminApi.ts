@@ -152,6 +152,8 @@ export const adminApkServe = (id: string) => request<ApkBuild>('POST', `/admin/a
 export const adminApkUpdate = (id: string, body: { notes?: string; version_code?: number }) =>
   request<ApkBuild>('PUT', `/admin/apk/${id}`, body, true);
 
+export const adminApkDelete = (id: string) => request<void>('DELETE', `/admin/apk/${id}`, undefined, true);
+
 /** Sube un APK por trozos (por debajo del límite de tamaño del proxy). Si falla, cancela la subida. */
 export async function adminApkUpload(
   file: File,

@@ -147,6 +147,22 @@ async def main():
         check("fichero borrado a mano → marcado como perdido", gone["missing"])
         check("no se puede servir un fichero perdido (409)", c.post(f"/api/admin/apk/{gone['id']}/serve", headers=HA).status_code == 409)
 
+        # ── Borrar builds ──
+        check("no-admin no puede borrar (403)", c.delete(f"/api/admin/apk/{ci['id']}", headers=HU).status_code == 403)
+        check("no se puede borrar la servida (409)", c.delete(f"/api/admin/apk/{up['id']}", headers=HA).status_code == 409)
+        check("la servida sigue ahí", (APK_DIR / up["file"]).is_file())
+        r = c.delete(f"/api/admin/apk/{ci['id']}", headers=HA)
+        check("borrar build de Jenkins → 204", r.status_code == 204, r.text[:120])
+        check("se borran el APK y su .json", not (APK_DIR / "builds" / ci_name).exists() and not (APK_DIR / "builds" / (ci_name + ".json")).exists())
+        files = [b["file"] for b in c.get("/api/admin/apk", headers=HA).json()["builds"]]
+        check("no vuelve a aparecer al recargar el repositorio", f"builds/{ci_name}" not in files, str(files))
+        check("descarga de la build borrada → 404", c.get(f"/api/apk/download/{ci['id']}", follow_redirects=False).status_code == 404)
+        check("borrar una build con el fichero perdido → 204", c.delete(f"/api/admin/apk/{gone['id']}", headers=HA).status_code == 204)
+        check("borrar dos veces → 404", c.delete(f"/api/admin/apk/{gone['id']}", headers=HA).status_code == 404)
+        files = [b["file"] for b in c.get("/api/admin/apk", headers=HA).json()["builds"]]
+        check("quedan la antigua y la subida", sorted(files) == sorted(["mibolsillo-1.2.0.apk", up["file"]]), str(files))
+        check("manifest.json intacto", manifest()["version"] == "1.3.0")
+
     print("\n" + ("TODO OK" if fails == 0 else f"{fails} FALLARON"))
     sys.exit(1 if fails else 0)
 
