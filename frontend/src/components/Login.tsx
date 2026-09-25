@@ -4,6 +4,7 @@ import { useAuth } from '../AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLocale, localizeError } from '../i18n';
 import { BrandMark, IconArrowLeft } from './Icons';
+import LegalLinks from './LegalLinks';
 
 export default function Login() {
   const { login, googleLogin } = useAuth();
@@ -54,6 +55,7 @@ export default function Login() {
         <p className="auth-link">
           <Link to="/forgot-password">{t('auth.forgot')}</Link>
         </p>
+        <LegalLinks className="auth-legal" />
       </div>
     </div>
   );

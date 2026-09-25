@@ -23,13 +23,14 @@ from datetime import date, datetime, timedelta
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from jose import jwt
-from sqlalchemy import delete, func, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.models.models import (
-    ApiKey, BillingCycle, Category, Expense, ExpensePhoto, Goal, Income, Project, Subscription, User,
+    BillingCycle, Expense, Goal, Income, Project, Subscription, User,
 )
+from app.services.accounts import delete_user_data
 
 DEMO_EMAIL = settings.demo_email.strip().lower()
 DEMO_ENABLED = settings.demo_enabled
@@ -97,10 +98,7 @@ async def reset_demo_data(db: AsyncSession, user: User) -> None:
     from app.routers.categories import _ensure_defaults  # evita import circular (auth → demo → routers)
 
     uid = user.id
-    expense_ids = select(Expense.id).where(Expense.user_id == uid)
-    await db.execute(delete(ExpensePhoto).where(ExpensePhoto.expense_id.in_(expense_ids)))
-    for model in (Expense, Income, Goal, Subscription, Project, Category, ApiKey):
-        await db.execute(delete(model).where(model.user_id == uid))
+    await delete_user_data(db, uid)
 
     user.name = "Demo"
     user.avatar_url = ""

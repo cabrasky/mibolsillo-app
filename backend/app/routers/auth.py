@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.models.models import User, ApiKey, OAuthConfig, SmtpConfig
+from app.services.accounts import delete_user_data
 from app.services.demo import DEMO_EMAIL, DEMO_ENABLED, get_demo_user, is_demo
 from app.schemas.schemas import (
     RegisterRequest,
@@ -24,6 +25,7 @@ from app.schemas.schemas import (
     AuthResponse,
     UserOut,
     UserUpdate,
+    AccountDeleteRequest,
     PreferencesUpdate,
     PasswordChangeRequest,
     ForgotPasswordRequest,
@@ -395,6 +397,24 @@ async def update_me(
         current_user.avatar_url = body.avatar_url.strip()
     await db.flush()
     return UserOut.model_validate(current_user)
+
+
+@router.delete("/me", status_code=204)
+async def delete_me(
+    body: AccountDeleteRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Elimina la cuenta y TODOS sus datos (gastos, fotos, ingresos, metas…).
+
+    Se confirma escribiendo el propio email (las cuentas de Google no tienen
+    contraseña). La cuenta demo no llega aquí: la corta el middleware demo_read_only.
+    """
+    if body.confirm_email.strip().lower() != (current_user.email or "").lower():
+        raise HTTPException(status_code=400, detail="Email confirmation does not match")
+    await delete_user_data(db, current_user.id)
+    await db.delete(current_user)
+    await db.flush()
 
 
 @router.put("/me/preferences", response_model=UserOut)

@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { useLocale, nextLocale, localizeError } from '../i18n';
-import { BrandMark, IconDownload, IconGrid, IconList, IconRefresh, IconSmartphone, IconTarget, IconWallet, IconArrowRight, IconSparkle } from './Icons';
+import { BrandMark, IconDownload, IconGrid, IconList, IconRefresh, IconSmartphone, IconTarget, IconWallet, IconArrowRight, IconSparkle, IconCheckCircle, IconX } from './Icons';
+import LegalLinks from './LegalLinks';
 
 const APK_URL = '/apk/mibolsillo-1.0.0.apk';
 
@@ -23,6 +24,9 @@ export default function Landing() {
   const navigate = useNavigate();
   // La demo solo se abre desde aquí (no desde el login)
   const [demo, setDemo] = useState({ busy: false, error: '' });
+  // Tras eliminar la cuenta se vuelve aquí con ?deleted=1
+  const [deleted, setDeleted] = useState(() => new URLSearchParams(window.location.search).has('deleted'));
+  const closeDeleted = () => { setDeleted(false); window.history.replaceState(null, '', '/'); };
   const tryDemo = async () => {
     setDemo({ busy: true, error: '' });
     try {
@@ -51,6 +55,14 @@ export default function Landing() {
           <Link to="/login" className="btn primary">{t('auth.enter')}</Link>
         </div>
       </header>
+
+      {deleted && (
+        <div className="landing-notice" role="status">
+          <IconCheckCircle size={18} />
+          <span>{t('account.deleted')}</span>
+          <button type="button" onClick={closeDeleted} aria-label={t('common.close')}><IconX size={16} /></button>
+        </div>
+      )}
 
       <section className="landing-hero">
         <div>
@@ -132,7 +144,8 @@ export default function Landing() {
       </section>
 
       <footer className="landing-footer">
-        {t('landing.footer')} <Link to="/login">{t('auth.login')}</Link>
+        <div>{t('landing.footer')} <Link to="/login">{t('auth.login')}</Link></div>
+        <LegalLinks />
       </footer>
     </div>
   );

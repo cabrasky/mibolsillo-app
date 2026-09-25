@@ -742,6 +742,27 @@ const pt: Record<TKey, string> = {
   'demo.create': 'Criar a minha conta',
   'demo.readOnly': 'A demo é só de leitura: as alterações não são guardadas.',
   'demo.profile': 'A conta demo é pública: não é possível alterar o nome nem a palavra-passe.',
+
+  // Textos legales y baja de la cuenta
+  'legal.title': 'Legal',
+  'legal.docs': 'Textos legais',
+  'legal.updated': 'Última atualização',
+  'legal.privacy': 'Privacidade',
+  'legal.cookies': 'Cookies',
+  'legal.notice': 'Aviso legal',
+  'legal.terms': 'Termos de utilização',
+  'legal.registerNote': 'Ao criar a conta aceitas os [Termos de utilização](/legal/terminos) e a [Política de privacidade](/legal/privacidad).',
+  'settings.legalHint': 'Como são tratados os teus dados, o que fica guardado no navegador e as condições de utilização.',
+  'account.deleteTitle': 'Eliminar conta',
+  'account.deleteText': 'A tua conta e todos os teus dados serão apagados de imediato: despesas, fotos de talões, receitas, metas, assinaturas, projetos, categorias e chaves de API. Não é possível desfazer; se os quiseres guardar, exporta antes um CSV ou Excel.',
+  'account.deleteCc': 'As divisões que enviaste para o Cuentas Claras são geridas nessa app.',
+  'account.deleteBtn': 'Eliminar a minha conta',
+  'account.deleteConfirmTitle': 'Eliminar a tua conta?',
+  'account.deleteConfirmLabel': 'Escreve o teu email ({email}) para confirmar',
+  'account.deleteConfirmBtn': 'Eliminar a minha conta e os meus dados',
+  'account.deleting': 'A eliminar…',
+  'account.deleted': 'A tua conta e todos os teus dados foram eliminados.',
+  'account.emailMismatch': 'O email não coincide com o da tua conta.',
 };
 
 export default pt;

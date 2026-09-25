@@ -76,6 +76,7 @@ export function localizeError(error: unknown, t: (key: string, fallback?: string
     ? String((error as { requestId?: string }).requestId || '') : '';
   let localized = '';
   if (normalized.includes('demo account')) localized = t('demo.readOnly');
+  else if (normalized.includes('email confirmation does not match')) localized = t('account.emailMismatch');
   else if (normalized.includes('database unavailable') || normalized.includes('schema is out of date')) localized = t('error.database');
   else if (normalized.includes('internal server error')) localized = t('error.internal');
   else if (normalized.includes('incorrect email') || normalized.includes('invalid credentials')) localized = t('error.credentials');

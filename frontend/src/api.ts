@@ -95,6 +95,11 @@ export async function login(email: string, password: string): Promise<AuthRespon
   return request<AuthResponse>('POST', '/auth/login', { email, password });
 }
 
+/** Elimina la cuenta y TODOS sus datos (se confirma escribiendo el propio email). */
+export async function deleteAccount(confirmEmail: string): Promise<void> {
+  await request<void>('DELETE', '/auth/me', { confirm_email: confirmEmail }, true);
+}
+
 /** Entra con la cuenta demo pública (solo lectura, datos de ejemplo). */
 export async function demoLogin(): Promise<AuthResponse> {
   return request<AuthResponse>('POST', '/auth/demo');

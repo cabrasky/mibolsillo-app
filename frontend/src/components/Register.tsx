@@ -4,6 +4,7 @@ import { useAuth } from '../AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLocale, localizeError } from '../i18n';
 import { BrandMark, IconArrowLeft } from './Icons';
+import RichText from './RichText';
 
 export default function Register() {
   const { register } = useAuth();
@@ -48,6 +49,7 @@ export default function Register() {
           <label>{t('auth.password')}</label>
           <input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
           {error && <p className="error">{error}</p>}
+          <p className="auth-consent"><RichText text={t('legal.registerNote')} /></p>
           <button className="btn primary" type="submit" disabled={busy}>
             {busy ? t('auth.registering') : t('auth.register')}
           </button>

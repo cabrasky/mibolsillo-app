@@ -757,6 +757,27 @@ const es = {
   'demo.create': 'Crear mi cuenta',
   'demo.readOnly': 'La demo es de solo lectura: los cambios no se guardan.',
   'demo.profile': 'La cuenta demo es pública: no se puede cambiar su nombre ni su contraseña.',
+
+  // Textos legales y baja de la cuenta
+  'legal.title': 'Legal',
+  'legal.docs': 'Textos legales',
+  'legal.updated': 'Última actualización',
+  'legal.privacy': 'Privacidad',
+  'legal.cookies': 'Cookies',
+  'legal.notice': 'Aviso legal',
+  'legal.terms': 'Términos de uso',
+  'legal.registerNote': 'Al crear la cuenta aceptas los [Términos de uso](/legal/terminos) y la [Política de privacidad](/legal/privacidad).',
+  'settings.legalHint': 'Cómo se tratan tus datos, qué se guarda en tu navegador y las condiciones de uso.',
+  'account.deleteTitle': 'Eliminar cuenta',
+  'account.deleteText': 'Se borrarán al momento tu cuenta y todos tus datos: gastos, fotos de tickets, ingresos, metas, suscripciones, proyectos, categorías y claves de API. No se puede deshacer; si quieres conservarlos, exporta antes un CSV o Excel.',
+  'account.deleteCc': 'Los repartos que hayas enviado a Cuentas Claras se gestionan en esa app.',
+  'account.deleteBtn': 'Eliminar mi cuenta',
+  'account.deleteConfirmTitle': '¿Eliminar tu cuenta?',
+  'account.deleteConfirmLabel': 'Escribe tu email ({email}) para confirmar',
+  'account.deleteConfirmBtn': 'Eliminar mi cuenta y mis datos',
+  'account.deleting': 'Eliminando…',
+  'account.deleted': 'Tu cuenta y todos tus datos se han eliminado.',
+  'account.emailMismatch': 'El email no coincide con el de tu cuenta.',
 };
 
 export type TKey = keyof typeof es;

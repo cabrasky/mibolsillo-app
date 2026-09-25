@@ -42,6 +42,7 @@ function getPathInfo(pathname: string) {
   if (PATH_INFO[pathname]) return PATH_INFO[pathname];
   if (pathname.startsWith('/more/')) return PATH_INFO['/more'];
   if (pathname.startsWith('/projects')) return { i18nKey: 'nav.more', titleKey: 'nav.projects', parentTab: 'more' as BottomTab };
+  if (pathname.startsWith('/legal')) return { i18nKey: 'nav.more', titleKey: 'legal.title', parentTab: 'more' as BottomTab };
   return PATH_INFO['/dashboard'];
 }
 
@@ -63,7 +64,7 @@ export default function MobileLayout({
   const info = getPathInfo(location.pathname);
   const activeTab = currentBottomTab(location.pathname);
   const isMoreSub = MORE_SUBPATHS.includes(location.pathname);
-  const showBack = isMoreSub || location.pathname.startsWith('/projects') || ['/settings', '/admin', '/subs', '/categories', '/excel', '/help', '/developer'].includes(location.pathname);
+  const showBack = isMoreSub || location.pathname.startsWith('/projects') || location.pathname.startsWith('/legal') || ['/settings', '/admin', '/subs', '/categories', '/excel', '/help', '/developer'].includes(location.pathname);
   const { t } = useLocale();
   const { logout } = useAuth();
 
