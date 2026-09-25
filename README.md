@@ -1,75 +1,99 @@
-# miBolsillo (mibolsillo-app) — Personal Expense Manager
+# miBolsillo (mibolsillo-app): control de gastos personal
 
-MiBolsillo: full-stack personal expense tracker with Sankey diagrams, Google OAuth, PostgreSQL, and Kubernetes deployment.
+Web y API de **miBolsillo**, para apuntar gastos, ingresos, metas, suscripciones y proyectos, compartir gastos y ver estadísticas.
+La app de Android está en [`cabrasky/mibolsillo-mobile`](https://github.com/cabrasky/mibolsillo-mobile).
 
-**Producto web:** https://mibolsillo.cabrasky.net
+- **Web:** https://mibolsillo.cabrasky.net
+- **API:** https://mibolsillo.cabrasky.net/api (alias histórico: gastos.cabrasky.net)
 
-**Integración:** los gastos compartidos (personas Debe/Invitado) se pueden enviar a
-**Cuentas Claras** (`cabrasky/cuentas-claras`) con el botón "Añadir a CC" para gestionar
-el reparto entre gente; el vínculo queda guardado como `ref_cc` en cada gasto. · **API:** https://mibolsillo.cabrasky.net/api
-(alias histórico: gastos.cabrasky.net)
+> **Estado:** hoy miBolsillo es un **servicio alojado por su autor** en mibolsillo.cabrasky.net.
+> **Todavía no se puede instalar en un servidor propio.** El autoalojamiento está planeado para más adelante, junto con un modo 100 % local con sincronización entre dispositivos por QR (ver [ROADMAP.md](ROADMAP.md)).
+> Las instrucciones de abajo son para **desarrollar** en local, no para montar una instancia propia.
 
-| Stack | Tech |
-|-------|------|
-| **Frontend** | React 19, TypeScript, Vite, Recharts, React Router |
+| Parte | Tecnología |
+|-------|------------|
+| **Frontend** | React 19, TypeScript, Vite, Recharts, React Router · fuentes servidas desde la propia web |
 | **Backend** | Python 3.12, FastAPI, SQLAlchemy (async), Alembic |
-| **Auth** | Google OAuth 2.0, JWT |
-| **DB** | PostgreSQL 16 |
+| **Acceso** | Email y contraseña o Google OAuth 2.0 · JWT |
+| **BD** | PostgreSQL 16 |
 | **Infra** | Docker, Kubernetes (kustomize), NGINX |
-| **CI/CD** | Jenkins (multibranch pipeline) |
+| **CI/CD** | Jenkins (multibranch): cada push a `main` despliega |
 
-Companion mobile app (React Native / Expo, offline-first): `cabrasky/mibolsillo-mobile`.
+## Funciones
 
-## Quick Start
+- **Gastos como en tu Excel:** categoría, motivo, tipo y método, con sugerencias según tu historial y los buckets Fijo / Puntual / Viajes / Inversión calculados solos.
+- **Ingresos, metas, suscripciones y proyectos.** Las suscripciones tienen «Pagado» con un toque; los proyectos llevan su desglose de gastos.
+- **Gastos compartidos y pagos pendientes.** Se pueden enviar a **Cuentas Claras** con el botón «Añadir a CC»; el vínculo queda en `ref_cc`.
+- **Estadísticas:** resúmenes mensual y semanal, diagrama Sankey (Ingresos → Disponible → Gastos) y comparativas.
+- **Excel:** plantilla, exportación e importación sin duplicados. También exportación a CSV.
+- **Cuenta:**
+  - preferencias (idioma, tema, presupuesto semanal) guardadas en la cuenta y en cookies;
+  - ventana de bienvenida la primera vez;
+  - eliminar la cuenta con todos sus datos.
+- **Demo pública de solo lectura** desde la portada, con datos de ejemplo que se renuevan cada día.
+- **Textos legales:** privacidad, cookies, aviso legal y términos (`/legal/…`).
+- **Soporte técnico:** los usuarios escriben desde la web o la app y el admin responde; las respuestas llegan también por email.
+- **Panel de admin (`/admin`):**
+  - uso de la app con gráficos;
+  - usuarios: suspender, dar admin, reset, eliminar;
+  - soporte;
+  - estado del sistema y errores recientes;
+  - configuración de Google y del correo.
+- **Correos** con la plantilla «Salvia y tomate» (logo incrustado, modo oscuro).
+- **Diseño:** sistema visual «Salvia y tomate», modo claro y oscuro, disposición de escritorio y de móvil que se adapta sola. Idiomas: es, en y pt.
+
+## Desarrollo local
 
 ```bash
-# 1. Env
-cp .env.example .env
-# Edit .env with your Google OAuth credentials
+# 1. Variables
+cp .env.example .env            # credenciales de Google OAuth (opcional)
 
-# 2. Backend + DB
+# 2. Backend + BD
 docker compose up -d postgres backend
 
 # 3. Frontend
+cd frontend
 npm install
-npm run build
-python3 spa-server.py 8121 0.0.0.0
+npm run dev                     # o: npm run build && python3 spa-server.py 8121 0.0.0.0
 ```
 
-Open `http://localhost:8121`.
+Más detalle en [SETUP.MD](SETUP.MD). La API está documentada en [docs/API.md](docs/API.md).
 
-## Features
+### Tests
 
-- **Sankey Diagram** — port-based flow visualization (Ingresos → Disponible → Gastos)
-- **Smart suggestions** — category/type/method suggested from your history as you type
-- **Category filters** — charts filterable by category, with monthly averages and year-over-year comparison
-- **Invitations** — flag expenses paid as a treat (no repayment) with filters and totals
-- **i18n** — ES, EN, PT with locale selector
-- **Dual layout** — Desktop sidebar + Mobile bottom nav (auto-adaptive)
-- **Charts** — Recharts (bars, pie, area, line) + custom SVG Sankey
-- **Google OAuth** — secure login with JWT tokens
-- **Multi-user** — each user's data isolated by user_id
+Los tests del backend son scripts de extremo a extremo con SQLite y `TestClient`:
 
-## Project Layout
+```bash
+cd backend
+pip install -r requirements.txt aiosqlite httpx
+python tests/test_admin_e2e.py      # también: test_support_e2e, test_delete_account_e2e,
+                                    # test_demo_e2e, test_preferences_e2e, test_photo_e2e, test_emails
+```
+
+Frontend: `npx tsc -b`, `npx oxlint src` y `npx vite build`.
+
+## Estructura
 
 ```
-├── backend/          # FastAPI Python backend
+├── backend/
 │   ├── app/
-│   │   ├── main.py        # Entry point
-│   │   ├── config.py      # Settings from env
-│   │   ├── database.py    # Async SQLAlchemy engine
-│   │   ├── models/        # User, Expense, Income, Goal, Subscription
-│   │   ├── schemas/       # Pydantic request/response models
-│   │   └── routers/       # Auth + CRUD endpoints
-│   ├── Dockerfile
-│   └── requirements.txt
-├── src/               # React frontend
-│   ├── components/    # Dashboard, Sankey, Charts, Expenses, etc.
-│   ├── i18n.tsx       # Multi-language provider
-│   └── store.ts       # localStorage persistence
-├── k8s/               # Kubernetes manifests (kustomize)
+│   │   ├── main.py            # Arranque, middlewares (demo de solo lectura) y errores
+│   │   ├── config.py          # Configuración por entorno
+│   │   ├── models/            # Usuarios, gastos, ingresos, metas, suscripciones, proyectos, soporte…
+│   │   ├── routers/           # auth, expenses, …, admin, support
+│   │   ├── services/          # demo, cuentas, soporte, errores, recurrentes, fotos
+│   │   ├── mail.py            # Envío de correos
+│   │   └── email_layout.py    # Plantilla de los correos
+│   ├── migrations/            # Alembic
+│   └── tests/                 # Pruebas de extremo a extremo
+├── frontend/
+│   └── src/
+│       ├── components/        # Páginas y piezas (admin/, Landing, SettingsPage…)
+│       ├── legal/             # Textos legales (es/en/pt)
+│       ├── locales/           # Traducciones (es/en/pt)
+│       └── store.ts           # Caché local de los datos de la cuenta
+├── k8s/                       # Manifiestos de Kubernetes (kustomize)
 ├── docker-compose.yml
-└── Jenkinsfile        # CI/CD pipeline
+├── ROADMAP.md
+└── Jenkinsfile
 ```
-
-See [SETUP.MD](SETUP.MD) for full deployment instructions.

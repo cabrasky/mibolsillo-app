@@ -3,8 +3,15 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { useLocale, nextLocale, localizeError } from '../i18n';
-import { BrandMark, IconDownload, IconGrid, IconList, IconRefresh, IconSmartphone, IconTarget, IconWallet, IconArrowRight, IconSparkle, IconCheckCircle, IconX, IconAlertCircle } from './Icons';
+import { BrandMark, IconDownload, IconGrid, IconList, IconRefresh, IconSmartphone, IconTarget, IconWallet, IconArrowRight, IconSparkle, IconCheckCircle, IconX, IconAlertCircle, IconServer, IconQrCode } from './Icons';
 import LegalLinks from './LegalLinks';
+
+// Lo que viene (ver ROADMAP.md): sin fecha, se anuncia como «Próximamente»
+const ROADMAP = [
+  { icon: IconServer, title: 'landing.r1t', desc: 'landing.r1d' },
+  { icon: IconSmartphone, title: 'landing.r2t', desc: 'landing.r2d' },
+  { icon: IconQrCode, title: 'landing.r3t', desc: 'landing.r3d' },
+];
 
 const APK_URL = '/apk/mibolsillo-1.0.0.apk';
 
@@ -134,6 +141,23 @@ export default function Landing() {
               </div>
             );
           })}
+        </div>
+      </section>
+
+      <section className="landing-section">
+        <span className="landing-eyebrow">{t('landing.roadmapEyebrow')}</span>
+        <h2>{t('landing.roadmapTitle')}</h2>
+        <div className="landing-features landing-roadmap">
+          {ROADMAP.map(r => (
+            <div key={r.title} className="landing-feature">
+              <div className="landing-roadmap-top">
+                <div className="more-icon"><r.icon size={22} /></div>
+                <span className="landing-soon">{t('landing.soon')}</span>
+              </div>
+              <div className="landing-feature-title">{t(r.title)}</div>
+              <div className="landing-feature-desc">{t(r.desc)}</div>
+            </div>
+          ))}
         </div>
       </section>
 
