@@ -2,8 +2,8 @@
 import { useLocale } from '../i18n';
 import RichText from './RichText';
 
-const B = { border: '1px solid var(--border)', borderRadius: 14, padding: 16, background: 'var(--surface)', marginBottom: 12 };
-const H = { margin: '0 0 8px', fontSize: 15.5, fontWeight: 800 } as const;
+const B = { border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px 22px', background: 'var(--surface)', marginBottom: 16 };
+const H = { margin: '0 0 10px', fontSize: 16, fontWeight: 800 } as const;
 const LI = { lineHeight: 1.75, fontSize: 13.5, color: 'var(--text)' } as const;
 
 // Cada sección: clave del título + claves de sus puntos (textos en src/locales)

@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { getToken } from '../api';
 import { useLocale, localizeError, fill } from '../i18n';
 
-const P = { box: { border: '1px solid var(--border)', borderRadius: 14, padding: 18, background: 'var(--surface)', display: 'flex', flexDirection: 'column' as const, gap: 10 } };
+const P = { box: { border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px 22px', background: 'var(--surface)', display: 'flex', flexDirection: 'column' as const, gap: 12 } };
 
 export default function ExcelPage({ onImported }: { onImported?: () => void }) {
   const { t } = useLocale();
@@ -33,7 +33,6 @@ export default function ExcelPage({ onImported }: { onImported?: () => void }) {
 
   return <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 720 }}>
     <div style={P.box}>
-      <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800 }}>{t('more.excel')}</h2>
       <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 13 }}>{t('excel.intro')}</p>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
         <button type="button" className="btn primary" onClick={() => download('template')}>{t('excel.template')}</button>

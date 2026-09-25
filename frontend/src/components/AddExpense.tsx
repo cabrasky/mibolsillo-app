@@ -5,6 +5,8 @@ import type { Expense } from '../types';
 import { useLocale, refLabel, fill } from '../i18n';
 import RichText from './RichText';
 import { personasOf, repaySummary, serializePersonas, type Persona } from '../personas';
+import { eur } from '../format';
+import { IconSparkle, IconX } from './Icons';
 
 interface Props {
   isOpen: boolean;
@@ -149,9 +151,7 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
         <div className="modal-header">
           <h2>{isEdit ? t('expense.editLabel') : t('nav.newExpense')}</h2>
           <button className="modal-close" onClick={onClose} type="button" title={t('common.close')} aria-label={t('common.close')}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
+            <IconX size={18} />
           </button>
         </div>
 
@@ -193,7 +193,7 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
               {errors.desc && <span className="field-error">{errors.desc}</span>}
               {sug && !errors.desc && (
                 <div className="sug-bar">
-                  <span className="sug-icon">✦</span>
+                  <span className="sug-icon"><IconSparkle size={14} /></span>
                   <span className="sug-text">
                     {fill(t('expense.suggestion'), { m: sug.match })} <b>{sug.proposito ? refLabel('categories', sug.proposito, t) : '—'}</b> · {refLabel('types', sug.tipo, t)} · {sug.motivo ? refLabel('motives', sug.motivo, t) : t('expense.noMotive')} · {refLabel('methods', sug.metodo, t)}
                   </span>
@@ -236,7 +236,7 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
               <label>{t('expense.projectOptional')}</label>
               <select value={proyectoId} onChange={e => setProyectoId(e.target.value)}>
                 <option value="">{t('expense.noProjectGeneral')}</option>
-                {projects.map(p => <option key={p.id} value={p.id}>📁 {p.name}</option>)}
+                {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
           </div>
@@ -267,7 +267,7 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
                         <button type="button" className={p.r === 'deb' ? 'on deb' : ''} onClick={() => upP(i, { r: 'deb' })}>{t('expense.owes')}</button>
                         <button type="button" className={p.r === 'inv' ? 'on inv' : ''} onClick={() => upP(i, { r: 'inv' })}>{t('expense.invited')}</button>
                       </div>
-                      <button type="button" className="btn ghost x" onClick={() => delP(i)} title={t('common.remove')} aria-label={t('common.remove')}>✕</button>
+                      <button type="button" className="btn ghost x" onClick={() => delP(i)} title={t('common.remove')} aria-label={t('common.remove')}><IconX size={16} /></button>
                     </div>
                     {p.r === 'deb' && (
                       <div className="persona-repay">
@@ -301,11 +301,11 @@ export default function AddExpense({ isOpen, editExpense, onClose, onSaved, pres
                 </div>
                 <div className="amount-preview">
                   <span>{t('expense.yourPart')}</span>
-                  <span>{meCorresponde.toFixed(2).replace('.', ',')} €</span>
+                  <span>{eur(meCorresponde)}</span>
                   {invSum > 0 && (
                     <>
-                      <span style={{ marginLeft: 14, color: 'var(--muted)' }}>{t('expense.invited')}</span>
-                      <span style={{ color: '#10b981' }}>{invSum.toFixed(2).replace('.', ',')} €</span>
+                      <span style={{ marginLeft: 14, color: 'var(--text-muted)' }}>{t('expense.invited')}</span>
+                      <span style={{ color: 'var(--success)' }}>{eur(invSum)}</span>
                     </>
                   )}
                 </div>

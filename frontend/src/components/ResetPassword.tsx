@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { resetPassword } from '../api';
 import { useLocale, localizeError } from '../i18n';
+import { BrandMark, IconArrowLeft } from './Icons';
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -45,11 +46,11 @@ export default function ResetPassword() {
     return (
       <div className="auth-page">
         <div className="auth-card">
-        <div style={{ textAlign: 'left', marginBottom: 4 }}>
-          <Link to="/" className="back-link">{t('common.backHome')}</Link>
-        </div>
-          <h1>Gastos App</h1>
-          <h2>{t('error.invalidLink')}</h2>
+          <div className="auth-top">
+            <span className="auth-brand"><BrandMark /><span className="brand-name">miBolsillo</span></span>
+            <Link to="/" className="back-link"><IconArrowLeft size={14} />{t('common.backHome')}</Link>
+          </div>
+          <h1>{t('error.invalidLink')}</h1>
           <p>{t('auth.invalidLinkText')}</p>
           <p className="auth-link">
             <Link to="/forgot-password">{t('auth.requestNew')}</Link>
@@ -62,8 +63,10 @@ export default function ResetPassword() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1>Gastos App</h1>
-        <h2>{t('auth.newPassword')}</h2>
+        <div className="auth-top">
+          <span className="auth-brand"><BrandMark /><span className="brand-name">miBolsillo</span></span>
+        </div>
+        <h1>{t('auth.newPassword')}</h1>
         <form onSubmit={handleSubmit}>
           <label>{t('auth.newPassword')}</label>
           <input

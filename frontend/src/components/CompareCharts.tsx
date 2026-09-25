@@ -6,10 +6,12 @@ import {
 import { expenseCost } from '../types';
 import type { Expense, Income } from '../types';
 import { useLocale, fill, LOCALE_TAG } from '../i18n';
+import { SERIES } from '../palette';
+import { IconCaretUp, IconCaretDown } from './Icons';
 
 /* ── Comparativas de periodos superpuestos (meses / semanas / trimestres / años) ── */
 
-const PALETTE = ['#6366f1', '#f59e0b', '#10b981', '#ec4899', '#06b6d4', '#8b5cf6'];
+const PALETTE = SERIES;
 const MAX_SERIES = 6;
 type T = (key: string) => string;
 const DIMS: Dim[] = ['meses', 'semanas', 'trimestres', 'anios'];
@@ -201,46 +203,33 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
       <h3>{t('cmp.title')}</h3>
 
       {/* Dimensión */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         {DIMS.map(d => (
-          <button key={d} onClick={() => setDim(d)}
-            style={{
-              border: dim === d ? '1.5px solid var(--primary)' : '1px solid var(--border)',
-              background: dim === d ? 'var(--primary)' : 'transparent',
-              color: dim === d ? '#fff' : 'var(--text)',
-              borderRadius: 999, padding: '5px 14px', fontSize: 13, cursor: 'pointer', fontWeight: 700,
-            }}>{t(`cmp.dim.${d}`)}</button>
+          <button key={d} onClick={() => setDim(d)} aria-pressed={dim === d}
+            className={`xg-chip${dim === d ? ' on' : ''}`}>{t(`cmp.dim.${d}`)}</button>
         ))}
       </div>
 
       {/* Métrica */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         {METRICS.map(m => (
-          <button key={m.key} onClick={() => setMetric(m.key)}
-            style={{
-              border: metric === m.key ? '1.5px solid var(--primary)' : '1px solid var(--border)',
-              background: metric === m.key ? 'var(--primary)' + '22' : 'transparent',
-              color: 'var(--text)',
-              borderRadius: 999, padding: '4px 12px', fontSize: 12.5, cursor: 'pointer', fontWeight: metric === m.key ? 700 : 500,
-            }}>{t(m.label)}</button>
+          <button key={m.key} onClick={() => setMetric(m.key)} aria-pressed={metric === m.key}
+            className={`xg-chip${metric === m.key ? ' on' : ''}`}>{t(m.label)}</button>
         ))}
       </div>
 
       {/* Periodos a comparar */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginBottom: 4 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 4 }}>
         {candidates.map(k => {
           const on = active.includes(k);
           const partial = isPartial(k, dim);
           const label = periodLabel(k, dim, t) + (partial ? ' *' : '');
           return (
-            <button key={k} onClick={() => toggle(k)}
+            <button key={k} onClick={() => toggle(k)} aria-pressed={on}
               title={periodLabel(k, dim, t) + (partial ? ` ${t('cmp.inProgress')}` : '')}
-              style={{
-                border: on ? `1.5px solid ${colorOf(k)}` : '1px solid var(--border)',
-                background: on ? colorOf(k) + '22' : 'transparent',
-                color: on ? colorOf(k) : 'var(--muted)',
-                borderRadius: 999, padding: '3px 11px', fontSize: 12, cursor: 'pointer', fontWeight: on ? 700 : 500,
-              }}>{label}</button>
+              className={`xg-chip${on ? ' on' : ''}`}>
+              {on && <span className="xg-dot" style={{ background: colorOf(k) }} />}{label}
+            </button>
           );
         })}
         {candidates.length === 0 && <span className="muted" style={{ fontSize: 12 }}>{t('cmp.noMoves')}</span>}
@@ -257,8 +246,8 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
             <ResponsiveContainer width="100%" height={240}>
               <LineChart data={seriesRows} margin={{ top: 8, right: 10, left: -14, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="x" tick={{ fontSize: 10, fill: 'var(--muted)' }} minTickGap={14} />
-                <YAxis tick={{ fontSize: 10, fill: 'var(--muted)' }} tickFormatter={(v: number) => eur(v)} />
+                <XAxis dataKey="x" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} minTickGap={14} />
+                <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} tickFormatter={(v: number) => eur(v)} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: any, name: any) => [eur(Number(v) || 0), String(name)]} />
                 {active.map(k => (
                   <Line key={k} type="monotone" dataKey={k} name={periodLabel(k, dim, t)}
@@ -274,8 +263,8 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={totals} margin={{ top: 8, right: 10, left: -14, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'var(--muted)' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: 'var(--muted)' }} tickFormatter={(v: number) => eur(v)} />
+                <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} tickFormatter={(v: number) => eur(v)} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [eur(Number(v)), t(METRICS.find(m => m.key === metric)!.label)]} cursor={{ fill: 'var(--border)', opacity: 0.25 }} />
                 <Bar dataKey="total" radius={[4, 4, 0, 0]} maxBarSize={44}>
                   {totals.map(tot => <Cell key={tot.key} fill={colorOf(tot.key)} />)}
@@ -290,15 +279,15 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
               const diff = avg !== 0 ? Math.round(((tot.total - avg) / Math.abs(avg)) * 100) : 0;
               const partial = isPartial(tot.key, dim);
               return (
-                <div key={tot.key} style={{ minWidth: 120, flex: 1, border: '1px solid var(--border)', borderRadius: 12, padding: '8px 12px' }}>
+                <div key={tot.key} style={{ minWidth: 120, flex: 1, border: '1px solid var(--border)', borderRadius: 14, padding: '10px 14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: 12.5 }}>
                     <span style={{ width: 9, height: 9, borderRadius: 99, background: colorOf(tot.key), display: 'inline-block' }} />
                     {tot.label}{partial ? ' *' : ''}
                   </div>
-                  <div style={{ fontWeight: 800, fontSize: 15, marginTop: 3 }}>{eur(tot.total)}</div>
-                  <div style={{ fontSize: 11, color: 'var(--muted)' }}>
+                  <div className="display num" style={{ fontSize: 20, marginTop: 3 }}>{eur(tot.total)}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                     {partial ? <span style={{ color: 'var(--warning)', fontWeight: 700 }}>{t('cmp.partial')}</span> : totals.length > 1 && (
-                      diff >= 0 ? <span style={{ color: '#10b981' }}>▲ {diff}%</span> : <span style={{ color: '#ef4444' }}>▼ {Math.abs(diff)}%</span>
+                      diff >= 0 ? <span className="delta" style={{ color: 'var(--success)' }}><IconCaretUp size={10} />{diff}%</span> : <span className="delta" style={{ color: 'var(--danger)' }}><IconCaretDown size={10} />{Math.abs(diff)}%</span>
                     )}
                     {!partial && totals.length > 1 && ` ${t('cmp.vsAvg')}`}
                   </div>
@@ -306,10 +295,10 @@ export default function PeriodCompare({ expenses, incomes }: { expenses: Expense
               );
             })}
             {totals.length > 1 && (
-              <div style={{ minWidth: 120, flex: 1, border: '1px solid var(--border)', borderRadius: 12, padding: '8px 12px', background: 'var(--surface2)' }}>
+              <div style={{ minWidth: 120, flex: 1, border: '1px solid var(--border)', borderRadius: 14, padding: '10px 14px', background: 'var(--surface2)' }}>
                 <div style={{ fontWeight: 700, fontSize: 12.5 }}>{t('cmp.grand')}</div>
                 <div style={{ fontWeight: 800, fontSize: 15, marginTop: 3 }}>{eur(grand)}</div>
-                <div style={{ fontSize: 11, color: 'var(--muted)' }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                   {fill(t(anyPartial ? 'cmp.avgComplete' : 'cmp.avg'), { v: eur(Math.round(avg * 100) / 100) })}
                 </div>
               </div>

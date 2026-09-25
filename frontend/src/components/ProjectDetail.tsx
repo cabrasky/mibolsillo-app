@@ -4,6 +4,7 @@ import { expenseCost } from '../types';
 import { loadData, deleteExpense, updateExpense } from '../store';
 import { useLocale, fill, refLabel } from '../i18n';
 import { IconArrowLeft, IconPlus, IconTrash } from './Icons';
+import { eur } from '../format';
 
 interface Props {
   onRefresh: () => void;
@@ -26,7 +27,7 @@ export default function ProjectDetail({ onRefresh, onEditExpense, onAddToProject
       <div className="card">
         <div className="empty">
           <p>{t('proj.notFound')}</p>
-          <Link to="/projects" className="btn outline">{t('proj.backToList')}</Link>
+          <Link to="/projects" className="btn outline"><IconArrowLeft size={16} />{t('proj.backToList')}</Link>
         </div>
       </div>
     );
@@ -54,24 +55,18 @@ export default function ProjectDetail({ onRefresh, onEditExpense, onAddToProject
           <IconArrowLeft size={18} />
         </button>
         <div>
-          <div className="page-title">📁 {project.name}</div>
+          <h1 className="page-title">{project.name}</h1>
           <div className="page-sub">{fill(t('proj.subtitle'), { n: items.length })}</div>
         </div>
       </div>
 
       <div className="proj-hero">
         <div>
-          <div style={{ fontSize: '.78rem', opacity: .85, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em' }}>
-            {fill(t('proj.investedIn'), { name: project.name })}
-          </div>
-          <div className="proj-total">{total.toFixed(2)} €</div>
-          <div className="proj-meta">{fill(t('proj.pendingByYou'), { v: `${pending.toFixed(2)} €` })}</div>
+          <div className="hero-label">{fill(t('proj.investedIn'), { name: project.name })}</div>
+          <div className="proj-total">{eur(total)}</div>
+          <div className="proj-meta">{fill(t('proj.pendingByYou'), { v: `${eur(pending)}` })}</div>
         </div>
-        <button
-          className="btn"
-          onClick={() => onAddToProject(project.id)}
-          style={{ background: 'rgba(255,255,255,.18)', color: '#fff', backdropFilter: 'blur(4px)', boxShadow: 'none' }}
-        >
+        <button className="btn on-hero" onClick={() => onAddToProject(project.id)}>
           <IconPlus size={16} /> {t('expense.addBtn')}
         </button>
       </div>
@@ -79,7 +74,7 @@ export default function ProjectDetail({ onRefresh, onEditExpense, onAddToProject
       <div className="card">
         <div className="card-header">
           <h3>{t('proj.items')}</h3>
-          <span className="card-total">{total.toFixed(2)} EUR</span>
+          <span className="card-total">{eur(total)}</span>
         </div>
         {items.length === 0 ? (
           <div className="empty">
@@ -101,7 +96,7 @@ export default function ProjectDetail({ onRefresh, onEditExpense, onAddToProject
                     </td>
                     <td>{e.proposito ? <span className={`tag tag-${e.proposito.toLowerCase().replace(/[\/\s]/g, '')}`}>{refLabel('categories', e.proposito, t)}</span> : '-'}</td>
                     <td className="td-muted">{e.metodo ? refLabel('methods', e.metodo, t) : '-'}</td>
-                    <td className="td-amount">{e.amount.toFixed(2)} EUR</td>
+                    <td className="td-amount">{eur(e.amount)}</td>
                     <td>
                       <div className="row-actions">
                         <button className="btn sm outline" onClick={() => onEditExpense(e.id)} title={t('expense.editLabel')}>{t('common.edit')}</button>

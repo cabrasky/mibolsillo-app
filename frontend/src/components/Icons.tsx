@@ -204,3 +204,63 @@ export const IconCamera = ({ size = 16, className }: { size?: number; className?
     <circle cx="12" cy="13" r="4"/>
   </svg>
 );
+
+export const IconUser = ({ size = 18 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>
+  </svg>
+);
+
+export const IconKey = ({ size = 18 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3L20 3M16 7l3 3M14 9l2 2"/>
+  </svg>
+);
+
+export const IconMail = ({ size = 18 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>
+  </svg>
+);
+
+export const IconLock = ({ size = 18 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+  </svg>
+);
+
+export const IconSparkle = ({ size = 14 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2l2.2 6.6a2 2 0 0 0 1.2 1.2L22 12l-6.6 2.2a2 2 0 0 0-1.2 1.2L12 22l-2.2-6.6a2 2 0 0 0-1.2-1.2L2 12l6.6-2.2a2 2 0 0 0 1.2-1.2z"/>
+  </svg>
+);
+
+export const IconChevronRight = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 6l6 6-6 6"/>
+  </svg>
+);
+
+// Flechas rellenas para subidas/bajadas de porcentaje
+export const IconCaretUp = ({ size = 12 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M12 5l8 12H4z"/></svg>
+);
+export const IconCaretDown = ({ size = 12 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M12 19L4 7h16z"/></svg>
+);
+
+// Marca miBolsillo: el bolsillo con la moneda (mismo dibujo que mibolsillo-mobile/assets/logo.svg).
+// `bare` quita el cuadrado de fondo y recorta al dibujo (sobre la barra lateral salvia el cuadrado no se ve).
+export const BrandMark = ({ size = 'md', bare = false }: { size?: 'sm' | 'md' | 'lg' | number; bare?: boolean }) => {
+  const px = typeof size === 'number' ? size : size === 'lg' ? 52 : size === 'sm' ? 30 : 36;
+  return (
+    <svg className="brand-mark" width={bare ? Math.round(px * 21 / 25.9) : px} height={px}
+      viewBox={bare ? '13.6 12.1 21 25.9' : '0 0 48 48'} aria-hidden="true">
+      {!bare && <rect width="48" height="48" rx="10" fill="#1E4D3A" />}
+      <circle cx="24" cy="19.5" r="7" fill="#FF5A36" />
+      <path d="m 20,19 3,-3 1,3 3,-3 m 0,0 -1.2,0.15 M 27,16 26.9,17.2" fill="none" stroke="#14261E" strokeWidth="0.75" strokeLinejoin="round" strokeLinecap="round" />
+      <path d="M 14.5,19.5 V 30 C 15.2,34.3 18.4,37.2 24.15,37.2 C 29.9,37.2 33.1,34.3 33.8,30 V 19.5 Z" fill="#2F6A51" stroke="#4E8A6D" strokeWidth="0.75" strokeLinejoin="round" strokeLinecap="round" />
+      <path d="M 15.925,20.675 V 29.6 C 16.52,33.255 19.24,35.72 24.1275,35.72 C 29.015,35.72 31.735,33.255 32.33,29.6 V 20.675" fill="none" stroke="#B4CCBF" strokeWidth="0.25" strokeDasharray="1 .75" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  );
+};

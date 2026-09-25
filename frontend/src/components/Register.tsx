@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLocale, localizeError } from '../i18n';
+import { BrandMark, IconArrowLeft } from './Icons';
 
 export default function Register() {
   const { register } = useAuth();
@@ -34,11 +35,11 @@ export default function Register() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <div style={{ textAlign: 'left', marginBottom: 4 }}>
-          <Link to="/" className="back-link">{t('common.backHome')}</Link>
+        <div className="auth-top">
+          <span className="auth-brand"><BrandMark /><span className="brand-name">miBolsillo</span></span>
+          <Link to="/" className="back-link"><IconArrowLeft size={14} />{t('common.backHome')}</Link>
         </div>
-        <h1>Gastos App</h1>
-        <h2>{t('auth.createAccount')}</h2>
+        <h1>{t('auth.createAccount')}</h1>
         <form onSubmit={handleSubmit}>
           <label>{t('common.name')}</label>
           <input type="text" value={name} onChange={e => setName(e.target.value)} required />

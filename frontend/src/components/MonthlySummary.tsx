@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 import { expenseCost, getMonth, bucketOf } from '../types';
 import { useLocale } from '../i18n';
 import type { Expense } from '../types';
+import { eur } from '../format';
+import { CHART, SERIES } from '../palette';
 
 interface Props {
   expenses: Expense[];
@@ -38,10 +40,10 @@ export default function MonthlySummary({ expenses }: Props) {
   return (
     <>
       <div className="stats">
-        <div className="stat"><div className="label">{t('monthly.yearTotal')}</div><div className="value primary">{grandTotal.toFixed(2)} EUR</div></div>
-        <div className="stat"><div className="label">{t('monthly.avgMonth')}</div><div className="value">{avg.toFixed(2)} EUR</div></div>
+        <div className="stat"><div className="label">{t('monthly.yearTotal')}</div><div className="value primary">{eur(grandTotal)}</div></div>
+        <div className="stat"><div className="label">{t('monthly.avgMonth')}</div><div className="value">{eur(avg)}</div></div>
         <div className="stat"><div className="label">{t('monthly.count')}</div><div className="value">{expenses.length}</div></div>
-        <div className="stat"><div className="label">{t('monthly.avgSpend')}</div><div className="value">{expenses.length ? (grandTotal / expenses.length).toFixed(2) : '0.00'} EUR</div></div>
+        <div className="stat"><div className="label">{t('monthly.avgSpend')}</div><div className="value">{eur(expenses.length ? grandTotal / expenses.length : 0)}</div></div>
       </div>
 
       <div className="card">
@@ -83,11 +85,11 @@ export default function MonthlySummary({ expenses }: Props) {
         <h3>{t('monthly.distribution')}</h3>
         <div className="bar-list">
           {[
-            { label: t('ref.purposes.fijo'), val: totals.fijo, color: '#dfe6e9' },
-            { label: t('ref.purposes.puntual'), val: totals.puntual, color: '#ffeaa7' },
-            { label: t('ref.purposes.viajes'), val: totals.viajes, color: '#74b9ff' },
-            { label: t('ref.purposes.nivel'), val: totals.vida, color: '#55efc4' },
-            { label: t('ref.purposes.inversion'), val: totals.inversion, color: '#a29bfe' },
+            { label: t('ref.purposes.fijo'), val: totals.fijo, color: CHART.neutral },
+            { label: t('ref.purposes.puntual'), val: totals.puntual, color: SERIES[5] },
+            { label: t('ref.purposes.viajes'), val: totals.viajes, color: SERIES[6] },
+            { label: t('ref.purposes.nivel'), val: totals.vida, color: SERIES[0] },
+            { label: t('ref.purposes.inversion'), val: totals.inversion, color: SERIES[4] },
           ].map(({ label, val, color }) => {
             const pct = grandTotal > 0 ? ((val / grandTotal) * 100).toFixed(1) : 0;
             return (
@@ -96,7 +98,7 @@ export default function MonthlySummary({ expenses }: Props) {
                 <div className="progress-wrap">
                   <div className="progress-fill" style={{ width: `${pct}%`, background: color }} />
                 </div>
-                <span className="bar-value">{val.toFixed(2)} EUR ({pct}%)</span>
+                <span className="bar-value">{eur(val)} ({pct}%)</span>
               </div>
             );
           })}

@@ -1,20 +1,9 @@
 /* ── Landing pública (no autenticados) ────────────────────────────────────── */
 import { Link } from 'react-router-dom';
 import { useLocale, nextLocale } from '../i18n';
-import { IconDownload, IconGrid, IconList, IconRefresh, IconSmartphone, IconTarget, IconWallet } from './Icons';
+import { BrandMark, IconDownload, IconGrid, IconList, IconRefresh, IconSmartphone, IconTarget, IconWallet, IconArrowRight } from './Icons';
 
 const APK_URL = '/apk/mibolsillo-1.0.0.apk';
-
-const col = {
-  primary: 'var(--primary-strong)',
-  text: 'var(--text)',
-  muted: 'var(--text-muted)',
-  surface: 'var(--surface)',
-  surface2: 'var(--surface2)',
-  border: 'var(--border)',
-  bg: 'var(--bg)',
-  ok: 'var(--ok, #059669)',
-};
 
 const FEATURES = [
   { icon: 'list', title: 'landing.f1t', desc: 'landing.f1d' },
@@ -28,119 +17,98 @@ const FEATURES = [
 
 export default function Landing() {
   const { t, locale, setLocale } = useLocale();
+  const mock = [
+    { d: t('landing.mock1'), c: t('ref.categories.savings'), a: '450,00 €', cat: 'cat-c2', income: false },
+    { d: t('landing.mock2'), c: t('ref.categories.food'), a: '3,50 €', cat: 'cat-c4', income: false },
+    { d: t('landing.mock3'), c: t('ref.categories.drink'), a: '2,90 €', cat: 'cat-c1', income: false },
+    { d: t('landing.mock4'), c: t('landing.income'), a: '+800,00 €', cat: 'cat-c1', income: true },
+  ];
   return (
-    <div style={{ backgroundColor: col.bg, minHeight: '100vh', color: col.text }}>
-      {/* Header */}
-      <header style={{ maxWidth: 1080, margin: '0 auto', padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <img src="/logo.png" alt="miBolsillo" style={{ width: 26, height: 26, borderRadius: 8 }} />
-          <span style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.5px' }}>miBolsillo</span>
+    <div className="landing">
+      <header className="landing-bar">
+        <div className="landing-brand">
+          <BrandMark size={52} />
+          <span className="brand-name">miBolsillo</span>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div className="landing-actions">
           <button type="button" className="theme-btn" onClick={() => setLocale(nextLocale(locale))} title={t('lang.select')} aria-label={t('lang.select')}>{locale.toUpperCase()}</button>
-          <Link to="/register" style={{ textDecoration: 'none', color: col.text, fontWeight: 700, fontSize: 14, padding: '8px 12px' }}>{t('auth.createAccount')}</Link>
-          <Link to="/login" className="btn primary" style={{ textDecoration: 'none', padding: '9px 18px', borderRadius: 12 }}>{t('auth.enter')}</Link>
+          <Link to="/register" className="landing-link">{t('auth.createAccount')}</Link>
+          <Link to="/login" className="btn primary">{t('auth.enter')}</Link>
         </div>
       </header>
 
-      {/* Hero */}
-      <section style={{ maxWidth: 1080, margin: '0 auto', padding: '30px 22px 0', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 30, alignItems: 'center' }}>
+      <section className="landing-hero">
         <div>
-          <span style={{ display: 'inline-block', backgroundColor: 'var(--primary-light)', color: col.primary, fontWeight: 800, fontSize: 12, padding: '5px 12px', borderRadius: 999, marginBottom: 16, letterSpacing: .3 }}>
-            {t('landing.badge')}
-          </span>
-          <h1 style={{ fontSize: 42, fontWeight: 800, letterSpacing: '-1.5px', lineHeight: 1.08, margin: '0 0 14px' }}>
-            {t('landing.heroA')}<br />{t('landing.heroB')} <span style={{ color: col.primary }}>{t('landing.heroC')}</span>.
+          <span className="landing-eyebrow">{t('landing.badge')}</span>
+          <h1>
+            {t('landing.heroA')}<br />{t('landing.heroB')} <em>{t('landing.heroC')}</em>.
           </h1>
-          <p style={{ color: col.muted, fontSize: 16, lineHeight: 1.55, margin: '0 0 22px', maxWidth: 460 }}>
-            {t('landing.heroText')}
-          </p>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <a href={APK_URL} className="btn primary" style={{ textDecoration: 'none', padding: '13px 22px', borderRadius: 14, fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-              <IconSmartphone size={18} /> {t('landing.downloadAndroid')}
-            </a>
-            <Link to="/login" style={{ textDecoration: 'none', padding: '13px 22px', borderRadius: 14, fontSize: 15, fontWeight: 800, color: col.text, border: '1.5px solid var(--border-strong)' }}>
-              {t('landing.openWeb')}
-            </Link>
+          <p className="landing-lead">{t('landing.heroText')}</p>
+          <div className="landing-ctas">
+            <a href={APK_URL} className="btn primary lg"><IconSmartphone size={18} />{t('landing.downloadAndroid')}</a>
+            <Link to="/login" className="btn outline lg">{t('landing.openWeb')}<IconArrowRight size={16} /></Link>
           </div>
-          <p style={{ color: col.muted, fontSize: 12.5, marginTop: 12 }}>{t('landing.requirements')}</p>
+          <p className="landing-note">{t('landing.requirements')}</p>
         </div>
 
         {/* Mock de la app */}
-        <div style={{ perspective: 1200 }}>
-          <div style={{ backgroundColor: col.surface, border: `1px solid ${col.border}`, borderRadius: 24, padding: 18, boxShadow: '0 24px 60px rgba(6,78,59,.14)', transform: 'rotateY(-6deg) rotateX(2deg)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div className="brand-logo" style={{ width: 30, height: 30, borderRadius: 9, fontSize: 15 }}>€</div>
-                <span style={{ fontWeight: 800, letterSpacing: '-.3px' }}>miBolsillo</span>
-              </div>
-              <span style={{ fontSize: 11, color: col.muted }}>{t('ref.months.9')} 2026</span>
+        <div className="landing-mock" aria-hidden="true">
+          <div className="landing-mock-top">
+            <div className="landing-brand sm">
+              <BrandMark size={36} />
+              <span>miBolsillo</span>
             </div>
-            <div style={{ background: 'linear-gradient(135deg, #059669, #0d9488)', borderRadius: 16, padding: 14, color: '#fff', marginBottom: 12 }}>
-              <div style={{ fontSize: 11, opacity: .85, fontWeight: 700 }}>{t('landing.monthBalance')}</div>
-              <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: -1 }}>+326,41 €</div>
-            </div>
-            {[
-              { d: t('landing.mock1'), c: t('ref.categories.savings'), a: '450,00 €', neg: true },
-              { d: t('landing.mock2'), c: t('ref.categories.food'), a: '3,50 €', neg: true },
-              { d: t('landing.mock3'), c: t('ref.categories.drink'), a: '2,90 €', neg: true },
-              { d: t('landing.mock4'), c: t('landing.income'), a: '800,00 €', neg: false },
-            ].map(r => (
-              <div key={r.d} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', borderBottom: `1px solid ${col.border}` }}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 13.5 }}>{r.d}</div>
-                  <div style={{ fontSize: 11, color: col.muted }}>{r.c}</div>
-                </div>
-                <span style={{ fontWeight: 800, fontSize: 13.5, color: r.neg ? col.text : col.ok }}>{r.a}</span>
-              </div>
-            ))}
+            <span className="landing-note">{t('ref.months.9')} 2026</span>
           </div>
+          <div className="hero-card landing-mock-hero">
+            <span className="hero-label">{t('landing.monthBalance')}</span>
+            <span className="hero-num">+326,41 €</span>
+          </div>
+          {mock.map(r => (
+            <div key={r.d} className="landing-mock-row">
+              <span className={`xg-initial ${r.cat}`}>{r.c.charAt(0).toUpperCase()}</span>
+              <span className="landing-mock-text">
+                <span className="xg-desc">{r.d}</span>
+                <span className="xg-meta">{r.c}</span>
+              </span>
+              <span className={`xg-amount num${r.income ? ' income' : ''}`}>{r.a}</span>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Features */}
-      <section style={{ maxWidth: 1080, margin: '0 auto', padding: '56px 22px' }}>
-        <h2 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-1px', textAlign: 'center', marginBottom: 28 }}>{t('landing.featuresTitle')}</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
+      <section className="landing-section">
+        <span className="landing-eyebrow">miBolsillo</span>
+        <h2>{t('landing.featuresTitle')}</h2>
+        <div className="landing-features">
           {FEATURES.map(f => {
             const Icon = { list: IconList, grid: IconGrid, refresh: IconRefresh, target: IconTarget, wallet: IconWallet, phone: IconSmartphone }[f.icon] as any;
             return (
-              <div key={f.title} style={{ backgroundColor: col.surface, border: `1px solid ${col.border}`, borderRadius: 18, padding: 18 }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, borderRadius: 13, backgroundColor: 'var(--primary-light)', color: col.primary, marginBottom: 12 }}>
-                  <Icon size={22} />
-                </div>
-                <div style={{ fontWeight: 800, fontSize: 15.5, marginBottom: 6 }}>{t(f.title)}</div>
-                <div style={{ color: col.muted, fontSize: 13.5, lineHeight: 1.5 }}>{t(f.desc)}</div>
+              <div key={f.title} className="landing-feature">
+                <div className="more-icon"><Icon size={22} /></div>
+                <div className="landing-feature-title">{t(f.title)}</div>
+                <div className="landing-feature-desc">{t(f.desc)}</div>
               </div>
             );
           })}
         </div>
       </section>
 
-      {/* Descarga */}
-      <section id="descarga" style={{ maxWidth: 760, margin: '0 auto', padding: '0 22px 60px' }}>
-        <div style={{ background: 'linear-gradient(140deg, #0f766e, #0d9488 60%, #0891b2)', borderRadius: 26, padding: '34px 28px', color: '#fff', textAlign: 'center' }}>
-          <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 72, height: 72, borderRadius: 22, backgroundColor: "rgba(255,255,255,.16)", color: "#fff", marginBottom: 10 }}><IconSmartphone size={36} /></div>
-          <h2 style={{ fontSize: 26, fontWeight: 800, margin: '0 0 8px', letterSpacing: '-.8px' }}>{t('landing.downloadTitle')}</h2>
-          <p style={{ opacity: .9, fontSize: 14.5, margin: '0 auto 20px', maxWidth: 460, lineHeight: 1.5 }}>
-            {t('landing.downloadText')}
-          </p>
-          <a
-            href={APK_URL}
-            download
-            style={{ display: 'inline-block', backgroundColor: '#fff', color: '#0f766e', fontWeight: 800, padding: '14px 26px', borderRadius: 14, fontSize: 15.5, textDecoration: 'none' }}
-          >
-            <IconDownload size={18} /> {t('landing.downloadApk')}
-          </a>
-          <div style={{ marginTop: 14, fontSize: 12.5, opacity: .85, lineHeight: 1.7 }}>
+      <section id="descarga" className="landing-section narrow">
+        <div className="hero-card landing-download">
+          <div className="landing-download-icon"><IconSmartphone size={32} /></div>
+          <h2>{t('landing.downloadTitle')}</h2>
+          <p>{t('landing.downloadText')}</p>
+          <a href={APK_URL} download className="btn primary lg"><IconDownload size={18} />{t('landing.downloadApk')}</a>
+          <div className="landing-download-info">
             {t('landing.apkInfo')}<br />
             {t('landing.apkHelp')}
           </div>
         </div>
       </section>
 
-      <footer style={{ borderTop: `1px solid ${col.border}`, padding: '22px', textAlign: 'center', color: col.muted, fontSize: 13 }}>
-        {t('landing.footer')} <Link to="/login" style={{ color: col.primary, fontWeight: 700, textDecoration: 'none' }}>{t('auth.login')}</Link>
+      <footer className="landing-footer">
+        {t('landing.footer')} <Link to="/login">{t('auth.login')}</Link>
       </footer>
     </div>
   );

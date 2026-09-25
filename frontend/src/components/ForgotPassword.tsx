@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { forgotPassword } from '../api';
 import { Link } from 'react-router-dom';
 import { useLocale, localizeError } from '../i18n';
+import { BrandMark, IconArrowLeft } from './Icons';
 
 export default function ForgotPassword() {
   const { t } = useLocale();
@@ -28,11 +29,11 @@ export default function ForgotPassword() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <div style={{ textAlign: 'left', marginBottom: 4 }}>
-          <Link to="/" className="back-link">{t('common.backHome')}</Link>
+        <div className="auth-top">
+          <span className="auth-brand"><BrandMark /><span className="brand-name">miBolsillo</span></span>
+          <Link to="/" className="back-link"><IconArrowLeft size={14} />{t('common.backHome')}</Link>
         </div>
-        <h1>Gastos App</h1>
-        <h2>{t('auth.recover')}</h2>
+        <h1>{t('auth.recover')}</h1>
         <form onSubmit={handleSubmit}>
           <label>{t('common.email')}</label>
           <input
