@@ -7,6 +7,7 @@ import {
 } from '../api';
 import { useLocale, localizeError, fill, LOCALE_TAG } from '../i18n';
 import RichText from './RichText';
+import { blockedInDemo } from '../demo';
 
 const B = { border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px 22px', background: 'var(--surface)', marginBottom: 16 };
 const H = { margin: '0 0 10px', fontSize: 16, fontWeight: 800 } as const;
@@ -44,6 +45,7 @@ export default function DeveloperPage() {
   useEffect(() => { load(); }, [load]);
 
   const toggle = async () => {
+    if (blockedInDemo()) return;
     setBusy(true); setError(null);
     try {
       const st = await apiToggleDeveloper();
@@ -54,6 +56,7 @@ export default function DeveloperPage() {
   };
 
   const create = async () => {
+    if (blockedInDemo()) return;
     setBusy(true); setError(null); setCreatedKey(null);
     try {
       const created = await apiCreateApiKey(newName);

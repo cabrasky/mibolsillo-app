@@ -9,6 +9,7 @@ import { personasOf } from '../personas';
 import { catColor } from '../categoryColors';
 import { IconSearch, IconEdit, IconFilter, IconArrowUpRight, IconChevronRight, IconX } from './Icons';
 import { eurFmt } from '../format';
+import { blockedInDemo } from '../demo';
 
 interface Props {
   expenses: Expense[];
@@ -156,7 +157,7 @@ export default function ExpenseList({ expenses, onEdit, onDelete, compact = fals
     catch (error) { setPhotoError(localizeError(error, t)); }
   };
   const uploadPhoto = async (file: File | undefined) => {
-    if (!photoId || !file) return;
+    if (!photoId || !file || blockedInDemo()) return;
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { setPhotoError(t('error.photoUpload')); return; }
     setPhotoBusy(true); setPhotoError('');
     try {
@@ -167,13 +168,14 @@ export default function ExpenseList({ expenses, onEdit, onDelete, compact = fals
     finally { setPhotoBusy(false); if (fileRef.current) fileRef.current.value = ''; }
   };
   const deletePhoto = async () => {
-    if (!photoId) return;
+    if (!photoId || blockedInDemo()) return;
     setPhotoBusy(true); setPhotoError('');
     try { await apiDeleteExpensePhoto(photoId); closePhoto(); }
     catch (error) { setPhotoError(localizeError(error, t)); }
     finally { setPhotoBusy(false); }
   };
   const pushCc = async (expense: Expense) => {
+    if (blockedInDemo()) return;
     setBusyCc(expense.id);
     try { const result = await apiSendToCC(expense.id); setCcRefs(prev => ({ ...prev, [expense.id]: JSON.stringify(result) })); }
     catch (error) { alert(localizeError(error, t)); }

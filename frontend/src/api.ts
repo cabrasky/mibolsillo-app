@@ -83,6 +83,7 @@ export interface AuthResponse {
     avatar_url: string;
     is_admin: boolean;
     is_developer: boolean;
+    is_demo?: boolean;
   } & Partial<AccountPreferences>;
 }
 
@@ -92,6 +93,11 @@ export async function register(email: string, password: string, name: string): P
 
 export async function login(email: string, password: string): Promise<AuthResponse> {
   return request<AuthResponse>('POST', '/auth/login', { email, password });
+}
+
+/** Entra con la cuenta demo pública (solo lectura, datos de ejemplo). */
+export async function demoLogin(): Promise<AuthResponse> {
+  return request<AuthResponse>('POST', '/auth/demo');
 }
 
 export async function getMe(): Promise<AuthResponse['user']> {

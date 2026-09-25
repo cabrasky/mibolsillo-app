@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import type { Expense } from '../types';
-import { MOCK_EXPENSES, MOCK_INCOMES, MOCK_GOALS, MOCK_SUBSCRIPTIONS } from '../mockData';
 import { useLocale } from '../i18n';
-import { IconCheckCircle, IconAlertTriangle, IconAlertCircle, IconInfo, IconRefresh } from './Icons';
+import { IconCheckCircle, IconAlertTriangle, IconAlertCircle, IconInfo } from './Icons';
 import { eur } from '../format';
 
 interface Props {
@@ -33,13 +32,6 @@ export default function SanityCheck({ expenses }: Props) {
   }, [expenses, t]);
 
   const counts = { ok: checks.filter(c => c.cls === 'ok').length, warn: checks.filter(c => c.cls === 'warn').length, err: checks.filter(c => c.cls === 'err').length };
-
-  const loadTestData = () => {
-    if (!confirm(t('sanity.confirmLoad'))) return;
-    const data = { expenses: MOCK_EXPENSES, incomes: MOCK_INCOMES, goals: MOCK_GOALS, subscriptions: MOCK_SUBSCRIPTIONS };
-    localStorage.setItem('gastos_app_data', JSON.stringify(data));
-    window.location.reload();
-  };
 
   const IconComponent = (cls: string) => {
     switch (cls) {
@@ -75,18 +67,6 @@ export default function SanityCheck({ expenses }: Props) {
             ))}
           </ul>
         )}
-      </div>
-      <div className="card">
-        <div className="card-header">
-          <h3>{t('sanity.testData')}</h3>
-          <button className="btn sm outline" onClick={loadTestData} title={t('sanity.loadTitle')}>
-            <IconRefresh size={14} /> {t('common.load')}
-          </button>
-        </div>
-        <p style={{ fontSize: '.8rem', color: 'var(--text-muted)' }}>
-          {t('sanity.testText')}
-          <br /><strong style={{ color: 'var(--danger)' }}>{t('sanity.overwrite')}</strong>
-        </p>
       </div>
     </>
   );

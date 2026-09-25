@@ -5,6 +5,7 @@ from datetime import date, datetime
 from typing import Optional
 from sqlalchemy import String, Float, Date, DateTime, Boolean, Text, LargeBinary, ForeignKey, Enum as SAEnum, false
 from sqlalchemy.orm import Mapped, mapped_column
+from app.config import settings
 from app.database import Base
 
 
@@ -41,6 +42,11 @@ class User(Base):
     weekly_goal: Mapped[Optional[float]] = mapped_column(Float, nullable=True, default=None)
     setup_done: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
     mobile_tour_done: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
+
+    @property
+    def is_demo(self) -> bool:
+        """Cuenta demo compartida (ver app/services/demo.py)."""
+        return (self.email or "").lower() == settings.demo_email.strip().lower()
 
 
 class OAuthConfig(Base):

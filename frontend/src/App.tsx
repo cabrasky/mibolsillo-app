@@ -6,6 +6,8 @@ import { tNow } from './i18n';
 import AddExpense from './components/AddExpense';
 import SettingsPage from './components/SettingsPage';
 import SetupModal from './components/SetupModal';
+import DemoBanner from './components/DemoBanner';
+import { blockedInDemo } from './demo';
 import { PreferencesProvider, usePreferences } from './PreferencesContext';
 import Dashboard from './components/Dashboard';
 import ExpenseList from './components/ExpenseList';
@@ -87,6 +89,7 @@ function AppContent() {
   const refresh = useCallback(() => { setData(loadData()); setEditId(null); }, []);
 
   const handleDelete = (id: string) => {
+    if (blockedInDemo()) return;
     if (!confirm(tNow('common.confirmDeleteExpense'))) return;
     deleteExpense(id);
     refresh();
@@ -99,13 +102,15 @@ function AppContent() {
   const handleSave = () => { refresh(); setShowAddModal(false); setEditId(null); setAddPresetProject(''); };
 
   // Al entrar con sesión, cargar todos los datos del servidor (multi-dispositivo)
-  const [serverSynced, setServerSynced] = useState(false);
+  // (una vez por cuenta: al cambiar de cuenta, p. ej. demo → registro, se recarga)
+  const [syncedFor, setSyncedFor] = useState<string | null>(null);
   useEffect(() => {
-    if (user && !serverSynced) {
-      setServerSynced(true);
+    if (user && syncedFor !== user.id) {
+      setSyncedFor(user.id);
+      refresh();
       loadAllFromServer().then(ok => { if (ok) refresh(); });
     }
-  }, [user, serverSynced, refresh]);
+  }, [user, syncedFor, refresh]);
 
   const editExpense = editId ? data.expenses.find((e: any) => e.id === editId) || null : null;
 
@@ -196,6 +201,7 @@ function AppContent() {
   if (layout === 'desktop') {
     return (
       <DesktopLayout expenses={data.expenses} onAddClick={handleAddClick}>
+        <DemoBanner />
         {routes}
         <AddExpense isOpen={showAddModal} editExpense={editExpense} onClose={handleCloseAdd} onSaved={handleSave} presetProjectId={addPresetProject} />
         {setupModal}
@@ -206,6 +212,7 @@ function AppContent() {
   return (
     <>
       <MobileLayout onAddClick={handleAddClick}>
+        <DemoBanner />
         {routes}
       </MobileLayout>
       <AddExpense isOpen={showAddModal} editExpense={editExpense} onClose={handleCloseAdd} onSaved={handleSave} presetProjectId={addPresetProject} />

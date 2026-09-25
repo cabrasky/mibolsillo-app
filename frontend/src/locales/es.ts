@@ -372,7 +372,6 @@ const es = {
   'common.amountEur': 'Importe (EUR)',
   'common.saveChanges': 'Guardar cambios',
   'common.allF': 'Todas',
-  'common.load': 'Cargar',
   'common.average': 'Media',
 
   // More menu
@@ -655,11 +654,6 @@ const es = {
 
   // Sanity check
   'sanity.totalExpenses': 'Total gastos',
-  'sanity.testData': 'Datos de prueba',
-  'sanity.loadTitle': 'Cargar datos de ejemplo',
-  'sanity.testText': 'Carga ~25 gastos, 11 ingresos, 5 metas de ahorro y 9 suscripciones para probar todas las funciones de la app.',
-  'sanity.overwrite': 'Esto sobrescribirá todos tus datos actuales.',
-  'sanity.confirmLoad': '¿Cargar datos de prueba?\n\nSe borrarán los datos actuales y se crearán ~25 gastos,\n11 ingresos, 5 metas y 9 suscripciones de ejemplo.',
 
   // Monthly
   'monthly.yearTotal': 'Total año',
@@ -753,6 +747,16 @@ const es = {
   'setup.intro': 'Elige cómo quieres usar miBolsillo. Podrás cambiarlo cuando quieras en Configuración.',
   'setup.save': 'Guardar y empezar',
   'setup.later': 'Más tarde',
+
+  // Cuenta demo
+  'demo.try': 'Probar la demo',
+  'demo.tryHint': 'Sin registrarte: una cuenta de ejemplo de solo lectura.',
+  'demo.entering': 'Abriendo la demo…',
+  'demo.title': 'Estás en la demo.',
+  'demo.banner': 'Los datos son de ejemplo y no se pueden cambiar.',
+  'demo.create': 'Crear mi cuenta',
+  'demo.readOnly': 'La demo es de solo lectura: los cambios no se guardan.',
+  'demo.profile': 'La cuenta demo es pública: no se puede cambiar su nombre ni su contraseña.',
 };
 
 export type TKey = keyof typeof es;

@@ -43,6 +43,10 @@ class Settings(BaseSettings):
     smtp_from: str = "gastos@cabrasky.net"
     smtp_from_name: str = "Gastos App"
 
+    # Cuenta demo compartida (POST /auth/demo)
+    demo_enabled: bool = True
+    demo_email: str = "demo@mibolsillo.app"
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

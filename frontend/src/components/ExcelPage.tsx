@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { getToken } from '../api';
 import { useLocale, localizeError, fill } from '../i18n';
+import { blockedInDemo } from '../demo';
 
 const P = { box: { border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px 22px', background: 'var(--surface)', display: 'flex', flexDirection: 'column' as const, gap: 12 } };
 
@@ -17,6 +18,7 @@ export default function ExcelPage({ onImported }: { onImported?: () => void }) {
   };
 
   const importFile = async (file: File) => {
+    if (blockedInDemo()) { if (fileRef.current) fileRef.current.value = ''; return; }
     setBusy(true); setMsg({});
     try {
       const form = new FormData(); form.append('file', file);

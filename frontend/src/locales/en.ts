@@ -358,7 +358,6 @@ const en: Record<TKey, string> = {
   'common.amountEur': 'Amount (EUR)',
   'common.saveChanges': 'Save changes',
   'common.allF': 'All',
-  'common.load': 'Load',
   'common.average': 'Average',
 
   // More menu
@@ -641,11 +640,6 @@ const en: Record<TKey, string> = {
 
   // Sanity check
   'sanity.totalExpenses': 'Total expenses',
-  'sanity.testData': 'Test data',
-  'sanity.loadTitle': 'Load sample data',
-  'sanity.testText': 'Loads ~25 expenses, 11 incomes, 5 savings goals and 9 subscriptions so you can try every feature of the app.',
-  'sanity.overwrite': 'This will overwrite all your current data.',
-  'sanity.confirmLoad': 'Load test data?\n\nYour current data will be deleted and ~25 expenses,\n11 incomes, 5 goals and 9 sample subscriptions will be created.',
 
   // Monthly
   'monthly.yearTotal': 'Year total',
@@ -739,6 +733,16 @@ const en: Record<TKey, string> = {
   'setup.intro': 'Choose how you want to use miBolsillo. You can change it any time in Settings.',
   'setup.save': 'Save and start',
   'setup.later': 'Later',
+
+  // Cuenta demo
+  'demo.try': 'Try the demo',
+  'demo.tryHint': 'No sign-up: a read-only sample account.',
+  'demo.entering': 'Opening the demo…',
+  'demo.title': 'You are in the demo.',
+  'demo.banner': 'The data is sample data and can’t be changed.',
+  'demo.create': 'Create my account',
+  'demo.readOnly': 'The demo is read-only: changes are not saved.',
+  'demo.profile': 'The demo account is public: its name and password can’t be changed.',
 };
 
 export default en;

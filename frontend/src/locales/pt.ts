@@ -357,7 +357,6 @@ const pt: Record<TKey, string> = {
   'common.amountEur': 'Valor (EUR)',
   'common.saveChanges': 'Guardar alterações',
   'common.allF': 'Todas',
-  'common.load': 'Carregar',
   'common.average': 'Média',
 
   // More menu
@@ -640,11 +639,6 @@ const pt: Record<TKey, string> = {
 
   // Sanity check
   'sanity.totalExpenses': 'Total despesas',
-  'sanity.testData': 'Dados de teste',
-  'sanity.loadTitle': 'Carregar dados de exemplo',
-  'sanity.testText': 'Carrega ~25 despesas, 11 receitas, 5 metas de poupança e 9 assinaturas para experimentar todas as funções da app.',
-  'sanity.overwrite': 'Isto vai substituir todos os teus dados atuais.',
-  'sanity.confirmLoad': 'Carregar dados de teste?\n\nOs dados atuais serão apagados e serão criadas ~25 despesas,\n11 receitas, 5 metas e 9 assinaturas de exemplo.',
 
   // Monthly
   'monthly.yearTotal': 'Total do ano',
@@ -738,6 +732,16 @@ const pt: Record<TKey, string> = {
   'setup.intro': 'Escolhe como queres usar o miBolsillo. Podes mudar quando quiseres nas Definições.',
   'setup.save': 'Guardar e começar',
   'setup.later': 'Mais tarde',
+
+  // Cuenta demo
+  'demo.try': 'Experimentar a demo',
+  'demo.tryHint': 'Sem registo: uma conta de exemplo só de leitura.',
+  'demo.entering': 'A abrir a demo…',
+  'demo.title': 'Estás na demo.',
+  'demo.banner': 'Os dados são de exemplo e não podem ser alterados.',
+  'demo.create': 'Criar a minha conta',
+  'demo.readOnly': 'A demo é só de leitura: as alterações não são guardadas.',
+  'demo.profile': 'A conta demo é pública: não é possível alterar o nome nem a palavra-passe.',
 };
 
 export default pt;
