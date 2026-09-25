@@ -561,18 +561,18 @@ const es = {
   'help.excel1': 'En Más → [Excel](/excel) tienes la **misma plantilla** que usas (con desplegables), **exportar** tus gastos e **importar** un archivo rellenado.',
   'help.excel2': 'Reimportar no duplica: las filas ya existentes se omiten.',
   'help.privacyTitle': 'Privacidad y datos',
-  'help.privacy1': 'Tus datos viven en **tu servidor** (gastos.cabrasky.net). Nada de anuncios ni terceros.',
+  'help.privacy1': 'Tus datos se guardan en el servidor de miBolsillo (mibolsillo.cabrasky.net), en la UE. Nada de anuncios ni terceros: lo tienes todo en la [Política de privacidad](/legal/privacidad).',
   'help.privacy2': 'Puedes entrar con email o con Google, y exportar a Excel cuando quieras para tener tu copia.',
 
   // Landing
-  'landing.badge': 'Control de gastos personal · self-hosted',
+  'landing.badge': 'Control de gastos personal · web y Android',
   'landing.heroA': 'Todo tu dinero,',
   'landing.heroB': 'claro y',
-  'landing.heroC': 'en casa',
+  'landing.heroC': 'a mano',
   'landing.heroText': 'Anota cada gasto como se lo dirías a tu Excel: categoría, motivo, método… y la app lo clasifica sola en Fijo, Puntual, Viajes e Inversión. Web + app Android sincronizadas.',
   'landing.downloadAndroid': 'Descargar app Android',
   'landing.openWeb': 'Abrir la web app',
-  'landing.requirements': 'Requiere Android 8+ · APK directo (no está en Google Play) · tus datos nunca salen de tu servidor',
+  'landing.requirements': 'Requiere Android 8+ · APK directo (no está en Google Play) · sin anuncios ni rastreo',
   'landing.monthBalance': 'Balance del mes',
   'landing.mock1': 'Inversión S&P500',
   'landing.mock2': 'Energética y chuches (c. Juan)',
@@ -588,18 +588,18 @@ const es = {
   'landing.f3d': 'Netflix, gimnasio… marca "Pagado" y registra el gasto y avanza el ciclo automáticamente.',
   'landing.f4t': 'Metas de ahorro',
   'landing.f4d': 'Viajes, fondo de emergencia… con progreso y aportaciones rápidas.',
-  'landing.f5t': 'Tuyo, en tu servidor',
-  'landing.f5d': 'Sin nubes de terceros: tus datos viven en tu propio servidor. Web y app móvil sincronizados al instante.',
+  'landing.f5t': 'Tus datos, a salvo',
+  'landing.f5d': 'Sin anuncios, sin rastreo y sin vender nada: tus datos solo sirven para que la app funcione. Expórtalos cuando quieras o borra tu cuenta con todo.',
   'landing.f6t': 'En tu bolsillo',
   'landing.f6d': 'App Android nativa (APK) con el mismo aspecto y datos que la web. Y en cualquier navegador.',
   'landing.f7t': 'Conectado a Cuentas Claras',
   'landing.f7d': '¿Gasto compartido? Envíalo a Cuentas Claras con un toque y gestiona el reparto entre amigos sin salir de tu flujo.',
   'landing.downloadTitle': 'Descarga la app Android',
-  'landing.downloadText': 'La misma experiencia que la web en tu móvil: gastos, proyectos, suscripciones y metas sincronizados con tu servidor.',
+  'landing.downloadText': 'La misma experiencia que la web en tu móvil: gastos, proyectos, suscripciones y metas sincronizados con tu cuenta, y funciona sin conexión.',
   'landing.downloadApk': 'Descargar el APK de miBolsillo',
   'landing.apkInfo': 'Versión 1.0.0 · ~40 MB · Android 8+',
   'landing.apkHelp': 'Al instalar, permite «fuentes desconocidas» (solo esta vez) · actualizaciones: descarga el nuevo APK y reinstala encima',
-  'landing.footer': 'miBolsillo · control de gastos personal · hecho en casa (cabrasky.net) ·',
+  'landing.footer': 'miBolsillo · control de gastos personal · un proyecto de cabrasky.net ·',
 
   // Admin
   'admin.denied': 'Acceso denegado. Solo administradores.',
@@ -946,6 +946,17 @@ const es = {
   'support.tooMany': 'Has enviado demasiadas consultas hoy. Inténtalo mañana o escribe a gastos@cabrasky.net.',
   'support.helpLink': '¿No encuentras la respuesta? [Escribe a soporte](/support) y te responderemos.',
   'error.suspended': 'Tu cuenta está suspendida. Si crees que es un error, escribe a gastos@cabrasky.net.',
+
+  // Portada: lo que viene (roadmap público)
+  'landing.roadmapEyebrow': 'En camino',
+  'landing.roadmapTitle': 'Lo que viene',
+  'landing.soon': 'Próximamente',
+  'landing.r1t': 'Instálalo en tu servidor',
+  'landing.r1d': 'Hoy miBolsillo funciona como servicio en mibolsillo.cabrasky.net. Más adelante podrás alojarlo tú mismo, con los datos en tu propia máquina.',
+  'landing.r2t': 'Todo en tu dispositivo',
+  'landing.r2d': 'Un modo 100 % local: gastos, fotos de tickets y todo lo demás guardado solo en tu móvil u ordenador, sin cuenta ni servidor.',
+  'landing.r3t': 'Sincroniza con un QR',
+  'landing.r3d': 'Escanea un código QR desde otro dispositivo para abrir una sesión y pasarle tus datos al momento, por una conexión directa y temporal.',
 };
 
 export type TKey = keyof typeof es;

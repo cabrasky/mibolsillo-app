@@ -547,18 +547,18 @@ const en: Record<TKey, string> = {
   'help.excel1': 'In More → [Excel](/excel) you\'ll find the **same template** you use (with drop-downs), plus **export** for your expenses and **import** for a filled-in file.',
   'help.excel2': 'Re-importing doesn\'t create duplicates: rows that already exist are skipped.',
   'help.privacyTitle': 'Privacy and data',
-  'help.privacy1': 'Your data lives on **your own server** (gastos.cabrasky.net). No ads, no third parties.',
+  'help.privacy1': 'Your data is stored on the miBolsillo server (mibolsillo.cabrasky.net), in the EU. No ads, no third parties: it’s all in the [Privacy policy](/legal/privacidad).',
   'help.privacy2': 'You can sign in with email or Google, and export to Excel whenever you want a copy.',
 
   // Landing
-  'landing.badge': 'Personal expense tracking · self-hosted',
+  'landing.badge': 'Personal expense tracking · web and Android',
   'landing.heroA': 'All your money,',
   'landing.heroB': 'clear and',
-  'landing.heroC': 'at home',
+  'landing.heroC': 'at hand',
   'landing.heroText': 'Log each expense the way you\'d tell your spreadsheet: category, reason, method… and the app sorts it into Fixed, One-off, Travel and Investment on its own. Web and Android app, always in sync.',
   'landing.downloadAndroid': 'Download the Android app',
   'landing.openWeb': 'Open the web app',
-  'landing.requirements': 'Requires Android 8+ · direct APK (not on Google Play) · your data never leaves your server',
+  'landing.requirements': 'Requires Android 8+ · direct APK (not on Google Play) · no ads or tracking',
   'landing.monthBalance': 'Month balance',
   'landing.mock1': 'S&P 500 investment',
   'landing.mock2': 'Energy drink and sweets (with Juan)',
@@ -574,18 +574,18 @@ const en: Record<TKey, string> = {
   'landing.f3d': 'Netflix, gym… tap "Paid" to log the expense and move to the next cycle automatically.',
   'landing.f4t': 'Savings goals',
   'landing.f4d': 'Trips, emergency fund… with progress tracking and quick contributions.',
-  'landing.f5t': 'Yours, on your server',
-  'landing.f5d': 'No third-party cloud: your data lives on your own server. Web and mobile app sync instantly.',
+  'landing.f5t': 'Your data, kept safe',
+  'landing.f5d': 'No ads, no tracking and nothing for sale: your data is only used to make the app work. Export it whenever you like or delete your account with everything in it.',
   'landing.f6t': 'In your pocket',
   'landing.f6d': 'Native Android app (APK) with the same look and data as the web. And in any browser.',
   'landing.f7t': 'Connected to Cuentas Claras',
   'landing.f7d': 'Shared expense? Send it to Cuentas Claras in one tap and split it with friends without leaving your flow.',
   'landing.downloadTitle': 'Get the Android app',
-  'landing.downloadText': 'The same experience as the web, on your phone: expenses, projects, subscriptions and goals synced with your server.',
+  'landing.downloadText': 'The same experience as the web, on your phone: expenses, projects, subscriptions and goals synced with your account, and it works offline.',
   'landing.downloadApk': 'Download the miBolsillo APK',
   'landing.apkInfo': 'Version 1.0.0 · ~40 MB · Android 8+',
   'landing.apkHelp': 'When installing, allow “unknown sources” (just this once) · to update: download the new APK and install it over the old one',
-  'landing.footer': 'miBolsillo · personal expense tracking · home-made (cabrasky.net) ·',
+  'landing.footer': 'miBolsillo · personal expense tracking · a cabrasky.net project ·',
 
   // Admin
   'admin.denied': 'Access denied. Administrators only.',
@@ -932,6 +932,17 @@ const en: Record<TKey, string> = {
   'support.tooMany': 'You have sent too many requests today. Try again tomorrow or write to gastos@cabrasky.net.',
   'support.helpLink': 'Can’t find the answer? [Contact support](/support) and we’ll get back to you.',
   'error.suspended': 'Your account is suspended. If you think this is a mistake, write to gastos@cabrasky.net.',
+
+  // Portada: lo que viene (roadmap público)
+  'landing.roadmapEyebrow': 'On the way',
+  'landing.roadmapTitle': 'What’s next',
+  'landing.soon': 'Coming soon',
+  'landing.r1t': 'Host it yourself',
+  'landing.r1d': 'Today miBolsillo runs as a service at mibolsillo.cabrasky.net. Later on you’ll be able to host it yourself, with your data on your own machine.',
+  'landing.r2t': 'Everything on your device',
+  'landing.r2d': 'A 100% local mode: expenses, receipt photos and everything else stored only on your phone or computer, with no account and no server.',
+  'landing.r3t': 'Sync with a QR code',
+  'landing.r3d': 'Scan a QR code from another device to open a session and send it your data instantly, over a direct, temporary connection.',
 };
 
 export default en;

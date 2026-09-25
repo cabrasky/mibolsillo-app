@@ -2,6 +2,10 @@
 
 Setup for miBolsillo (web + API). Mobile app: `cabrasky/mibolsillo-mobile` (React Native/Expo).
 
+> **Note:** this guide covers **local development** and the author's own deployment (Kubernetes + Jenkins).
+> miBolsillo is currently a hosted service at https://mibolsillo.cabrasky.net and is **not yet supported
+> as a self-hosted install**. Self-hosting is planned; see [ROADMAP.md](ROADMAP.md).
+
 ## Prerequisites
 
 - Docker & Docker Compose

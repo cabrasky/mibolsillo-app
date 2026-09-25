@@ -259,6 +259,13 @@ export const IconSend = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
+export const IconQrCode = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+    <path d="M14 14h3v3h-3zM20 14v.01M20 20h-3M14 20v.01M17 17v3"/>
+  </svg>
+);
+
 export const IconSparkle =({ size = 14 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
     <path d="M12 2l2.2 6.6a2 2 0 0 0 1.2 1.2L22 12l-6.6 2.2a2 2 0 0 0-1.2 1.2L12 22l-2.2-6.6a2 2 0 0 0-1.2-1.2L2 12l6.6-2.2a2 2 0 0 0 1.2-1.2z"/>
